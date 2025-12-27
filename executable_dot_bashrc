@@ -1,0 +1,475 @@
+#!/usr/bin/env bash
+
+# Source global definitions
+[[ -f "/etc/bashrc" ]] && source /etc/bashrc
+
+setterm -linewrap on
+
+# ------------------------------------------------------------------------------
+# Bash History sync after every command across all sessions
+# ------------------------------------------------------------------------------
+
+shopt -s histappend
+
+# Immediately add commands to your history instead of waiting for the end of each session.
+# First, you need to append to the history file immediately with history -a.
+# Next, you must clear the current history in your shell session with history -c.
+# Finally, to load the updated history back into your shell session, use the history -r command.
+export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+
+HISTTIMEFORMAT="%F %T "
+
+# ------------------------------------------------------------------------------
+# Session Variables
+# ------------------------------------------------------------------------------
+# Uncomment the following line if you don't like systemctl's auto-paging feature:
+# export SYSTEMD_PAGER=
+export XDG_STATE_HOME="$HOME/.local/state" # for flatpak mpv
+export MOZ_ENABLE_WAYLAND=1
+export PAGER="less"
+
+# ------------------------------------------------------------------------------
+# ANSI escape code variables.
+# ------------------------------------------------------------------------------
+
+# Usage: printf "I ${Red}love${Color_Off} Stack Overflow\n"
+# If you are using the echo command, be sure to use the -e flag to allow backslash escapes.
+# echo -e "I ${Red}love${Color_Off} Stack Overflow"
+
+# Reset
+export Color_Off='\033[0m'       # Text Reset
+
+# Regular Colors
+export Black='\033[0;30m'        # Black
+export Red='\033[0;31m'          # Red
+export Green='\033[0;32m'        # Green
+export Yellow='\033[0;33m'       # Yellow
+export Blue='\033[0;34m'         # Blue
+export Purple='\033[0;35m'       # Purple
+export Cyan='\033[0;36m'         # Cyan
+export White='\033[0;37m'        # White
+
+# Bold
+export BBlack='\033[1;30m'       # Black
+export BRed='\033[1;31m'         # Red
+export BGreen='\033[1;32m'       # Green
+export BYellow='\033[1;33m'      # Yellow
+export BBlue='\033[1;34m'        # Blue
+export BPurple='\033[1;35m'      # Purple
+export BCyan='\033[1;36m'        # Cyan
+export BWhite='\033[1;37m'       # White
+
+# Underline
+export UBlack='\033[4;30m'       # Black
+export URed='\033[4;31m'         # Red
+export UGreen='\033[4;32m'       # Green
+export UYellow='\033[4;33m'      # Yellow
+export UBlue='\033[4;34m'        # Blue
+export UPurple='\033[4;35m'      # Purple
+export UCyan='\033[4;36m'        # Cyan
+export UWhite='\033[4;37m'       # White
+
+# Background
+export On_Black='\033[40m'       # Black
+export On_Red='\033[41m'         # Red
+export On_Green='\033[42m'       # Green
+export On_Yellow='\033[43m'      # Yellow
+export On_Blue='\033[44m'        # Blue
+export On_Purple='\033[45m'      # Purple
+export On_Cyan='\033[46m'        # Cyan
+export On_White='\033[47m'       # White
+
+# High Intensity
+export IBlack='\033[0;90m'       # Black
+export IRed='\033[0;91m'         # Red
+export IGreen='\033[0;92m'       # Green
+export IYellow='\033[0;93m'      # Yellow
+export IBlue='\033[0;94m'        # Blue
+export IPurple='\033[0;95m'      # Purple
+export ICyan='\033[0;96m'        # Cyan
+export IWhite='\033[0;97m'       # White
+
+# Bold High Intensity
+export BIBlack='\033[1;90m'      # Black
+export BIRed='\033[1;91m'        # Red
+export BIGreen='\033[1;92m'      # Green
+export BIYellow='\033[1;93m'     # Yellow
+export BIBlue='\033[1;94m'       # Blue
+export BIPurple='\033[1;95m'     # Purple
+export BICyan='\033[1;96m'       # Cyan
+export BIWhite='\033[1;97m'      # White
+
+# High Intensity backgrounds
+export On_IBlack='\033[0;100m'   # Black
+export On_IRed='\033[0;101m'     # Red
+export On_IGreen='\033[0;102m'   # Green
+export On_IYellow='\033[0;103m'  # Yellow
+export On_IBlue='\033[0;104m'    # Blue
+export On_IPurple='\033[0;105m'  # Purple
+export On_ICyan='\033[0;106m'    # Cyan
+export On_IWhite='\033[0;107m'   # White
+
+# ------------------------------------------------------------------------------
+# Functions
+# ------------------------------------------------------------------------------
+
+# Use sudo on functions and aliases
+# https://unix.stackexchange.com/a/438712
+function sudo_af {
+    local firstArg=$1
+    if [ $(type -t $firstArg) = function ]
+    then
+        shift && command sudo bash -c "$(declare -f $firstArg);$firstArg $*"
+    elif [ $(type -t $firstArg) = alias ]
+    then
+        alias sudo='\sudo '
+        eval "sudo $@"
+    else
+        command sudo "$@"
+    fi
+}
+
+function hlt {
+    grep --color=always -E "${1}|$"
+}
+
+# Make new direcotry and move to it
+function mkdcd {
+    cd -- "$( mkd -d "$*" )"
+}
+
+function lns {
+    # -s, --symbolic
+    #     make symbolic links instead of hard links
+    # -i, --interactive
+    #     prompt whether to remove destinations
+    # -n, --no-dereference
+    #     treat LINK_NAME as a normal file if it is a symbolic link to a directory
+    # -v, --verbose
+    #     print name of each linked file
+    [[ $# == 2 ]] && ln -sinv "$( expand_path "${1}" )" "$( expand_path "${2}" )"
+}
+
+# ------------------------------------------------------------------------------
+# PATH
+# ------------------------------------------------------------------------------
+
+# PATH uses first-come-first-served approach,
+# so add items to end of PATH if you want
+# to prevent system commands being overridden.
+
+# mapfile -t original_PATH_paths < <( echo "${PATH//:/$'\n'}" )
+
+declare -a additional_PATH_paths=(
+    "$HOME/.local/bin"
+    "$HOME/.cargo/bin"
+    "$HOME/.scripts"
+    "$HOME/.scripts/cts"
+    "/home/linuxbrew/.linuxbrew/opt/rustup/bin"
+)
+
+for aPp in "${additional_PATH_paths[@]}"; do
+    PATH="${aPp}:$PATH"
+    # if [[ -d "${aPp}" ]]; then
+    #     PATH=$( find "${aPp}" -type d -not -path '*.git*' -printf "%p:" )$PATH
+    # fi
+done
+
+# Remove any duplicates
+# https://unix.stackexchange.com/a/40755
+PATH="$( printf %s "$PATH" | awk -v RS=: -v ORS=: '!arr[$0]++' )"
+
+export PATH
+
+# ------------------------------------------------------------------------------
+# PYTHONPATH
+# ------------------------------------------------------------------------------
+
+declare -a additional_PYTHONPATH_paths=(
+    "$HOME/.scripts"
+    "/usr/bin"
+)
+
+for aPPp in "${additional_PYTHONPATH_paths[@]}"; do
+    PYTHONPATH="${aPPp}:$PYTHONPATH"
+done
+
+# Remove any duplicates
+PYTHONPATH="$( printf %s "$PYTHONPATH" | awk -v RS=: -v ORS=: '!arr[$0]++' )"
+
+export PYTHONPATH
+
+# ------------------------------------------------------------------------------
+# Homebrew
+# ------------------------------------------------------------------------------
+
+if command -v brew &> /dev/null; then
+    eval "$($( brew --prefix )/bin/brew shellenv)"
+elif [[ -e "/home/linuxbrew/.linuxbrew/bin/brew" ]]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" &> /dev/null
+fi
+HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-/home/linuxbrew/.linuxbrew}"
+
+# ------------------------------------------------------------------------------
+# Aliases
+# ------------------------------------------------------------------------------
+
+alias e="exit"
+alias c="clear"
+alias clean="clear"
+
+alias sshgen="ssh-keygen -t ed25519 -C "${USER}@$(hostname)""
+
+function print_path_as_list {
+    echo "${PATH//:/$'\n'}"
+}
+alias lspath='print_path_as_list'
+
+function gen_pass {
+    [[ -v 1 ]] && length=$1 || length=32
+    </dev/urandom tr -dc '1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM!$%^&*@~#<>?\|/' | head -c $length ; echo ""
+}
+
+alias ~="cd ~"
+alias ..="cd .."
+alias ...="cd ../.."
+
+alias ls="ls -1a --color=auto"
+alias lsl="ls -lha --color=auto"
+
+alias cp="cp -vai"
+alias mv="mv -vi"
+alias rm="rm -vr"
+alias mkdir="mkdir -vp"
+
+alias untar="tar -xJf"
+
+alias diff="difft" # Use difftastic, syntax-aware diffing
+
+alias lsnic="ip -c a"
+alias idnic="ethtool -p"    # ethtool [ FLAGS ] -p|--identify DEVNAME	Show visible port identification (e.g. blinking)
+                            # [ TIME-IN-SECONDS ]
+
+alias jfs="journalctl --follow --unit"
+alias jfu="journalctl --follow --user-unit"
+
+alias dns-flush="sudo resolvectl flush-caches"
+alias dns-refresh="sudo resolvectl flush-caches"
+alias flush-dns="sudo resolvectl flush-caches"
+alias refresh-dns="sudo resolvectl flush-caches"
+
+# https://github.com/walles/px#killing-processes
+alias pxk="px --sort=cpupercent | fzf --bind 'ctrl-r:reload(px --sort=cpupercent)' --height=20 --no-hscroll --tac --no-sort --header-lines=1 | awk '{print $1}' | xargs kill -9"
+alias pxkp="px --sort=cpupercent --no-username | fzf --preview='px --color {1}' --bind 'ctrl-r:reload(px --sort=cpupercent --no-username)' --height=20 --no-hscroll --tac --no-sort --header-lines=1 | awk '{print $1}' | xargs kill -9"
+
+alias py="python"
+alias secureboot-get-status='mokutil --sb-state'
+
+# https://jordanelver.co.uk/blog/2010/11/27/automatically-attaching-to-a-tmux-session-via-ssh/
+# servername="ssh servername -t tmux a"
+
+alias serve="python3 -m http.server 3333"
+
+if command -v miniserve &> /dev/null ; then
+    alias miniserve="miniserve -p 3333 --pretty-urls --no-symlinks --enable-tar-gz --enable-zip --dirs-first --show-wget-footer ./"
+else
+    function miniserve {
+        if command -v podman &> /dev/null ; then
+            podman run \
+                    --rm -it \
+                    -v ./:/tmp \
+                    -p 3333:8080 \
+                    docker.io/svenstaro/miniserve \
+                    --pretty-urls --no-symlinks \
+                    --enable-tar-gz --enable-zip \
+                    --dirs-first --show-wget-footer \
+                    /tmp
+        elif command -v docker &> /dev/null ; then
+            docker run \
+                --rm -it \
+                -v ./:/tmp \
+                -p 3333:8080 \
+                docker.io/svenstaro/miniserve \
+                --pretty-urls --no-symlinks \
+                --enable-tar-gz --enable-zip \
+                --dirs-first --show-wget-footer \
+                /tmp
+        fi
+    }
+fi
+
+function copyparty {
+    docker run \
+            --rm \
+            -it \
+            --label com.centurylinklabs.watchtower.enable=true \
+            -u 1000 \
+            -p 3923:3923 \
+            -v "$( pwd )":/w:z \
+            -v $HOME/.config/copyparty:/cfg:z \
+            -e LD_PRELOAD=/usr/lib/libmimalloc-secure.so.2 \
+            copyparty/dj \
+            -v /w::r
+}
+
+declare -a cmds=( nmcli btop bat eza ug apt dnf rpm brew pip pipx docker code gext)
+# Setup aliases if commands exist
+for cmd in "${cmds[@]}"; do
+    command -v "$cmd" >/dev/null && {
+        case "$cmd" in
+            nmcli)  alias lsnet="nmcli dev show";;
+            btop)   alias b="btop";;
+            bat)    alias cat='bat --style=plain --pager=never'
+                    alias bat='bat --style=plain --pager=never'
+                    ;;
+            eza)    alias ll='eza -l --icons=auto --group-directories-first'
+                    alias l.='eza -d .*'
+                    alias l1='eza -1'
+                    alias lt="eza --icons --group-directories-first --tree --level=1"
+                    alias lsa="eza --icons --group-directories-first --all"
+                    alias lta="eza --icons --group-directories-first --all --tree --level=1"
+                    alias eza="eza -lhao --group-directories-first"
+                    ;;
+            ug) alias grep='ug'
+                alias grepe='ug -E'
+                alias grepf='ug -F'
+                alias grepz='ug -z'
+                alias grepze='ug -zE'
+                alias grepzf='ug -zF'
+                ;;
+            apt)    alias aptli="apt list --installed";;
+            dnf)    alias dnfli="dnf list --installed";;
+            rpm)    alias rpmli="rpm -qa | sort";;
+            flatpak)    alias flatpaklrs="flatpak remotes --columns=name"
+                        alias flatpaklru="flatpak remotes --user --columns=name"
+                        alias flatpaklis="flatpak list --columns=application"
+                        alias flatpakliu="flatpak list --user --columns=application"
+                        ;;
+            brew)   alias brewlt="brew tap"
+                    alias brewlf="brew list --formula -1"
+                    ;;
+            pip)    alias pipli="pip list";;
+            pipx)   alias pipxi="pipx list --short";;
+            docker) alias docker-gc="docker system prune --force";;
+            code)   alias codele="code --list-extensions";;
+            gext)   alias gextle="gext list -a";;
+        esac
+    }
+done
+unset cmds
+
+# ------------------------------------------------------------------------------
+# Other user specific aliases and functions
+# ------------------------------------------------------------------------------
+# if [[ -d "$HOME/.bashrc.d" ]]; then
+#     mapfile -t bashrc_d_f < <( find "$HOME/.bashrc.d" -type f )
+#     for rc in "${bashrc_d_f[@]}"; do
+#         if [[ -f "${rc}" ]]; then
+#             source "${rc}"
+#         fi
+#     done
+#     unset rc bashrc_d_f
+# fi
+
+# ------------------------------------------------------------------------------
+# aliases from justfiles
+# https://just.systems/man/en/chapter_73.html#global-and-user-justfiles
+# ------------------------------------------------------------------------------
+
+if command -v just &> /dev/null; then
+
+    # Aliases from other user justfiles ala `just --global-justfile`
+    declare -a justfiles=(
+        "$HOME/.config/just/justfile"
+        "$HOME/.justfile"
+    )
+
+    for jf in "${justfiles[@]}"; do
+        if [[ -f "${jf}" ]]; then
+            for recipe in `just --justfile "${jf}" --summary`; do
+                alias $recipe="just --justfile ${jf} --working-directory . $recipe"
+            done
+        fi
+    done
+
+    unset justfiles
+fi
+
+# ------------------------------------------------------------------------------
+# nnn with autocd on exit
+# ------------------------------------------------------------------------------
+
+# Must be in barshrc because of subshelling
+# https://www.baeldung.com/linux/cd-command-bash-script
+
+if command -v nnn &> /dev/null; then
+    function n {
+        # Block nesting of nnn in subshells
+        [ "${NNNLVL:-0}" -eq 0 ] || {
+            echo "nnn is already running"
+            return
+        }
+
+        # The behaviour is set to cd on quit (nnn checks if NNN_TMPFILE is set)
+        # If NNN_TMPFILE is set to a custom path, it must be exported for nnn to
+        # see. To cd on quit only on ^G, remove the "export" and make sure not to
+        # use a custom path, i.e. set NNN_TMPFILE *exactly* as follows:
+        #      NNN_TMPFILE="${XDG_CONFIG_HOME:-$HOME/.config}/nnn/.lastd"
+        export NNN_TMPFILE="${XDG_CONFIG_HOME:-$HOME/.config}/nnn/.lastd"
+
+        # Unmask ^Q (, ^V etc.) (if required, see `stty -a`) to Quit nnn
+        # stty start undef
+        # stty stop undef
+        # stty lwrap undef
+        # stty lnext undef
+
+        # The command builtin allows one to alias nnn to n, if desired, without
+        # making an infinitely recursive alias
+        command nnn "$@"
+
+        [ ! -f "$NNN_TMPFILE" ] || {
+            source "$NNN_TMPFILE"
+            rm -f "$NNN_TMPFILE" > /dev/null
+        }
+    }
+fi
+
+# ------------------------------------------------------------------------------
+# superfile cd_on_quit
+# ------------------------------------------------------------------------------
+if command -v spf &> /dev/null; then
+    function fm {
+        export SPF_LAST_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/superfile/lastdir"
+
+        command spf "$@"
+
+        [ ! -f "$SPF_LAST_DIR" ] || {
+            . "$SPF_LAST_DIR"
+            rm -f -- "$SPF_LAST_DIR" > /dev/null
+        }
+    }
+fi
+
+# ------------------------------------------------------------------------------
+# bash-preexec.sh
+# ------------------------------------------------------------------------------
+[ -f "/etc/profile.d/bash-preexec.sh" ] && . "/etc/profile.d/bash-preexec.sh"
+[ -f "/usr/share/bash-prexec" ] && . "/usr/share/bash-prexec"
+[ -f "/usr/share/bash-prexec.sh" ] && . "/usr/share/bash-prexec.sh"
+[ -f "${HOMEBREW_PREFIX}/etc/profile.d/bash-preexec.sh" ] && . "${HOMEBREW_PREFIX}/etc/profile.d/bash-preexec.sh"
+
+# ------------------------------------------------------------------------------
+[ "$(command -v fzf)" ] && eval "$(fzf --bash)"
+[ "$(command -v starship)" ] && eval "$(starship init bash)"
+[ "$(command -v thefuck)" ] && eval "$(thefuck --alias)"
+[ "$(command -v zoxide)" ] && eval "$(zoxide init bash)"
+
+# ------------------------------------------------------------------------------
+# Use bash-completion, if available
+# ------------------------------------------------------------------------------
+# [[ $PS1 && -f "/usr/share/bash-completion/bash_completion" ]] && source /usr/share/bash-completion/bash_completion
+
+# ------------------------------------------------------------------------------
+# Set directory for new shells on Termux
+# ------------------------------------------------------------------------------
+[[ "$( uname -a )" =~ 'Android' && -d "${HOME}/storage/downloads" ]] && cd "${HOME}/storage/downloads"

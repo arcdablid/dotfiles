@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_name="${0##*/}"
+
+mapfile -t available_files < <( find -type f -name "*.jpg" -or -name "*.jpeg" -or -name "*.png" )
+
+for af in "${available_files[@]}"; do
+    cwebp -short -metadata all -q 80 "${af}" -o "${af%.*}.webp"
+    rm -v "${af}"
+done

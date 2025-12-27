@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! command -v stress-ng &>/dev/null ; then
+    printf '%s\n' "stress-ng not available!"
+    exit 1
+else
+    echo 'Running a 1 minute benchmark ...'
+    cd /tmp && stress-ng --matrix 0 -t ${1} --times
+fi

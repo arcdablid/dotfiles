@@ -1,0 +1,532 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ------------------------------------------------------------------------------
+# ANSI escape code variables.
+# ------------------------------------------------------------------------------
+
+# Usage: printf "I ${Red}love${Color_Off} Stack Overflow\n"
+# If you are using the echo command, be sure to use the -e flag to allow backslash escapes.
+# echo -e "I ${Red}love${Color_Off} Stack Overflow"
+
+# Reset
+Color_Off='\033[0m'       # Text Reset
+
+# Regular Colors
+Black='\033[0;30m'        # Black
+Red='\033[0;31m'          # Red
+Green='\033[0;32m'        # Green
+Yellow='\033[0;33m'       # Yellow
+Blue='\033[0;34m'         # Blue
+Purple='\033[0;35m'       # Purple
+Cyan='\033[0;36m'         # Cyan
+White='\033[0;37m'        # White
+
+# Bold
+BBlack='\033[1;30m'       # Black
+BRed='\033[1;31m'         # Red
+BGreen='\033[1;32m'       # Green
+BYellow='\033[1;33m'      # Yellow
+BBlue='\033[1;34m'        # Blue
+BPurple='\033[1;35m'      # Purple
+BCyan='\033[1;36m'        # Cyan
+BWhite='\033[1;37m'       # White
+
+# Underline
+UBlack='\033[4;30m'       # Black
+URed='\033[4;31m'         # Red
+UGreen='\033[4;32m'       # Green
+UYellow='\033[4;33m'      # Yellow
+UBlue='\033[4;34m'        # Blue
+UPurple='\033[4;35m'      # Purple
+UCyan='\033[4;36m'        # Cyan
+UWhite='\033[4;37m'       # White
+
+# Background
+On_Black='\033[40m'       # Black
+On_Red='\033[41m'         # Red
+On_Green='\033[42m'       # Green
+On_Yellow='\033[43m'      # Yellow
+On_Blue='\033[44m'        # Blue
+On_Purple='\033[45m'      # Purple
+On_Cyan='\033[46m'        # Cyan
+On_White='\033[47m'       # White
+
+# High Intensity
+IBlack='\033[0;90m'       # Black
+IRed='\033[0;91m'         # Red
+IGreen='\033[0;92m'       # Green
+IYellow='\033[0;93m'      # Yellow
+IBlue='\033[0;94m'        # Blue
+IPurple='\033[0;95m'      # Purple
+ICyan='\033[0;96m'        # Cyan
+IWhite='\033[0;97m'       # White
+
+# Bold High Intensity
+BIBlack='\033[1;90m'      # Black
+BIRed='\033[1;91m'        # Red
+BIGreen='\033[1;92m'      # Green
+BIYellow='\033[1;93m'     # Yellow
+BIBlue='\033[1;94m'       # Blue
+BIPurple='\033[1;95m'     # Purple
+BICyan='\033[1;96m'       # Cyan
+BIWhite='\033[1;97m'      # White
+
+# High Intensity backgrounds
+On_IBlack='\033[0;100m'   # Black
+On_IRed='\033[0;101m'     # Red
+On_IGreen='\033[0;102m'   # Green
+On_IYellow='\033[0;103m'  # Yellow
+On_IBlue='\033[0;104m'    # Blue
+On_IPurple='\033[0;105m'  # Purple
+On_ICyan='\033[0;106m'    # Cyan
+On_IWhite='\033[0;107m'   # White
+
+# ------------------------------------------------------------------------------
+
+function expand_path {
+    local py_v="$( python -V | cut -d ' ' -f 2 )"
+    if [[ "${py_v}" == '3.'* ]]; then
+        python - "$@" << EOF
+import argparse
+import pathlib
+
+parser = argparse.ArgumentParser(
+    description="Normalize input paths",
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+)
+
+parser.add_argument(
+    "paths",
+    metavar="P",
+    type=str,
+    nargs="+",
+    help="path to file/folder",
+)
+
+args = parser.parse_args()
+
+for p in args.paths:
+    p = pathlib.Path(f"{p}").expanduser().resolve()
+    print(f"{str(p)}")
+EOF
+    fi
+}
+
+function print_char_line {
+    local filler=${1}
+    printf "%`tput cols`s" | sed "s/ /${filler}/g"
+    printf '\n'
+}
+
+function join_strings_w_delimeter {
+    # https://stackoverflow.com/a/17841619
+    # join_by , a b c #a,b,c
+    # join_by ' , ' a b c #a , b , c
+    # join_by ')|(' a b c #a)|(b)|(c
+    # join_by ' %s ' a b c #a %s b %s c
+    # join_by $'\n' a b c #a<newline>b<newline>c
+    # join_by - a b c #a-b-c
+    # join_by '\' a b c #a\b\c
+    # join_by '-n' '-e' '-E' '-n' #-e-n-E-n-n
+    # join_by , #
+    # join_by , a #a
+
+    local d=${1-} f=${2-}
+    if shift 2; then
+        printf %s "$f" "${@/#/$d}"
+    fi
+}
+
+# ------------------------------------------------------------------------------
+
+function vzip-encode {
+
+    local script_name="$FUNCNAME"
+
+    function vzip-encode-usage {
+        >&2 cat << EOF
+Usage: $0
+    [-f/--failed_items]     Path to file logging failed items.
+
+    [-s/--successful_items] Path to file logging successful items.
+
+    [-p/--processed_sizes]  Path to file logging processed item sizes.
+
+    <file> [file]
+EOF
+    }
+
+    local failed_items=""
+    local successful_items=""
+    local processed_sizes=""
+
+    local args=$(getopt -a -o f:s:p: --long failed_items:,successful_items:,processed_sizes: -- "$@")
+    if [[ $? -gt 0 ]]; then
+        vzip-encode-usage && exit 1
+    fi
+
+    eval set -- ${args}
+    while :
+    do
+        case $1 in
+
+            -f | --failed_items     )   failed_items="${2}"
+                                        shift 2
+                                        ;;
+            -s | --successful_items )   successful_items="${2}"
+                                        shift 2
+                                        ;;
+            -p | --processed_sizes  )   processed_sizes="${2}"
+                                        shift 2
+                                        ;;
+            # -- means the end of the arguments; drop this, and break out of the while loop
+            --  )   shift; break
+                    ;;
+            *   )   printf "[${script_name}] ${BRed}::ERROR::${Color_Off} Unsupported option: %s\n" "${1}"
+                    vzip-encode-usage
+                    exit 1
+                    ;;
+        esac
+    done
+
+    if [[ $# -eq 0 ]]; then
+        printf "[${script_name}] ${BRed}::ERROR::${Color_Off} No paths provided!\n"
+        vzip-encode-usage
+        exit 1
+    else
+        declare -a inputs=( "$@" )
+        for i in "${inputs[@]}"; do
+            expanded_i="$( expand_path "${i}" )"
+            printf "[${script_name}] ${BBlue}::INFO::${Color_Off} Encoding: %s\n" "${expanded_i}"
+
+            # Get some file info
+            local duration=$( ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 -sexagesimal "${expanded_i}" )
+            local bit_rate=$( ffprobe -v error -show_entries format=bit_rate -of default=noprint_wrappers=1:nokey=1 "${expanded_i}" )
+            local resolution=$( ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "${expanded_i}" )
+            local size_original=$( wc -c <"${expanded_i}" )
+
+            # Duration is nice already, do the rest
+            local nice_bit_rate=$( numfmt --to=iec-i --suffix=B --padding=7 ${bit_rate} )
+            local nice_size_original=$( numfmt --to=iec-i --suffix=B --padding=7 ${size_original} )
+
+            local src_encoder="$( ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 "${expanded_i}" | tr '[:upper:]' '[:lower:]' )" # or | awk '{print tolower($0)}'
+
+            # Print a nice header to know where we are / what we are doing
+            # echo
+            # print_char_line '='
+            # echo -e "${file}\n${BWhite}Encoder:${Color_Off} ${src_encoder}\t${BWhite}Size:${Color_Off} ${nice_size_original}\t${BWhite}Resolution:${Color_Off} ${resolution}\t${BWhite}Bitrate:${Color_Off} ${nice_bit_rate}\t${BWhite}Duration:${Color_Off} ${duration}"
+            # print_char_line '-'
+            # echo
+
+            # Check if mkv input and set output name
+            local file_name_ext="${expanded_i##*/}"
+            local file_name="${file_name_ext%.*}"
+            local file_parent_dir="$( dirname "${expanded_i}" )"
+
+            local output_file="$( mktemp -p "${file_parent_dir}" --suffix .mkv )"
+            # trap '{ rm -f -- "${output_file}"; }' EXIT
+
+            trap "rm -f ${output_file}" 0 2 3 15    # 0/EXIT = Exit shell, 2/SIGINT = Interrupt, 3/SIGQUIT = Quit, 15/SIGTERM = Terminate
+                                                    # https://man7.org/linux/man-pages/man7/signal.7.html
+                                                    # https://unix.stackexchange.com/a/181939
+
+            # Do the conversion
+            local success=false
+            # if ffmpeg -hide_banner -y -i "$file" -c:v libx265 -crf 28 -c:a libopus -strict experimental -c:s copy "$output_file"; then
+            if ffmpeg -hide_banner -y -i "${expanded_i}" -map 0:0 -c:v:0 libx265 -crf 26 -profile:v main -preset medium -map 0:1 -c:a:1 libopus -ar 48000 -b:a 128k -ac 2 -q:a 0 -movflags +faststart "${output_file}" ; then
+                success=true
+            elif HandBrakeCLI -i "${expanded_i}" -o "${output_file}" -e x265 -q 26 --custom-anamorphic --keep-display-aspect -E opus --mixdown stereo ; then
+                success=true
+            fi
+
+            if [[ "${success}" = true ]]; then
+                # Check filesizes before and after, delete larger file
+                local size_after=$( wc -c <"${output_file}" )
+                local nice_size_after=$( numfmt --to=iec-i --suffix=B --padding=7 ${size_after} )
+
+                if [[ ${size_after} -gt ${size_original} ]]; then
+                    # echo -e "${BWhite}Convereted size is larger than original. Deleting converted...${Color_Off}"
+                    rm "${output_file}" # Delete new file; wasteful but there is no "estimated-size-when-converted-function" to ffmpeg...
+                    printf "${Green}SRC${Color_Off}[%d] < ${Red}CVT${Color_Off}[%d] | file:/%s\n" ${nice_size_original} ${nice_size_after} "${expanded_iexpanded_i}" >> "${successful_items}"
+                    # Log orignal size instead of converted for comparison of all videos at the end
+                    printf '%d\n' ${size_original} >> "${processed_sizes}"
+                else
+                    # echo -e "${BWhite}Original size is larger than converted. Deleting original...${Color_Off}"
+                    cp -fv "${output_file}" "$( expand_path "${file_parent_dir}/${file_name}.mkv" )" # Copy temp file with original file name
+                    rm -f "${output_file}" # Remove temp file
+                    printf "${Red}SRC${Color_Off}[%d] > ${Green}CVT${Color_Off}[%d] | file:/%s\n" ${nice_size_original} ${nice_size_after} "$( expand_path "${file_parent_dir}/${file_name}.mkv" )" >> "${successful_items}"
+                    # Log converted size instead of original for comparison of all videos at the end
+                    printf '%d\n' ${size_after} >> "${processed_sizes}"
+
+                fi
+            else
+                # Handle failed conversion
+                # echo -e "[${BRed}ERROR${Color_Off}] - Conversion of ${file} failed..."
+                # echo -e "          Adding to failed list and cleaning up..."
+                printf '%s\n' "${expanded_i}" >> "${failed_items}" # Add to failed items list
+                [[ -e "${output_file}" ]] && rm "${output_file}" # Delete any failed ffmpeg output if it exists
+            fi
+        done
+    fi
+}
+
+function exit_0 {
+    if command -v "termux-notification" &> /dev/null ; then
+        termux-notification --id ydl_done --led-color FFFFFF --sound --title 'ydl DONE' --content 'ydl DONE'
+    fi
+    if command -v "termux-wake-unlock" &> /dev/null ; then
+        termux-wake-unlock
+    fi
+    exit 0
+}
+
+function exit_1 {
+    if command -v "termux-notification" &> /dev/null ; then
+        termux-notification --id ydl_done --led-color FFFFFF --sound --title 'ydl ERROR' --content 'ydl ERROR'
+    fi
+    if command -v "termux-wake-unlock" &> /dev/null ; then
+        termux-wake-unlock
+    fi
+    exit 1
+}
+
+function usage {
+    >&2 cat << EOF
+Usage: $0
+    [-h/--help]                 Display this help message.
+
+    [-j/--jobs]                 Number of item process simultaniously. Default is 3.
+
+    [-l/--list]                 Just list items to be encoded and exit, akin to a dry run.
+
+    [-r/--recursive]            If a folder is passed as an argument,
+                                processes all items recursively found under it.
+    [-p/--process-encoded]      Encode already encoded items.
+
+    [-o/--output-folder <path>] Path to folder to output under.
+                                Default is current working directory.
+                                Original files will not be deleted.
+
+    <url> [url] <list_file> [list_file]
+EOF
+}
+
+# If on Android/Termux trigger a wakelock which causes the system
+# not to go into deep sleep which can mess long downloads.
+if command -v "termux-wake-lock" &> /dev/null ; then
+    termux-wake-lock
+fi
+
+script_name="${0##*/}"
+
+abort=false
+
+declare -a required_cmds=( ffprobe ffmpeg HandBrakeCLI rust-parallel )
+for rc in "${required_cmds[@]}"; do
+    if ! command -v "${rc}" &> /dev/null ; then
+        printf "[${script_name}] ${BRed}::ERROR::${Color_Off} '${rc}' command not available!"
+        abort=true
+    fi
+done
+
+jobs=3
+list=false
+recursive=false
+process_encoded=false
+
+args=$(getopt -a -o hj:lrp --long help,jobs:,list,recursive,process-encoded -- "$@")
+if [[ $? -gt 0 ]]; then
+    usage && exit_1
+fi
+
+eval set -- ${args}
+while :
+do
+    case $1 in
+
+        -h | --help             )   usage && exit_0
+                                    shift
+                                    ;;
+        -j | --jobs             )   jobs="${2}"
+                                    printf "[${script_name}] ${BYellow}::INFO::${Color_Off} jobs: ${Yellow}%s${Color_Off}\n" "${jobs}"
+                                    shift 2
+                                    ;;
+        -l | --list             )   list='true'
+                                    printf "[${script_name}] ${BYellow}::INFO::${Color_Off} list: ${Yellow}%s${Color_Off}\n" "${list}"
+                                    shift
+                                    ;;
+        -r | --recursive        )   recursive='true'
+                                    printf "[${script_name}] ${BYellow}::INFO::${Color_Off} recursive: ${Yellow}%s${Color_Off}\n" "${recursive}"
+                                    shift
+                                    ;;
+        -p | --process-encoded  )   process_encoded='true'
+                                    printf "[${script_name}] ${BYellow}::INFO::${Color_Off} process_encoded: ${Yellow}%s${Color_Off}\n" "${process_encoded}"
+                                    shift
+                                    ;;
+        # -- means the end of the arguments; drop this, and break out of the while loop
+        --  )   shift; break
+                ;;
+        *   )   printf "${BRed}[${script_name}] ::ERROR:: Unsupported option: %s${Color_Off}\n" "${1}"
+                abort=true
+                ;;
+    esac
+done
+
+declare -a vids=()
+declare -a encoders_to_skip=( "x265" "hevc" "h265" "h.265" "libdav1d" "av1" )
+declare -a vid_file_formats=( "mkv" "avi" "wmv" "mpeg" "divx" "flv" "mpg" "webm" "m3u8" "mp4" "m4v" "mov" )
+declare -a batch_file_formats=( "txt" "md" )
+
+if [[ $# -eq 0 ]]; then
+    printf "[${script_name}] ${BRed}::ERROR::${Color_Off} No paths provided!\n"
+    abort=true
+else
+    declare -a inputs=( "$@" )
+    for i in "${inputs[@]}"; do
+        expanded_i="$( expand_path "${i}" )"
+        if [[ -f "${expanded_i}" ]]; then
+            expanded_i_extension="$( printf '%s\n' "${expanded_i##*.}" | tr '[:upper:]' '[:lower:]' )"
+            if printf '%s\n' "${batch_file_formats[@]}" | grep -q "${expanded_i_extension}"; then
+                # printf "[${script_name}] ${Blue}::INFO::${Color_Off} Batch file: %s\n" "${i}"
+                mapfile -t batch_file_lines < <( cat "${expanded_i}" | awk NF ) # 'awk NF' removes empty or just spaces lines
+                for bfl in "${batch_file_lines[@]}"; do
+                    expanded_bfl="$( expand_path "${bfl}" )"
+                    if [[ -f "${expanded_bfl}" ]]; then
+                        expanded_bfl_extension="$( printf '%s\n' "${expanded_bfl##*.}" | tr '[:upper:]' '[:lower:]' )"
+                        if printf '%s\n' "${vid_file_formats[@]}" | grep -q "${expanded_bfl_extension}"; then
+                            vids+=( "${expanded_bfl}" ) && printf "[${script_name}] ${Blue}::INFO::${Color_Off} Input: %s\n" "${expanded_bfl}"
+                        else
+                            printf "[${script_name}] ${Red}::ERROR::${Color_Off} Unacceptable file format: %s\n" "${expanded_bfl}"
+                            abort=true
+                        fi
+                    else
+                        printf "[${script_name}] ${Red}::ERROR::${Color_Off} File not found: %s\n" "${expanded_bfl}"
+                        abort=true
+                    fi
+                done
+            elif printf '%s\n' "${vid_file_formats[@]}" | grep -q "${expanded_i_extension}"; then
+                vids+=( "${expanded_i}" ) && printf "[${script_name}] ${Blue}::INFO::${Color_Off} Input: %s\n" "${expanded_i}"
+                # printf "[${script_name}] ${Blue}::INFO::${Color_Off} file: %s\n" "${expanded_i}"
+            fi
+        elif [[ -d "${expanded_i}" ]]; then
+            if [[ "${recursive}" == 'true' ]]; then
+                mapfile -t find_files < <( find "${expanded_i}" -iregex ".*.\($( join_strings_w_delimeter '\|' "${vid_file_formats[@]}" )\)" )
+            else
+                mapfile -t find_files < <( find "${expanded_i}" -maxdepth 1 -iregex ".*.\($( join_strings_w_delimeter '\|' "${vid_file_formats[@]}" )\)" )
+            fi
+            [[ ${#find_files[@]} -gt 0 ]] && vids+=( "${find_files[@]}" ) && printf "[${script_name}] ${Blue}::INFO::${Color_Off} Input: %s\n" "${find_files[@]}"
+        else
+            printf "[${script_name}] ${BRed}::ERROR::${Color_Off} Input not found: %s\n" "${expanded_bfl}"
+            abort=true
+        fi
+    done
+fi
+
+if [[ ${#vids[@]} -gt 0 ]]; then
+    # Remove any duplicate entries
+    mapfile -t unique_vids < <( printf '%s\n' "${vids[@]}" | sort -u )
+else
+    printf "[${script_name}] ${BRed}::ERROR::${Color_Off} No vids found to process!\n"
+    abort=true
+fi
+
+[[ "${abort}" == true ]] && usage && exit_1
+
+declare -a vids_to_encode=()
+total_size_original=0
+
+printf "\n[${script_name}] ${Blue}::INFO::${Color_Off} Vids to encode:\n"
+
+for uv in "${unique_vids[@]}"; do
+    uv_encoder="$( ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 "${uv}" | tr '[:upper:]' '[:lower:]' )" # or | awk '{print tolower($0)}'
+    uv_size=$( wc -c <"${uv}" )
+
+    if [[ "${process_encoded}" == true ]] || ! printf '%s\n' "${encoders_to_skip[@]}" | grep -q "${uv_encoder}"; then
+        vids_to_encode+=( "${uv}" )
+        total_size_original=$((total_size_original + uv_size))
+        printf "\t%s | %s | %s\n" "${uv}" "${uv_encoder}" "${uv_size}"
+    fi
+done
+
+if [[ ${#vids_to_encode[@]} -eq 0 ]]; then
+    printf "[${script_name}] ${BRed}::ERROR::${Color_Off} No vids to encode!\n"
+    exit_1
+fi
+
+# Exit now if all we want is just to see the above list
+if [[ "${list}" == true ]]; then
+    exit_0
+else
+    printf "[${script_name}] ${Blue}::INFO::${Color_Off} Encoding the above ${BYellow}%s${Color_Off} files...\n" "${#vids_to_encode[@]}"
+fi
+
+# Track progress of files
+successful_items="$( mktemp )"
+trap "rm -f ${successful_items}" 0 2 3 15   # 0/EXIT = Exit shell, 2/SIGINT = Interrupt, 3/SIGQUIT = Quit, 15/SIGTERM = Terminate
+                                            # https://man7.org/linux/man-pages/man7/signal.7.html
+                                            # https://unix.stackexchange.com/a/181939
+failed_items="$( mktemp )"
+trap "rm -f ${failed_items}" 0 2 3 15   # 0/EXIT = Exit shell, 2/SIGINT = Interrupt, 3/SIGQUIT = Quit, 15/SIGTERM = Terminate
+                                        # https://man7.org/linux/man-pages/man7/signal.7.html
+                                        # https://unix.stackexchange.com/a/181939
+processed_sizes="$( mktemp )"
+trap "rm -f ${processed_sizes}" 0 2 3 15    # 0/EXIT = Exit shell, 2/SIGINT = Interrupt, 3/SIGQUIT = Quit, 15/SIGTERM = Terminate
+                                            # https://man7.org/linux/man-pages/man7/signal.7.html
+                                            # https://unix.stackexchange.com/a/181939
+
+encode_cmds="$( mktemp )"
+trap "rm -f ${encode_cmds}" 0 2 3 15    # 0/EXIT = Exit shell, 2/SIGINT = Interrupt, 3/SIGQUIT = Quit, 15/SIGTERM = Terminate
+                                        # https://man7.org/linux/man-pages/man7/signal.7.html
+                                        # https://unix.stackexchange.com/a/181939
+
+# echo -e "\n${encode_cmds}\n"
+
+for ec in "${vids_to_encode[@]}"; do
+    printf 'vzip-encode -s "%s" -f "%s" -p "%s" -- "%s"\n' "${successful_items}" "${failed_items}" "${processed_sizes}" "${ec}" >> "${encode_cmds}"
+done
+
+export -f vzip-encode print_char_line exit_0 exit_1 expand_path
+
+rust-parallel --jobs ${jobs} --progress-bar --shell --discard-output all --input-file "${encode_cmds}"
+
+unset -f vzip-encode
+
+if [[ -f "${failed_items}" ]]; then
+    line_count=$( wc -l < "${failed_items}" )
+    if [[ "${line_count}" -gt 0 ]]; then
+        echo
+        print_char_line '='
+        printf "${BRed}Failed items:${Color_Off} %s\n" "${line_count}"
+        cat "${failed_items}"
+    fi
+    unset line_count
+fi
+
+if [[ -f "${successful_items}" ]]; then
+    line_count=$( wc -l < "${successful_items}" )
+    if [[ "${line_count}" -gt 0 ]]; then
+        echo
+        print_char_line '='
+        printf "${BGreen}Successful items:${Color_Off} %s\n" "${line_count}"
+        cat "${successful_items}"
+    fi
+    unset line_count
+fi
+
+if [[ -f "${processed_sizes}" ]]; then
+    line_count=$( wc -l < "${processed_sizes}" )
+    if [[ "${line_count}" -gt 0 ]]; then
+
+        total_size_converted=0
+        # https://stackoverflow.com/questions/450799/shell-command-to-sum-integers-one-per-line
+        total_size_converted=$( awk '{s+=$1} END {printf "%.0f", s}' "${processed_sizes}" )
+
+        printf "Total original size: ${BWhite}%s${Color_Off}\n" "$( numfmt --to=iec-i --suffix=B --padding=7 ${total_size_original} )"
+        printf "Size after conversion: ${BWhite}%s${Color_Off}\n" "$( numfmt --to=iec-i --suffix=B --padding=7 ${total_size_converted} )"
+        printf "Conversion saved: ${BWhite}%s${Color_Off}\n" "$( numfmt --to=iec-i --suffix=B --padding=7 $((total_size_original - total_size_converted)) )"
+    fi
+    unset line_count
+fi
+
+exit_0

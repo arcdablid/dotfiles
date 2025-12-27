@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+docker pull ghcr.io/gyulyvgc/sniffnet:latest
+docker run -it \
+    --net=host \
+    -v $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/tmp/$WAYLAND_DISPLAY \
+    -e WAYLAND_DISPLAY=$WAYLAND_DISPLAY \
+    -e XDG_RUNTIME_DIR=/tmp \
+    -e RUST_BACKTRACE=full \
+    -e ICED_BACKEND=tiny-skia \
+    --cap-add=NET_ADMIN \
+    --cap-add=NET_RAW \
+    ghcr.io/gyulyvgc/sniffnet:latest

@@ -1,0 +1,447 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+function append {
+    local line="${1}"
+    local file="${2}"
+    if [[ ! -f "${file}" ]]; then
+        printf '%s:: File not found: %s\n' "$FUNCNAME" "${file}" && return 1
+    else
+        printf '%s\n' "${line}" | tee --append "${file}" > /dev/null
+    fi
+}
+
+# ------------------------------------------------------------------------------
+#  InvokeAI
+# ------------------------------------------------------------------------------
+
+function invokeai_add {
+
+    printf '\nSetting up a local InvokeAI instance in Docker...\n\n'
+
+    # To check if a string is empty in a Bash script, use the -z conditional
+    # which returns 0 (true) if the length of the string is 0
+    # and 1 (false) if it is greater than 0
+    if [[ -z "$(docker container list --all --quiet --filter name=invokeai)" ]]; then
+        docker run -d --device /dev/kfd --device /dev/dri --security-opt seccomp=unconfined --add-host=host.docker.internal:host-gateway --publish 8189:9090 --name invokeai --restart always ghcr.io/invoke-ai/invokeai
+    else
+        printf 'ghcr.io/invoke-ai/invokeai container exists... Updating using containrrr/watchtower...'
+        docker run --rm --volume /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --run-once invokeai
+        printf 'Update complete!'
+    fi
+
+    [[ -f "${LOCAL_SERVICES_REGISTRY_FILE}" ]] && append " InvokeAI --> http://localhost:8189 " "${LOCAL_SERVICES_REGISTRY_FILE}"
+
+    printf '\nInvokeAI is ready on port 8189.\nhttp://localhost:8189 \n'
+}
+
+# Remove a local Open WebUI instance from Docker.
+function invokeai_remove {
+
+    printf '\nRemoving your local InvokeAI instance from Docker...\n\n'
+    docker container remove --force invokeai
+    docker image remove --force ghcr.io/invoke-ai/invokeai
+
+    # Remove entry from LOCAL_SERVICES_REGISTRY_FILE and remove empty lines
+    [[ -f "${LOCAL_SERVICES_REGISTRY_FILE}" ]] && sed -i "/ InvokeAI --> http://localhost:8189 /d" "${LOCAL_SERVICES_REGISTRY_FILE}" && sed -i '/^$/d' "${LOCAL_SERVICES_REGISTRY_FILE}"
+
+    printf '\nYour local InvokeAI instance should now be gone!'
+}
+
+# ------------------------------------------------------------------------------
+#  Fooocus
+# ------------------------------------------------------------------------------
+
+# Setup a local Fooocus instance with AMD GPU / ROCm support
+function fooocus_add {
+    printf '\nSetting up Fooocus with AMD GPU / ROCm support...\n\n'
+
+    if [[ ! -d "$HOME"/.fooocus ]]; then
+        # git clone https://github.com/lllyasviel/Fooocus.git "$HOME"/.fooocus
+        git clone https://github.com/mashb1t/Fooocus.git "$HOME"/.fooocus
+        cd "$HOME"/.fooocus
+        python -m venv fooocus_env
+        source fooocus_env/bin/activate
+        pip install -r requirements_versions.txt
+        pip uninstall torch torchvision torchaudio torchtext functorch xformers
+        pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.6
+    else
+        cd "$HOME"/.fooocus
+        git -C "$HOME"/.fooocus pull
+        source fooocus_env/bin/activate
+    fi
+
+    [[ -d "${ai_resources}"/checkpoints ]] && ln -sfv "${ai_resources}"/checkpoints/* "$HOME"/.fooocus/models/checkpoints/
+    [[ -d "${ai_resources}"/loras ]] && ln -sfv "${ai_resources}"/loras/* "$HOME"/.fooocus/models/loras/
+
+    python entry_with_update.py --always-download-new-model --preset realistic --theme dark
+    deactivate
+
+}
+
+# Remove Fooocus instance with AMD GPU / ROCm support
+function fooocus_remove {
+    rm -rfv "$HOME"/.fooocus
+}
+
+# ------------------------------------------------------------------------------
+#  Comfy UI with AMD GPU / ROCm support & ComfyUI-Manager
+# ------------------------------------------------------------------------------
+
+function comfyui_add {
+
+    printf '\nSetting up Comfy UI with AMD GPU / ROCm support & ComfyUI-Manager...\n\n'
+
+    # [[ ! -d "$HOME"/.comfyui ]] && git clone https://github.com/comfyanonymous/ComfyUI.git "$HOME"/.comfyui || git -C "$HOME"/.comfyui pull
+    # pip install -U torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.0
+    # pip install -U -r "$HOME"/.comfyui/requirements.txt
+    # python "$HOME"/.comfyui/main.py
+
+    [[ ! -d "$HOME/.comfyui" ]] && git clone https://github.com/comfyanonymous/ComfyUI.git "$HOME/.comfyui" || git -C "$HOME/.comfyui" pull
+    [[ ! -d "$HOME"/.comfyui/custom_nodes/comfyui-manager ]] && git clone https://github.com/ltdrdata/ComfyUI-Manager.git "$HOME"/.comfyui/custom_nodes/comfyui-manager || git -C "$HOME"/.comfyui/custom_nodes/comfyui-manager pull
+
+    cd "$HOME"/.comfyui
+
+    local desired_python="3.12"
+    if ! command -v pyenv &> /dev/null ; then
+        if command -v brew &> /dev/null ; then
+            brew install pyenv
+        fi
+    fi
+    eval "$(pyenv init - bash)"
+
+    pyenv install --skip-existing "${desired_python}"
+    pyenv shell "${desired_python}"
+
+    python -m venv comfyui_env
+    source comfyui_env/bin/activate
+    pip install -U torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.4
+    pip install -U -r "$HOME"/.comfyui/requirements.txt
+
+    deactivate && cd "$HOME"
+
+    extra_model_paths_yaml="
+## Rename this to extra_model_paths.yaml and ComfyUI will load it
+
+comfyui:
+    base_path: ${ai_resources}
+    # You can use is_default to mark that these folders should be listed first, and used as the default dirs for eg downloads
+    is_default: true
+
+    checkpoints: models/checkpoints
+    clip: models/clip
+    clip_vision: models/clip_vision
+    configs: models/configs
+    controlnet: models/controlnet
+    diffusion_models: |
+                models/diffusion_models
+                models/unet
+    embeddings: models/embeddings
+    loras: models/loras
+    upscale_models: models/upscale_models
+    vae: models/vae
+    hypernetworks: models/hypernetworks
+    custom_nodes: comfyui/custom_nodes
+    inpaint: models/inpaint
+    ipadapter: models/ipadapter
+"
+
+    [[ -d "$HOME/.comfyui" ]] && echo "${extra_model_paths_yaml}" > "$HOME/.comfyui/extra_model_paths.yaml"
+
+    QUADLET="
+[Unit]
+Description=Run ComfyUI as a user service on boot
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h
+ExecStart=/bin/bash --login -c 'source "%h"/.bashrc; \
+cd "%h"/.comfyui; \
+pyenv shell "${desired_python}"; \
+source comfyui_env/bin/activate; \
+python "%h"/.comfyui/main.py --listen=0.0.0.0 --port=8188; \
+deactivate'
+
+[Install]
+WantedBy=default.target
+"
+
+    [[ ! -d "$HOME"/.config/systemd/user ]] && mkdir -p "$HOME"/.config/systemd/user
+
+    [[ -d "$HOME"/.config/systemd/user ]] && echo "${QUADLET}" > "$HOME"/.config/systemd/user/comfyui.service
+
+    systemctl --user daemon-reload
+    systemctl --user enable comfyui.service
+    systemctl --user reload-or-restart comfyui.service
+
+    printf '\nComfy UI with AMD GPU / ROCm support & ComfyUI-Manager is ready on port 8188.\nhttp://localhost:8188 \n'
+}
+
+function comfyui_remove {
+    printf '\nRemoving your local Comfy UI instance with AMD GPU / ROCm support & ComfyUI-Manager...\n\n'
+
+    systemctl --user disable --now comfyui.service
+    rm -rf "$HOME"/.config/systemd/user/comfyui.service
+    systemctl --user daemon-reload
+
+    cd "$HOME"/.comfyui
+    python -m venv comfyui_env
+    source comfyui_env/bin/activate
+
+    pip uninstall -r "$HOME"/.comfyui/requirements.txt
+    pip uninstall torch torchvision torchaudio
+
+    deactivate
+
+    rm -rf "$HOME"/.comfyui
+
+    printf '\nComfy UI instance with AMD GPU / ROCm support & ComfyUI-Manager should now be gone!'
+}
+
+# ------------------------------------------------------------------------------
+#  Open WebUI @ Docker w/ bundled Ollama & SearXNG
+# ------------------------------------------------------------------------------
+
+function a1111_run {
+
+[[ ! -d "$HOME"/.a1111-stable-diffusion-webui ]] && git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui "$HOME"/.a1111-stable-diffusion-webui || git -C "$HOME"/.a1111-stable-diffusion-webui pull
+cd "$HOME"/.a1111-stable-diffusion-webui
+python -m venv a1111-stable-diffusion-webui_env
+source "$HOME"/.a1111-stable-diffusion-webui/a1111-stable-diffusion-webui_env/bin/activate
+python -m pip install --upgrade pip wheel
+TORCH_COMMAND='pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/rocm5.1.1' python "$HOME"/.a1111-stable-diffusion-webui/launch.py --precision full --no-half
+deactivate
+
+}
+
+function a1111_remove {
+    rm -rf "$HOME"/.a1111-stable-diffusion-webui
+}
+
+# ------------------------------------------------------------------------------
+#  Open WebUI @ Docker w/ bundled Ollama & SearXNG
+# ------------------------------------------------------------------------------
+
+function open_webui_aio_add {
+
+    printf '\nSetting up a local Open WebUI instance in Docker with bundled Ollama & SearXNG...\n\n'
+
+    [[ ! -d "$HOME"/.open-webui ]] && git clone https://github.com/open-webui/open-webui.git "$HOME"/.open-webui || git -C "$HOME"/.open-webui pull
+
+    read -r -d '' SEARXNG_SETTINGS_YML <<-EOF
+# see https://docs.searxng.org/admin/settings/settings.html#settings-use-default-settings
+use_default_settings: true
+
+server:
+    secret_key: "qyhoz7m37k9ytr7qcg6z28ukv4o59fk52gretq9jjyzr2qho4vj6zgrb3dx6omya"
+    limiter: false
+    image_proxy: true
+    port: 8080
+    bind_address: "0.0.0.0"
+
+ui:
+    static_use_hash: true
+
+search:
+    safe_search: 0
+    autocomplete: ""
+    default_lang: ""
+    formats:
+    - html
+    - json
+EOF
+
+    [[ ! -d "$HOME"/.open-webui/searxng ]] && mkdir -pv "$HOME"/.open-webui/searxng
+    echo "${SEARXNG_SETTINGS_YML}" > "$HOME"/.open-webui/searxng/settings.yml
+
+    read -r -d '' DOCKER_COMPOSE_SEARXNG_YAML <<-EOF
+services:
+    open-webui:
+    environment:
+        ENABLE_RAG_WEB_SEARCH: True
+        RAG_WEB_SEARCH_ENGINE: "searxng"
+        RAG_WEB_SEARCH_RESULT_COUNT: 3
+        RAG_WEB_SEARCH_CONCURRENT_REQUESTS: 10
+        SEARXNG_QUERY_URL: "http://searxng:8080/search?q=<query>"
+
+    searxng:
+    image: searxng/searxng:latest
+    container_name: searxng
+    ports:
+        - "8080:8080"
+    volumes:
+        - ./searxng:/etc/searxng
+    restart: always
+EOF
+
+    echo "${DOCKER_COMPOSE_SEARXNG_YAML}" > "$HOME"/.open-webui/docker-compose.searxng.yaml
+
+    read -r -d '' DOCKER_COMPOSE_COMFYUI_YAML <<-EOF
+services:
+    open-webui:
+    environment:
+        COMFYUI_BASE_URL: "http://host.docker.internal:8188/"
+        ENABLE_IMAGE_GENERATION: True
+EOF
+
+    echo "${DOCKER_COMPOSE_COMFYUI_YAML}" > "$HOME"/.open-webui/docker-compose.comfyui.yaml
+
+
+    HSA_OVERRIDE_GFX_VERSION=11.0.0 \
+    docker compose \
+    -f $HOME/.open-webui/docker-compose.yaml \
+    -f $HOME/.open-webui/docker-compose.amdgpu.yaml \
+    -f $HOME/.open-webui/docker-compose.api.yaml \
+    -f $HOME/.open-webui/docker-compose.searxng.yaml \
+    -f $HOME/.open-webui/docker-compose.comfyui.yaml \
+    up -d --build
+
+    printf '\nOpen WebUI w/ bundled Ollama & SearXNG should be ready on port 3000.\nhttp://localhost:3000 \n'
+}
+
+function open_webui_aio_remove {
+    #!/usr/bin/env bash
+
+    printf '\nRemoving your local Docker Open WebUI instance w/ bundled Ollama & SearXNG...\n\n'
+
+    docker compose \
+    -f $HOME/.open-webui/docker-compose.yaml \
+    -f $HOME/.open-webui/docker-compose.amdgpu.yaml \
+    -f $HOME/.open-webui/docker-compose.api.yaml \
+    -f $HOME/.open-webui/docker-compose.searxng.yaml \
+    down
+
+    [[ -d "$HOME"/.open-webui ]] && rm -rfv "$HOME"/.open-webui
+
+    printf '\nYour local Docker Open WebUI w/ bundled Ollama & SearXNG should now be gone!'
+}
+
+# ------------------------------------------------------------------------------
+#  Ollama @ Docker
+# ------------------------------------------------------------------------------
+
+# Setup a local Ollama instance with AMD GPU / ROCm support in Docker.
+function ollama_add {
+
+    printf '\nSetting up a local Ollama instance with AMD GPU / ROCm support in Docker...\n\n'
+
+    if [[ -z "$(docker network list --quiet --filter name=ollama-net)" ]]; then
+        printf 'Creating ollama-net bridge network...'
+        docker network create --driver bridge ollama-net
+        printf 'ollama-net bridge network created!'
+    fi
+
+    # To check if a string is empty in a Bash script, use the -z conditional
+    # which returns 0 (true) if the length of the string is 0
+    # and 1 (false) if it is greater than 0
+    if [[ -z "$(docker container list --all --quiet --filter name=ollama)" ]]; then
+        docker run -d --device /dev/kfd --device /dev/dri -v ollama:/root/.ollama --network=ollama-net -p 11434:11434 --name ollama --restart always ollama/ollama:rocm
+    else
+        printf 'ollama/ollama:rocm container exists... Updating using containrrr/watchtower...'
+        docker run --rm --volume /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --run-once ollama
+        printf 'Update complete!'
+    fi
+
+    printf '\nOllama is ready on port 11434.\nLocally, you can run a model like so:\n$ docker exec -it ollama ollama run llama3\nMore models can be found at: https://ollama.com/library \n'
+}
+
+# Setup a local Ollama instance with AMD GPU / ROCm support from Docker.
+function ollama_remove {
+    open_webui_remove
+
+    printf '\nRemoving your local Ollama instance with AMD GPU / ROCm support from Docker...\n\n'
+    docker container remove --force ollama
+    docker image remove --force ollama/ollama:rocm
+    docker network remove --force ollama-net
+    printf '\nYour local Ollama instance with AMD GPU / ROCm support should now be gone!'
+
+}
+
+# ------------------------------------------------------------------------------
+#  Open WebUI @ Docker w/ separate Ollama @ Docker
+# ------------------------------------------------------------------------------
+
+# Setup a local Open WebUI instance in Docker.
+function open_webui_add {
+    ollama_add
+
+    printf '\nSetting up a local Open WebUI instance in Docker...\n\n'
+
+    # To check if a string is empty in a Bash script, use the -z conditional
+    # which returns 0 (true) if the length of the string is 0
+    # and 1 (false) if it is greater than 0
+    if [[ -z "$(docker container list --all --quiet --filter name=open-webui)" ]]; then
+        docker run -d --network=ollama-net -p 3000:8080 --add-host=host.docker.internal:host-gateway -e OLLAMA_BASE_URL=http://ollama:11434 -e COMFYUI_BASE_URL=http://host.docker.internal:7860/ -e ENABLE_IMAGE_GENERATION=True -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
+    else
+        printf 'ghcr.io/open-webui/open-webui:ollama container exists... Updating using containrrr/watchtower...'
+        docker run --rm --volume /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --run-once open-webui
+        printf 'Update complete!'
+    fi
+
+    printf '\nOpen WebUI is ready on port 3000.\nhttp://localhost:3000 \n'
+}
+
+# Remove a local Open WebUI instance from Docker.
+function open_webui_remove {
+
+    printf '\nRemoving your local Open WebUI instance from Docker...\n\n'
+    docker container remove --force open-webui
+    docker image remove --force ghcr.io/open-webui/open-webui:main
+    printf '\nYour local Open WebUI instance should now be gone!'
+}
+
+# ------------------------------------------------------------------------------
+
+script_name="${0##*/}"
+
+# ai_resources="$HOME/syncthing/ai/models"
+ai_resources=""
+
+function print_usage {
+    printf 'Usage: %s -a/-r [a1111|comfyui|open-web-ui-aio|fooocus|ollama] -m <path to ai resources>' "$(basename \$0)" >&2
+}
+
+declare -a add=()
+declare -a remove=()
+
+while getopts "a:r:m:" flag; do
+    case "${flag}" in
+        a ) add+=( "${OPTARG}" ) ;;
+        r ) remove+=( "${OPTARG}" ) ;;
+        m ) ai_resources="${OPTARG}" ;;
+        ? ) print_usage && exit 1 ;;
+    esac
+done
+
+if [[ ${#add[@]} -eq 0 && ${#remove[@]} -eq 0 ]]; then
+    printf "\n${BRed}No actions specified!${Color_Off}\n"
+    exit 1
+fi
+
+if [[ ${ai_resources} == "" ]]; then
+    printf "\n${BRed}ai_resources not specified!${Color_Off}\n"
+    exit 1
+fi
+
+for r in "${remove[@]}"; do
+    case "${r}" in
+        a1111 ) a1111_remove ;;
+        comfyui ) comfyui_remove ;;
+        open-web-ui-aio ) open_webui_aio_remove ;;
+        fooocus ) fooocus_remove ;;
+        ollama ) ollama_remove ;;
+        ? ) printf 'Invalid option: %s\n' "${a}" && print_usage && exit 1 ;;
+    esac
+done
+
+for a in "${add[@]}"; do
+    case "${a}" in
+        a1111 ) a1111_add ;;
+        comfyui ) comfyui_add ;;
+        open-web-ui-aio ) open_webui_aio_add ;;
+        fooocus ) fooocus_add ;;
+        ollama ) ollama_add ;;
+        ? ) printf 'Invalid option: %s\n' "${a}" && print_usage && exit 1 ;;
+    esac
+done

@@ -1,0 +1,153 @@
+#!/usr/bin/bash
+set -euo pipefail
+
+function nested_array {
+    # RPM packages list
+    declare -A RPM_PACKAGES=(
+        ["fedora"]="\
+            android-tools \
+            aria2 \
+            bchunk \
+            bleachbit \
+            fuse-btfs \
+            fuse-devel \
+            fuse3-devel \
+            fzf \
+            gnome-disk-utility \
+            gparted \
+            gwenview \
+            hashcat \
+            isoimagewriter \
+            kcalc \
+            kgpg \
+            ksystemlog \
+            llama-cpp \
+            neovim \
+            nmap \
+            ollama \
+            openrgb \
+            printer-driver-brlaser \
+            qemu-kvm \
+            thefuck \
+            util-linux \
+            virt-manager \
+            virt-viewer \
+            wireshark \
+            yakuake \
+            yt-dlp \
+            zsh-autosuggestions \
+            zsh"
+
+        ["terra"]="\
+            coolercontrol \
+            ghostty \
+            hack-nerd-fonts \
+            starship \
+            ubuntu-nerd-fonts \
+            ubuntumono-nerd-fonts \
+            ubuntusans-nerd-fonts"
+
+        ["rpmfusion-free,rpmfusion-free-updates,rpmfusion-nonfree,rpmfusion-nonfree-updates"]="\
+            audacious \
+            audacious-plugins-freeworld \
+            audacity-freeworld"
+
+        ["fedora-multimedia"]="\
+            HandBrake-cli \
+            HandBrake-gui \
+            haruna \
+            mpv \
+            vlc-plugin-bittorrent \
+            vlc-plugin-ffmpeg \
+            vlc-plugin-kde \
+            vlc-plugin-pause-click \
+            vlc"
+
+        ["docker-ce"]="\
+            containerd.io \
+            docker-buildx-plugin \
+            docker-ce \
+            docker-ce-cli \
+            docker-compose-plugin"
+
+        ["brave-browser"]="brave-browser"
+        ["cloudflare-warp"]="cloudflare-warp"
+        ["vscode"]="code"
+    )
+
+    for repo in "${!RPM_PACKAGES[@]}"; do
+        read -ra pkg_array <<<"${RPM_PACKAGES[$repo]}"
+        if [[ $repo == copr:* ]]; then
+            # Handle COPR packages
+            copr_repo=${repo#copr:}
+            echo ">> dnf5 -y copr enable "$copr_repo" <<"
+            echo ">> dnf5 -y install "${pkg_array[@]}" <<"
+            echo ">> dnf5 -y copr disable "$copr_repo" <<"
+        else
+            # Handle regular packages
+            [[ $repo != "fedora" ]] && enable_opt="--enable-repo=$repo" || enable_opt=""
+            cmd=(dnf5 -y install)
+            [[ -n "$enable_opt" ]] && cmd+=("$enable_opt")
+            cmd+=("${pkg_array[@]}")
+            echo ">> ${cmd[@]} <<"
+        fi
+    done
+}
+
+function print_divider {
+
+    function print_usage {
+        local usage="
+        Usage:
+        print_divider [OPTIONS]
+
+        Options:
+        -f <character/string> filler character or string, default is '-'
+        -r <integer> repetitions of filler, default is current number of columns of terminal
+        "
+        printf '%s\n' "${usage}"
+    }
+
+    printf '\n'
+
+    local filler="-"
+    local repetitions="$(tput cols)"
+
+    args=$(getopt -a -o hf:r: --long help,filler:,repetitions: -- "$@")
+    if [[ $? -gt 0 ]]; then
+        print_usage && exit 1
+    fi
+
+    eval set -- ${args}
+    while :
+    do
+        case $1 in
+
+            -h | --help         )   print_usage && exit 0
+                                    shift ;;
+            -f | --filler       )   filler="${2}"
+                                    shift 2 ;;
+            -r | --repetitions  )   repetitions="${2}"
+                                    shift 2 ;;
+            # -- means the end of the arguments; drop this, and break out of the while loop
+            --  )   shift; break ;;
+            *   )   printf "[print_divider] ERROR - Unsupported option: %s\n" "${1}"
+                    print_usage
+                    exit 1
+                    ;;
+        esac
+    done
+
+
+    # local filler=${1:-"-"}
+    # local length=${2:-"$(tput cols)"}
+    printf "%${repetitions}s" | sed "s/ /${filler}/g"
+    printf '\n\n'
+}
+
+print_divider
+print_divider -r 80
+print_divider -r 80 -f 'u'
+print_divider -f '9'
+# print_divider -h
+print_divider -g 'f7'

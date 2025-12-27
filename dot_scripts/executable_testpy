@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+
+import sys
+
+def testpy():
+
+    import print_msg
+
+    executor = sys.argv[0]
+
+    print_msg.print_msg(
+        "-x",
+        f"{executor}",
+        "-i",
+        f"Directory  created successfully.",
+    )
+
+def middot():
+
+    print(f"  middoter   ".replace(" ", "\u00b7"))
+
+
+if __name__ == "__main__":
+    middot()

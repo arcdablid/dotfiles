@@ -1,0 +1,211 @@
+{
+    "extractor":
+    {
+        "base-directory": "./gallery-dl/",
+        "parent-directory": false,
+        "postprocessors": null,
+        "archive": null,
+        "cookies": null,
+        "cookies-update": true,
+        "proxy": null,
+        "skip": true,
+
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0",
+        "retries": 4,
+        "timeout": 30.0,
+        "verify": true,
+        "fallback": true,
+
+        "sleep": 0,
+        "sleep-request": 0,
+        "sleep-extractor": 0,
+
+        "path-restrict": "auto",
+        "path-replace": "_",
+        "path-remove": "\\u0000-\\u001f\\u007f",
+        "path-strip": "auto",
+        "path-extended": true,
+
+        "extension-map": {
+            "jpeg": "jpg",
+            "jpe" : "jpg",
+            "jfif": "jpg",
+            "jif" : "jpg",
+            "jfi" : "jpg"
+        },
+
+
+        "instagram":
+        {
+            "api": "rest",
+            "cookies": null,
+            "include": "posts",
+            "order-files": "asc",
+            "order-posts": "asc",
+            "previews": false,
+            "sleep-request": [6.0, 12.0],
+            "videos": true,
+            "metadata": true,
+
+            "filename": "{owner_id}_{username}_{date:?/_/}_{media_id}.{extension}",
+            "directory": ["{fullname:?/_/}"],
+
+            "postprocessors": [
+                {
+                    "name": "metadata",
+                    "event": "post",
+                    "filename": "{owner_id}_{username}_{date:?/_/}_{media_id}.txt",
+
+                    "mode": "custom",
+                    "format": "{description}\n{embed[url]:?/\n/}"
+                }
+            ]
+
+        },
+        "pillowfort":
+        {
+            "external": false,
+            "inline": true,
+            "reblogs": false
+        },
+        "pinterest":
+        {
+            "domain": "auto",
+            "sections": true,
+            "videos": true
+        },
+        "pixiv":
+        {
+            "refresh-token": null,
+            "include": "artworks",
+            "embeds": false,
+            "metadata": false,
+            "metadata-bookmark": false,
+            "tags": "japanese",
+            "ugoira": true
+        },
+        "reddit":
+        {
+            "client-id": null,
+            "user-agent": null,
+            "refresh-token": null,
+            "comments": 0,
+            "morecomments": false,
+            "date-min": 0,
+            "date-max": 253402210800,
+            "date-format": "%Y-%m-%dT%H:%M:%S",
+            "id-min": null,
+            "id-max": null,
+            "recursion": 0,
+            "videos": true
+        },
+        "redgifs":
+        {
+            "format": ["hd", "sd", "gif"]
+        },
+        "subscribestar":
+        {
+            "username": null,
+            "password": null
+        },
+        "tumblr":
+        {
+            "avatar": false,
+            "external": false,
+            "inline": true,
+            "posts": "all",
+            "offset": 0,
+            "original": true,
+            "reblogs": true
+        },
+        "twitter":
+        {
+            "username": null,
+            "password": null,
+            "cards": false,
+            "conversations": false,
+            "pinned": false,
+            "quoted": false,
+            "replies": true,
+            "retweets": false,
+            "strategy": null,
+            "text-tweets": false,
+            "twitpic": false,
+            "unique": true,
+            "users": "user",
+            "videos": true
+        },
+        "unsplash":
+        {
+            "format": "raw"
+        },
+        "wallhaven":
+        {
+            "api-key": null,
+            "metadata": false,
+            "include": "uploads"
+        },
+        "weibo":
+        {
+            "livephoto": true,
+            "retweets": true,
+            "videos": true
+        },
+        "ytdl":
+        {
+            "enabled": false,
+            "format": null,
+            "generic": true,
+            "logging": true,
+            "module": null,
+            "raw-options": null
+        }
+    },
+
+    "downloader":
+    {
+        "filesize-min": null,
+        "filesize-max": null,
+        "mtime": true,
+        "part": true,
+        "part-directory": null,
+        "progress": 3.0,
+        "rate": null,
+        "retries": 4,
+        "timeout": 30.0,
+        "verify": true,
+
+        "http":
+        {
+            "adjust-extensions": true,
+            "chunk-size": 32768,
+            "headers": null,
+            "validate": true
+        },
+
+        "ytdl":
+        {
+            "enabled": true,
+            "format": "mkv",
+            "module": "yt_dlp"
+        }
+    },
+
+    "output":
+    {
+        "mode": "auto",
+        "progress": true,
+        "shorten": true,
+        "ansi": false,
+        "colors": {
+            "success": "1;32",
+            "skip"   : "2"
+        },
+        "skip": true,
+        "log": "[{name}][{levelname}] {message}",
+        "logfile": null,
+        "unsupportedfile": null
+    },
+
+    "netrc": false
+}

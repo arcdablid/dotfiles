@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+docker kill $( docker container ls --all --filter=ancestor="$1" --format "{{.ID}}" )

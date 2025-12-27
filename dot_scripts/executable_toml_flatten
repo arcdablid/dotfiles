@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+
+import tomllib
+import sys
+
+def flatten_dict_using_stack(d):
+    flat_dict = {}
+    stack = [('', d)]
+    while stack:
+        parent_key, curr_d = stack.pop()
+        for k, v in curr_d.items():
+            new_key = parent_key + k if parent_key == '' else f'{parent_key}_{k}'
+            if isinstance(v, dict):
+                stack.append((new_key, v))
+            else:
+                flat_dict[new_key] = v
+    return flat_dict
+
+input = sys.argv[1]
+with open(f"{input}", "rb") as f:
+    data = tomllib.load(f)
+
+    # print(data)
+    # print(f"{}")
+    for key in flatten_dict_using_stack(data):
+        for value in flatten_dict_using_stack(data)[key]:
+            print(f"{key}|{value}")

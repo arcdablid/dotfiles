@@ -1,0 +1,18 @@
+[
+  {
+    "command": "editor.action.duplicateSelection",
+    "key": "ctrl+alt+k ctrl+alt+d"
+  },
+  {
+    "command": "editor.action.transformToUppercase",
+    "key": "ctrl+alt+k ctrl+alt+u"
+  },
+  {
+    "command": "editor.action.transformToLowercase",
+    "key": "ctrl+alt+k ctrl+alt+l"
+  },
+  {
+    "command": "editor.action.toggleColumnSelection",
+    "key": "ctrl+alt+k ctrl+alt+s"
+  }
+]

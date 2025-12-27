@@ -1,0 +1,106 @@
+{
+  "editor.fontFamily": "Hack Nerd Font",
+  "workbench.iconTheme": "material-icon-theme",
+  "workbench.productIconTheme": "material-product-icons",
+  "workbench.colorTheme": "Yaru Dark Grape",
+  "editor.renderWhitespace": "all",
+  "editor.fontSize": 18,
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "editor.minimap.enabled": true,
+  "editor.mouseWheelZoom": true,
+  "editor.pasteAs.enabled": true,
+  "editor.smoothScrolling": true,
+  "editor.tabSize": 4,
+  "editor.wordWrap": "on",
+  "explorer.sortOrder": "type",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  "git.autofetch": true,
+  "git.enableSmartCommit": true,
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.typeCheckingMode": "standard",
+  "remoteHub.commitDirectlyWarning": "off",
+  "terminal.integrated.copyOnSelection": true,
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.enableImages": true,
+  "terminal.integrated.fontSize": 16,
+  "terminal.integrated.gpuAcceleration": "on",
+  "terminal.integrated.middleClickBehavior": "paste",
+  "terminal.integrated.mouseWheelZoom": true,
+  "terminal.integrated.shellIntegration.enabled": true,
+  "terminal.integrated.smoothScrolling": true,
+  "terminal.integrated.suggest.enabled": true,
+  "window.menuBarVisibility": "classic",
+  "window.titleBarStyle": "custom",
+  "window.zoomLevel": 0,
+  "workbench.activityBar.location": "top",
+  "workbench.editor.highlightModifiedTabs": true,
+  "workbench.list.smoothScrolling": true,
+  "update.mode": "none",
+  "telemetry.telemetryLevel": "off",
+  "chat.disableAIFeatures": true,
+  "files.associations": {
+    "flake.lock": "json",
+    ".env*": "dotenv"
+  },
+  "editor.tokenColorCustomizations": {
+    "[*Light*]": {
+      "textMateRules": [
+        {
+          "scope": "ref.matchtext",
+          "settings": {
+            "foreground": "#000"
+          }
+        }
+      ]
+    },
+    "[*Dark*]": {
+      "textMateRules": [
+        {
+          "scope": "ref.matchtext",
+          "settings": {
+            "foreground": "#fff"
+          }
+        }
+      ]
+    },
+    "textMateRules": [
+      {
+        "scope": "keyword.other.dotenv",
+        "settings": {
+          "foreground": "#FF000000"
+        }
+      }
+    ]
+  },
+
+  "[dockercompose]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+    "editor.autoIndent": "advanced",
+    "editor.quickSuggestions": {
+      "other": true,
+      "comments": false,
+      "strings": true
+    },
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[github-actions-workflow]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "diffEditor.codeLens": true,
+  "diffEditor.ignoreTrimWhitespace": true
+}

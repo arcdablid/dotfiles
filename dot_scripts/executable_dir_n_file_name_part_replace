@@ -1,0 +1,95 @@
+#!/usr/bin/env python
+
+import argparse
+import os
+import pathlib
+
+
+def handle_rename(
+    input_path: pathlib.Path, target: str, substitute: str, echo_only: bool
+):
+    if input_path.is_file():
+        renamed_path = input_path.with_name(
+            f"{input_path.stem.replace(fr"{target}",fr"{substitute}")}{input_path.suffix}"
+        )
+    else:
+        renamed_path = input_path.with_name(
+            f"{input_path.stem.replace(fr"{target}",fr"{substitute}")}{input_path.suffix.replace(fr"{target}",fr"{substitute}")}"
+        )
+
+    print("")
+    print(rf"Original: {str(input_path)}")
+    print(rf"Modified: {str(renamed_path)}")
+
+    if not echo_only:
+        input_path.rename(renamed_path)
+
+
+def main():
+
+    # Useful for logging and other tasks
+    executor = os.path.basename(__file__)
+
+    parser = argparse.ArgumentParser(
+        description="Replace string/character in filenames with something else",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    parser.add_argument(
+        "-e",
+        "--echo_only",
+        action="store_true",
+    )
+
+    parser.add_argument(
+        "-r",
+        "--recursive",
+        action="store_true",
+    )
+
+    parser.add_argument(
+        "-t",
+        "--target",
+        required=True,
+        type=str,
+        help="The string or character to be replaced.",
+    )
+
+    parser.add_argument(
+        "-s",
+        "--substitute",
+        required=True,
+        type=str,
+        help="The character or string to replace anything found with.",
+    )
+
+    parser.add_argument(
+        "paths",
+        metavar="P",
+        type=str,
+        nargs="+",
+        help="Path to a directory or file.",
+    )
+
+    args = parser.parse_args()
+
+    for p in args.paths:
+        p_path = pathlib.Path(rf"{p}").expanduser().resolve()
+        if p_path.is_dir():
+            if args.recursive:
+                for p_path_i in p_path.rglob(rf"*{args.target}*"):
+                    handle_rename(
+                        p_path_i, args.target, args.substitute, args.echo_only
+                    )
+            else:
+                for p_path_i in p_path.glob(rf"*{args.target}*"):
+                    handle_rename(
+                        p_path_i, args.target, args.substitute, args.echo_only
+                    )
+        else:
+            if rf"{args.target}" in f"{p_path.stem}":
+                handle_rename(p_path, args.target, args.substitute, args.echo_only)
+
+
+if __name__ == "__main__":
+    main()

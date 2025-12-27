@@ -1,0 +1,26 @@
+# The configuration can be reloaded at runtime by pressing ctrl+shift+,
+
+# The syntax is "key = value". The whitespace around the
+# equals doesn't matter.
+
+# background = 282c34
+# foreground = ffffff
+
+# Comments start with a `#` and are only valid on their own line.
+# Blank lines are ignored!
+
+# keybind = ctrl+z=close_surface
+# keybind = ctrl+d=new_split:right
+
+# You can split your configuration into multiple files by using the config-file key in your configuration file.
+
+# config-file = some/relative/sub/config
+# config-file = ?optional/config # If the value is prefixed with ?, the file is optional and if it doesn't exist, it is ignored.
+# config-file = /absolute/path/config
+
+background-opacity = "0.9"
+font-family = "Hack Nerd Font"
+font-size = "13"
+# theme = "Dark Pastel"
+window-height = "48"
+window-width = "128"

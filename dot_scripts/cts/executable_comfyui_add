@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ------------------------------------------------------------------------------
+
+executor="${0##*/}"
+executor_path="${BASH_SOURCE}"
+while [ -L "${executor_path}" ]; do
+    executor_dir="$(cd -P "$(dirname "${executor_path}")" >/dev/null 2>&1 && pwd)"
+    executor_path="$(readlink "${executor_path}")"
+    [[ ${executor_path} != /* ]] && executor_path="${executor_dir}/${executor_path}"
+done
+executor_path="$(readlink -f "${executor_path}")"
+executor_dir="$(cd -P "$(dirname -- "${executor_path}")" >/dev/null 2>&1 && pwd)"
+
+declare -a required_cmds=( "cp" "mkdir" "rm" )
+
+fail=false
+for rc in "${required_cmds[@]}"; do
+    if ! command -v "${rc}" &> /dev/null ; then
+        printf "[${executor}] ${BRed}ERROR${Color_Off} - '${rc}' command not available!"
+        fail=true
+    fi
+done
+[[ "${fail}" == true ]] && exit 1
+
+# ------------------------------------------------------------------------------
+
+[[ ! -d "$HOME/.comfyui/models" ]] && mkdir -pv "$HOME/.comfyui/models"
+[[ ! -d "$HOME/.comfyui/output" ]] && mkdir -pv "$HOME/.comfyui/output"
+[[ ! -d "$HOME/.comfyui/settings" ]] && mkdir -pv "$HOME/.comfyui/settings"
+[[ ! -d "$HOME/.comfyui/flows" ]] && mkdir -pv "$HOME/.comfyui/flows"
+
+# docker compose --project-directory "${executor_dir}/comfyui" up --build
+docker compose --project-directory "${executor_dir}/comfyui" build --no-cache && docker compose --project-directory "${executor_dir}/comfyui" up -d

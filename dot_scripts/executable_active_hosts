@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+mapfile -t nets < <( ip -4 a | grep inet | grep -v 127.0.0.1 | awk '{print $2}' )
+for n in "${nets[@]}"; do
+    printf "\nScanning in relation to: %s\n" "${n}"
+    nmap -sn $n | grep "Nmap scan report for" | sed 's/Nmap scan report for //g' | printf '\t%s\n'
+done

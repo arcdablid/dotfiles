@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+function mkline {
+    local path="$( printf '%s\n' "${1}" | cut -d '|' -f 1 )"
+    local number=$( printf '%s\n' "${1}" | cut -d '|' -f 2 )
+    printf '%d|%s\n' ${number} "${path}" | tee --append "./rebalance_db_ng.txt" > /dev/null
+}
+
+rust_parallel_cmds="$( mktemp )"
+trap "rm -f ${rust_parallel_cmds}" 0 2 3 15    # 0/EXIT = Exit shell, 2/SIGINT = Interrupt, 3/SIGQUIT = Quit, 15/SIGTERM = Terminate
+                                        # https://man7.org/linux/man-pages/man7/signal.7.html
+                                        # https://unix.stackexchange.com/a/181939
+
+cat ./rebalance_db.txt | paste - - -d '|' > "${rust_parallel_cmds}"
+sed -i -e 's#^#mkline "#; s#$#"#' "${rust_parallel_cmds}"
+
+# head -n 10 "${rust_parallel_cmds}"
+
+export -f mkline
+rust-parallel --progress-bar --shell --discard-output all --input-file "${rust_parallel_cmds}"
+unset -f mkline

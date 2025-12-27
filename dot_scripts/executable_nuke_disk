@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_name="${0##*/}"
+
+printf 'Nuking %s\n' "${1}"
+sudo sgdisk --zap-all "${1}"
+wipefs --all "${1}"
