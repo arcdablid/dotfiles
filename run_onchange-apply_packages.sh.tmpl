@@ -117,8 +117,8 @@ EOF
     if [[ -f "${cache}"/requirements_previous.txt ]]; then
 
         # unique lines found in second input compared to first input
-        mapfile -t pip_to_install < <( grep -Fxvf "${cache}"/requirements_previous.txt "${cache}"/requirements_current.txt )
-        mapfile -t pip_to_uninstall < <( grep -Fxvf "${cache}"/requirements_current.txt "${cache}"/requirements_previous.txt )
+        mapfile -t pip_to_install < <( \grep -Fxvf "${cache}"/requirements_previous.txt "${cache}"/requirements_current.txt )
+        mapfile -t pip_to_uninstall < <( \grep -Fxvf "${cache}"/requirements_current.txt "${cache}"/requirements_previous.txt )
 
         [[ ${#pip_to_uninstall[@]} -gt 0 ]] && pip uninstall ${pip_to_uninstall[@]}
         [[ ${#pip_to_install[@]} -gt 0 ]] && pip install -U ${pip_to_install[@]}

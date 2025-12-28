@@ -211,6 +211,18 @@ fi
 HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-/home/linuxbrew/.linuxbrew}"
 
 # ------------------------------------------------------------------------------
+# Other exports
+# ------------------------------------------------------------------------------
+
+if command -v code &> /dev/null ; then
+    export VISUAL="code --wait"
+fi
+
+if command -v nano &> /dev/null ; then
+    export EDITOR="nano"
+fi
+
+# ------------------------------------------------------------------------------
 # Aliases
 # ------------------------------------------------------------------------------
 
@@ -351,7 +363,7 @@ for cmd in "${cmds[@]}"; do
             pip)    alias pipli="pip list";;
             pipx)   alias pipxi="pipx list --short";;
             docker) alias docker-gc="docker system prune --force";;
-            code)   alias codele="code --list-extensions";;
+            code)   alias codelsext="code --list-extensions";;
             gext)   alias gextle="gext list -a";;
         esac
     }

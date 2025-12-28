@@ -6,8 +6,8 @@ pip:
   - OSMPythonTools # A library to access OpenStreetMap related services | https://pypi.org/project/OSMPythonTools/
 
 homebrew:
-  # taps:
-  #   - homebrew-ffmpeg/ffmpeg
+  taps:
+    - sinelaw/fresh
   formulae:
     - Valkyrie00/homebrew-bbrew/bbrew # modern Terminal UI for managing Homebrew | https://bold-brew.com/
 
