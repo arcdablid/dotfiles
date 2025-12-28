@@ -105,27 +105,30 @@ else
     printf "${BRed}ERROR${Color_Off} - Homebrew not available!\n"
 fi
 
+cache=~/.var/lib/chezmoi/run_onchange-apply_packages
+[[ ! -d "${cache}" ]] && mkdir -p "${cache}"
+
 if command -v pip &> /dev/null; then
-    cat <<EOF > ~/.cache/chezmoi/run_onchange-apply_packages/requirements_current.txt
+    cat <<EOF > "${cache}"/requirements_current.txt
 {{ range .packages.pip -}}
 {{ . }}
 {{ end -}}
 EOF
-    if [[ -f ~/.cache/chezmoi/run_onchange-apply_packages/requirements_previous.txt ]]; then
+    if [[ -f "${cache}"/requirements_previous.txt ]]; then
 
         # unique lines found in second input compared to first input
-        mapfile -t pip_to_install < <( grep -Fxvf ~/.cache/chezmoi/run_onchange-apply_packages/requirements_previous.txt ~/.cache/chezmoi/run_onchange-apply_packages/requirements_current.txt )
-        mapfile -t pip_to_uninstall < <( grep -Fxvf ~/.cache/chezmoi/run_onchange-apply_packages/requirements_current.txt ~/.cache/chezmoi/run_onchange-apply_packages/requirements_previous.txt )
+        mapfile -t pip_to_install < <( grep -Fxvf "${cache}"/requirements_previous.txt "${cache}"/requirements_current.txt )
+        mapfile -t pip_to_uninstall < <( grep -Fxvf "${cache}"/requirements_current.txt "${cache}"/requirements_previous.txt )
 
         [[ ${#pip_to_uninstall[@]} -gt 0 ]] && pip uninstall ${pip_to_uninstall[@]}
         [[ ${#pip_to_install[@]} -gt 0 ]] && pip install -U ${pip_to_install[@]}
 
     else
-        pip install -U -r ~/.cache/chezmoi/run_onchange-apply_packages/requirements_current.txt
+        pip install -U -r "${cache}"/requirements_current.txt
     fi
 
-    [[ -f ~/.cache/chezmoi/run_onchange-apply_packages/requirements_previous.txt ]] && rm ~/.cache/chezmoi/run_onchange-apply_packages/requirements_previous.txt
-    mv ~/.cache/chezmoi/run_onchange-apply_packages/requirements_current.txt ~/.cache/chezmoi/run_onchange-apply_packages/requirements_previous.txt
+    [[ -f "${cache}"/requirements_previous.txt ]] && rm "${cache}"/requirements_previous.txt
+    mv "${cache}"/requirements_current.txt "${cache}"/requirements_previous.txt
 else
     printf "${BRed}ERROR${Color_Off} - Python pip not available!\n"
 fi
