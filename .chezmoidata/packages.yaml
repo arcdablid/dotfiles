@@ -10,8 +10,6 @@ packages:
     taps:
       - sinelaw/fresh
     formulae:
-      - Valkyrie00/homebrew-bbrew/bbrew # modern Terminal UI for managing Homebrew | https://bold-brew.com/
-
       - sd # Intuitive find & replace CLI | https://github.com/chmln/sd
       - eza # Modern, maintained replacement for ls | https://github.com/eza-community/eza
       - moor # Nice to use pager for humans | https://github.com/walles/moor
@@ -112,8 +110,6 @@ packages:
     - thenuprojectcontributors.vscode-nushell-lang
     - tomoki1207.pdf
     - usernamehw.errorlens
-    - visualstudioexptteam.intellicode-api-usage-examples
-    - visualstudioexptteam.vscodeintellicode
     - vscjava.migrate-java-to-azure
     - vscjava.vscode-gradle
     - vscjava.vscode-java-debug
@@ -122,6 +118,8 @@ packages:
     - vscjava.vscode-java-test
     - vscjava.vscode-java-upgrade
     - vscjava.vscode-maven
+    - GitHub.vscode-pull-request-github
+    - eamodio.gitlens
 
   flatpaks:
     - io.github.swordpuffin.rewaita
@@ -207,3 +205,5 @@ packages:
     - com.jeffser.Alpaca
     - com.jeffser.Alpaca.Plugins.Ollama
     - com.jeffser.Alpaca.Plugins.AMD
+
+    - com.github.mtkennerly.ludusavi # Cross-platform savegame backups/restores
