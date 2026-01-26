@@ -2,6 +2,7 @@ packages:
   cargo:
     - wrestic # A backup tool built in Rust that provides a wrapper around Restic, a popular backup program. | https://github.com/alvaro17f/wrestic
     - suckit # Recursively visit and download a website's content to your disk. | https://github.com/Skallwar/suckit
+    - cargo-binstall # Install Rust binaries as an alternative to building from source | https://github.com/cargo-bins/cargo-binstall?tab=readme-ov-file
 
   pip:
     - OSMPythonTools # A library to access OpenStreetMap related services | https://pypi.org/project/OSMPythonTools/
