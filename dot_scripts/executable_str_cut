@@ -1,0 +1,88 @@
+#!/usr/bin/env python
+
+import argparse
+
+
+def str_cut():
+
+    parser = argparse.ArgumentParser(
+        description="Cut input string by provided delimiter and return all parts, or optionally return only those specified via index part.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    parser.add_argument(
+        "-d",
+        "--delimiter",
+        required=True,
+        type=str,
+        help="The character or string to cut with/by.",
+    )
+
+    parser.add_argument(
+        "-p",
+        "--parts",
+        type=int,
+        nargs="*",
+        help="Part(s) to return.",
+    )
+
+    parser.add_argument(
+        "-s",
+        "--strip",
+        action="store_true",
+        help="Remove whitespace from output parts.",
+    )
+
+    parser.add_argument(
+        "-w",
+        "--whitespace",
+        action="store_true",
+        help="Represent whitespace with the Unicode character of middle dot.",
+        # https://en.wikipedia.org/wiki/Whitespace_character#Substitute_images
+    )
+
+    parser.add_argument(
+        "inputs",
+        metavar="I",
+        type=str,
+        nargs="+",  # n: n values, can be any number you want
+                    # ?: a single value, which can be optional
+                    # *: a flexible number of values, which will be gathered into a list
+                    # +: like *, but requiring at least one value
+                    # argparse.REMAINDER: all the values that are remaining in the command line
+        help="Inputs to act upon.",
+    )
+
+    args = parser.parse_args()
+
+    for i in args.inputs:
+        parts = i.split(args.delimiter)
+
+        if len(args.parts) == 0:
+            for p in parts:
+                if args.strip:
+                    if args.whitespace:
+                        print(p.strip().replace(" ", "\u00b7"))
+                    else:
+                        print(p.strip())
+                else:
+                    if args.whitespace:
+                        print(p.replace(" ", "\u00b7"))
+                    else:
+                        print(p)
+        else:
+            for rp in args.parts:
+                if args.strip:
+                    if args.whitespace:
+                        print(parts[rp-1].strip().replace(" ", "\u00b7"))
+                    else:
+                        print(parts[rp-1].strip())
+                else:
+                    if args.whitespace:
+                        print(parts[rp-1].replace(" ", "\u00b7"))
+                    else:
+                        print(parts[rp-1])
+
+
+if __name__ == "__main__":
+    str_cut()

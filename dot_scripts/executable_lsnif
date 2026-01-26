@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+function parse_ipja {
+    local py_v="$( python -V | cut -d ' ' -f 2 )"
+    if [[ "${py_v}" == '3.'* ]]; then
+        python - "$@" << EOF
+import argparse
+import json
+
+def main():
+
+    parser = argparse.ArgumentParser(
+        description="Isolate interface name, mac address, mtu, and network addresses from ip -j a output.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    parser.add_argument(
+        "-j",
+        "--json",
+        required=True,
+        type=str,
+        help="the input json from ip -j a",
+    )
+
+    parser.add_argument(
+        "-4",
+        "--ipv4addresses",
+        action='store_true',
+        help="select entries with ipv4 addresses only",
+    )
+
+    parser.add_argument(
+        "-6",
+        "--ipv6addresses",
+        action='store_true',
+        help="select entries with ipv6 addresses only",
+    )
+
+    parser.add_argument(
+        "-l",
+        "--list",
+        action='store_true',
+        help="list only addresses",
+    )
+
+    parser.add_argument(
+        "-n",
+        "--names",
+        action='store_true',
+        help="list only addresses",
+    )
+
+    args = parser.parse_args()
+
+    data = json.loads(args.json)
+    for d in data:
+        if str(d['ifname']) != 'lo':
+
+            ifname = str(d['ifname'])
+
+            try:
+                mtu = str(d['mtu'])
+            except KeyError:
+                mtu = f"-"
+
+            try:
+                mac = str(d['address'])
+            except KeyError:
+                mac = f"-"
+
+            addresses = list(())
+            try:
+                for ai in d['addr_info']:
+                    if (not args.ipv4addresses and not args.ipv6addresses) or (args.ipv4addresses and str(ai['family']) != 'inet6') or (args.ipv6addresses and str(ai['family']) == 'inet6'):
+                        addresses.append(f"{str(ai['local'])}/{str(ai['prefixlen'])}")
+            except KeyError:
+                addresses.append(f"-/-")
+
+            if args.list:
+                for a in addresses:
+                    if args.names:
+                        print(f"{ifname} {a}")
+                    else:
+                        print(f"{a}")
+            else:
+                if len(addresses) > 0 :
+                    print(f"\nInterface: {ifname}\nMTU: {mtu}\nMAC: {mac}\nAddresses:")
+                    for a in addresses:
+                        print(f"\t{a}")
+
+
+if __name__ == "__main__":
+    main()
+EOF
+    fi
+}
+
+parse_ipja -j "$( ip -j address )" "$@"

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ -z $1 ]]; then
+    printf "ERROR - A recipe filepath is required!\n"
+    exit 1
+fi
+
+mapfile -t pkgs < <( yq eval '.modules[] | select(.type == "dnf") | .install.packages[] ' "${1}" )
+
+for pkg in "${pkgs[@]}"; do
+    if ! dnf info -q --available "${pkg}" &> /dev/null ; then
+        printf '%s\n' "${pkg}"
+    fi
+done

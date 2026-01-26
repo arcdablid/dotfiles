@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+
+import argparse
+import validators
+
+
+def str_is_url():
+    parser = argparse.ArgumentParser(
+        description="Check input string(s) are URL(s)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    parser.add_argument(
+        "inputs",
+        metavar="I",
+        type=str,
+        nargs="+",
+        help="URL string to check.",
+    )
+
+    args = parser.parse_args()
+
+    for i in args.inputs:
+        result = validators.url(i)
+        if isinstance(result, validators.ValidationError):
+            print("false")
+        else:
+            print("true")
+
+
+if __name__ == "__main__":
+    str_is_url()

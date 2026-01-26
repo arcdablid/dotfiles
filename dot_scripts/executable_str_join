@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+
+import argparse
+
+
+def str_join():
+
+    parser = argparse.ArgumentParser(
+        description="Join input strings by provided delimiter and return result.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    parser.add_argument(
+        "-d",
+        "--delimiter",
+        required=True,
+        type=str,
+        help="The character or string to join with.",
+    )
+
+    parser.add_argument(
+        "-w",
+        "--whitespace",
+        action="store_true",
+        help="Represent whitespace with the Unicode character of middle dot.",
+        # https://en.wikipedia.org/wiki/Whitespace_character#Substitute_images
+    )
+
+    parser.add_argument(
+        "strings",
+        metavar="S",
+        type=str,
+        nargs="+",
+        help="Strings to join.",
+    )
+
+    args = parser.parse_args()
+
+    if args.whitespace:
+        print(args.delimiter.join(args.strings).replace(" ", "\u00b7"))
+    else:
+        print(args.delimiter.join(args.strings))
+
+
+if __name__ == "__main__":
+    str_join()
