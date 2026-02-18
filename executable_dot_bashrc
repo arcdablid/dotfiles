@@ -258,7 +258,7 @@ alias untar="tar -xJf"
 
 alias diff="difft" # Use difftastic, syntax-aware diffing
 
-alias lsnic="ip -c a"
+alias lsnic="ip -c -h -brief address show && echo && ip -c -h -brief link show"
 alias idnic="ethtool -p"    # ethtool [ FLAGS ] -p|--identify DEVNAME	Show visible port identification (e.g. blinking)
                             # [ TIME-IN-SECONDS ]
 
@@ -465,10 +465,22 @@ fi
 # ------------------------------------------------------------------------------
 # bash-preexec.sh
 # ------------------------------------------------------------------------------
-[ -f "/etc/profile.d/bash-preexec.sh" ] && . "/etc/profile.d/bash-preexec.sh"
-[ -f "/usr/share/bash-prexec" ] && . "/usr/share/bash-prexec"
-[ -f "/usr/share/bash-prexec.sh" ] && . "/usr/share/bash-prexec.sh"
-[ -f "${HOMEBREW_PREFIX}/etc/profile.d/bash-preexec.sh" ] && . "${HOMEBREW_PREFIX}/etc/profile.d/bash-preexec.sh"
+
+declare -a bash_preexec_locations=(
+    "/etc/profile.d/bash-preexec.sh"
+    "/usr/share/bash-prexec"
+    "/usr/share/bash-prexec.sh"
+    "${HOMEBREW_PREFIX}/etc/profile.d/bash-preexec.sh"
+)
+
+for bpl in "${bash_preexec_locations[@]}"; do
+    if [[ -f "${bpl}" ]]; then
+        source "${bpl}"
+        break
+    fi
+done
+
+unset bash_preexec_locations
 
 # ------------------------------------------------------------------------------
 [ "$(command -v fzf)" ] && eval "$(fzf --bash)"
@@ -479,7 +491,23 @@ fi
 # ------------------------------------------------------------------------------
 # Use bash-completion, if available
 # ------------------------------------------------------------------------------
-# [[ $PS1 && -f "/usr/share/bash-completion/bash_completion" ]] && source /usr/share/bash-completion/bash_completion
+if ! shopt -oq posix; then
+
+    declare -a bash_completion_locations=(
+        "/usr/share/bash-completion/bash_completion"
+        "/etc/bash_completion"
+    )
+
+    for bcl in "${bash_completion_locations[@]}"; do
+        if [[ -f "${bcl}" ]]; then
+            source "${bcl}"
+            break
+        fi
+    done
+
+    unset bash_completion_locations
+
+fi
 
 # ------------------------------------------------------------------------------
 # Set directory for new shells on Termux

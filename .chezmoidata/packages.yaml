@@ -5,7 +5,20 @@ packages:
     - cargo-binstall # Install Rust binaries as an alternative to building from source | https://github.com/cargo-bins/cargo-binstall?tab=readme-ov-file
 
   pip:
-    - OSMPythonTools # A library to access OpenStreetMap related services | https://pypi.org/project/OSMPythonTools/
+    # - OSMPythonTools # A library to access OpenStreetMap related services | https://pypi.org/project/OSMPythonTools/
+
+  uv:
+    # - requests
+    # - urllib3
+    # - isort # Sort Python imports automatically | https://pycqa.github.io/isort/
+    # - ruamel.yaml # YAML 1.2 loader/dumper package for Python | https://yaml.dev/doc/ruamel.yaml/
+    # - tqdm # Make your loops show a smart progress meter | https://tqdm.github.io/
+    # - pyperclip # Cross-platform clipboard module | https://github.com/asweigart/pyperclip
+    # - validators # Data validation in Python for humans | https://github.com/python-validators/validators/
+    # - tabulate # Pretty-print tabular data in Python, a library and a command-line utility
+    # - flask
+    # - flask-wtf # Simple integration of Flask and WTForms
+    # - wtforms # Forms validation and rendering library for python
 
   homebrew:
     taps:
@@ -121,6 +134,8 @@ packages:
     - vscjava.vscode-maven
     - GitHub.vscode-pull-request-github
     - eamodio.gitlens
+    - charliermarsh.ruff
+    - astral-sh.ty
 
   flatpaks:
     - io.github.swordpuffin.rewaita
