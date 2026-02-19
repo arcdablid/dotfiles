@@ -180,12 +180,24 @@ EOF
         mapfile -t uv_to_install < <( \grep -Fxvf "${cache}"/requirements_previous_uv.txt "${cache}"/requirements_current_uv.txt )
         mapfile -t uv_to_uninstall < <( \grep -Fxvf "${cache}"/requirements_current_uv.txt "${cache}"/requirements_previous_uv.txt )
 
-        [[ ${#uv_to_uninstall[@]} -gt 0 ]] && uv tool uninstall ${uv_to_uninstall[@]}
-        [[ ${#uv_to_install[@]} -gt 0 ]] && uv tool install ${uv_to_install[@]}
+        if [[ ${#uv_to_uninstall[@]} -gt 0 ]]; then
+            for utu in "${uv_to_uninstall[@]}"; do
+                uv tool uninstall "${utu}"
+            done
+        fi
+        if [[ ${#uv_to_install[@]} -gt 0 ]]; then
+            for uti in "${uv_to_install[@]}"; do
+                uv tool install "${uti}"
+            done
+        fi
 
     else
         mapfile -t requirements_current_uv < <( cat "${cache}"/requirements_current_uv.txt )
-        uv tool install ${requirements_current_uv[@]}
+        if [[ ${#requirements_current_uv[@]} -gt 0 ]]; then
+            for rcu in "${requirements_current_uv[@]}"; do
+                uv tool install "${rcu}"
+            done
+        fi
     fi
 
     [[ -f "${cache}"/requirements_previous_uv.txt ]] && rm "${cache}"/requirements_previous_uv.txt
