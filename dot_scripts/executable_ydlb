@@ -502,11 +502,11 @@ heredoc
 --embed-subs
 heredoc
     else
+        # --format-sort acodec:opus,abr
+        # --merge-output-format mkv
+        # --remux-video mka
         cat >> "${ytdlp_config}" <<'heredoc'
---format 'ba/b'
---format-sort acodec:opus,abr
---merge-output-format mkv
---remux-video mka
+--format 'ba'
 --embed-thumbnail
 --embed-chapters
 heredoc
