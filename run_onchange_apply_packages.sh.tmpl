@@ -96,39 +96,33 @@ cache_old=~/.var/lib/chezmoi/run_onchange-apply_packages
 
 if command -v brew &> /dev/null; then
 
-    printf "\n${BPurple}INFO${Color_Off} - Installing Homebrew taps...\n"
     brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
+
+printf "\n${BPurple}INFO${Color_Off} - Installing Homebrew taps...\n"
 {{ range .packages.homebrew.taps -}}
 tap {{ . | quote }}
 {{ end -}}
-EOF
 
-    printf "\n${BPurple}INFO${Color_Off} - Installing Homebrew formulae...\n"
-    brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
+printf "\n${BPurple}INFO${Color_Off} - Installing Homebrew formulae...\n"
 {{ range .packages.homebrew.formulae -}}
 brew {{ . | quote }}
 {{ end -}}
-EOF
 
-    printf "\n${BPurple}INFO${Color_Off} - Installing flatpaks...\n"
-    brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
+printf "\n${BPurple}INFO${Color_Off} - Installing flatpaks...\n"
 {{ range .packages.flatpaks -}}
 flatpak {{ . | quote }}
 {{ end -}}
-EOF
 
-    printf "\n${BPurple}INFO${Color_Off} - Installing cargo pkgs...\n"
-    brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
+printf "\n${BPurple}INFO${Color_Off} - Installing cargo pkgs...\n"
 {{ range .packages.cargo -}}
 cargo {{ . | quote }}
 {{ end -}}
-EOF
 
-    printf "\n${BPurple}INFO${Color_Off} - Installing VSCode extentions...\n"
-    brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
+printf "\n${BPurple}INFO${Color_Off} - Installing VSCode extentions...\n"
 {{ range .packages.vscode_extensions -}}
 vscode {{ . | quote }}
 {{ end -}}
+
 EOF
 
 else
