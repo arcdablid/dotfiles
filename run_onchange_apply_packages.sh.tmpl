@@ -98,27 +98,22 @@ if command -v brew &> /dev/null; then
 
     brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
 
-printf "\n${BPurple}INFO${Color_Off} - Installing Homebrew taps...\n"
 {{ range .packages.homebrew.taps -}}
 tap {{ . | quote }}
 {{ end -}}
 
-printf "\n${BPurple}INFO${Color_Off} - Installing Homebrew formulae...\n"
 {{ range .packages.homebrew.formulae -}}
 brew {{ . | quote }}
 {{ end -}}
 
-printf "\n${BPurple}INFO${Color_Off} - Installing flatpaks...\n"
 {{ range .packages.flatpaks -}}
 flatpak {{ . | quote }}
 {{ end -}}
 
-printf "\n${BPurple}INFO${Color_Off} - Installing cargo pkgs...\n"
 {{ range .packages.cargo -}}
 cargo {{ . | quote }}
 {{ end -}}
 
-printf "\n${BPurple}INFO${Color_Off} - Installing VSCode extentions...\n"
 {{ range .packages.vscode_extensions -}}
 vscode {{ . | quote }}
 {{ end -}}
@@ -134,7 +129,6 @@ fi
 [[ -f "${cache}"/requirements_previous.txt ]] && mv "${cache}"/requirements_previous.txt "${cache}"/requirements_previous_pip.txt
 
 if command -v pip &> /dev/null; then
-    printf "\n${BPurple}INFO${Color_Off} - Installing pip pkgs...\n"
     cat <<EOF > "${cache}"/requirements_current_pip.txt
 {{ range .packages.pip -}}
 {{ . }}
@@ -162,7 +156,6 @@ fi
 # ------------------------------------------------------------------------------
 
 if command -v uv &> /dev/null; then
-    printf "\n${BPurple}INFO${Color_Off} - Installing uv pkgs...\n"
     cat <<EOF > "${cache}"/requirements_current_uv.txt
 {{ range .packages.uv -}}
 {{ . }}
