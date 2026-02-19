@@ -89,8 +89,6 @@ packages:
     - bierner.github-markdown-preview # Changes VS Code's built-in markdown preview to match GitHub
     - dotenv.dotenv-vscode
     - esbenp.prettier-vscode
-    - github.copilot
-    - github.copilot-chat
     - golang.go
     - gruntfuggly.todo-tree
     - jnoortheen.nix-ide
@@ -136,6 +134,9 @@ packages:
     - eamodio.gitlens
     - charliermarsh.ruff
     - astral-sh.ty
+    - github.vscode-github-actions
+    - gitHub.remotehub
+    - gitHub.vscode-pull-request-github
 
   flatpaks:
     - io.github.swordpuffin.rewaita
