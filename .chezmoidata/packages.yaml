@@ -130,13 +130,16 @@ packages:
     - vscjava.vscode-java-test
     - vscjava.vscode-java-upgrade
     - vscjava.vscode-maven
-    - GitHub.vscode-pull-request-github
-    - eamodio.gitlens
+
     - charliermarsh.ruff
     - astral-sh.ty
+
+    - eamodio.gitlens
     - github.vscode-github-actions
-    - gitHub.remotehub
-    - gitHub.vscode-pull-request-github
+    - github.vscode-pull-request-github
+
+    - ms-vscode.remote-repositories
+    - github.remotehub
 
   flatpaks:
     - io.github.swordpuffin.rewaita
