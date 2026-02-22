@@ -258,16 +258,24 @@ alias untar="tar -xJf"
 
 alias diff="difft" # Use difftastic, syntax-aware diffing
 
-alias lsnic="ip -c -h -brief address show && echo && ip -c -h -brief link show"
-alias idnic="ethtool -p"    # ethtool [ FLAGS ] -p|--identify DEVNAME	Show visible port identification (e.g. blinking)
+function lsip {
+    printf "[${BPurple}WAN${Color_Off}]\n%s\n" "$( curl -s https://icanhazip.com || curl -s https://ifconfig.me || curl -s https://ipecho.net/plain || curl -s ipinfo.io/ip || wget -qO- https://icanhazip.com || wget -qO- https://ifconfig.me )"
+    printf "[${BPurple}LAN${Color_Off}]\n%s\n%s\n" "$( ip -c -h -brief address show )" "$( ip -c -h -brief link show )"
+
+}
+alias lsnic="lsip"
+alias lsnet="lsip"
+
+alias idnic="ethtool -p"    # ethtool [ FLAGS ] -p|--identify DEVNAME   Show visible port identification (e.g. blinking)
                             # [ TIME-IN-SECONDS ]
+alias idif="idnic"
 
 alias jfs="journalctl --follow --unit"
 alias jfu="journalctl --follow --user-unit"
 
 alias dns-flush="sudo resolvectl flush-caches"
-alias dns-refresh="sudo resolvectl flush-caches"
 alias flush-dns="sudo resolvectl flush-caches"
+alias dns-refresh="sudo resolvectl flush-caches"
 alias refresh-dns="sudo resolvectl flush-caches"
 
 # https://github.com/walles/px#killing-processes
