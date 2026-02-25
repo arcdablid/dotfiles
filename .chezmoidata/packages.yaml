@@ -142,6 +142,8 @@ packages:
     - github.remotehub
 
   flatpaks:
+    - io.github.nroduit.Weasis
+
     - io.github.swordpuffin.rewaita
     - org.kde.dolphin
 
