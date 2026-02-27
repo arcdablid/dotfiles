@@ -144,6 +144,27 @@ packages:
     - github.remotehub
 
   flatpaks:
+    - com.github.Matoking.protontricks
+    - com.github.tchx84.Flatseal
+    - com.mattjakeman.ExtensionManager
+    - com.vysp3r.ProtonPlus
+    - io.missioncenter.MissionCenter
+    - org.altlinux.Tuner
+    - org.gnome.Calculator
+    - org.gnome.Calendar
+    - org.gnome.Characters
+    - org.gnome.Contacts
+    - org.gnome.Logs
+    - org.gnome.Loupe
+    - org.gnome.NautilusPreviewer
+    - org.gnome.Papers
+    - org.gnome.TextEditor
+    - org.gnome.Weather
+    - org.gnome.baobab
+    - org.gnome.clocks
+    - org.gnome.font-viewer
+    - org.mozilla.firefox
+
     - io.github.nroduit.Weasis
 
     - io.github.swordpuffin.rewaita
