@@ -1,0 +1,20 @@
+[edit]
+    command = "code"
+    args = ["--wait"]
+
+[merge]
+    command = "flatpak run org.gnome.meld"
+    args = ["--auto-compare"] # , "{{ .Destination }}", "{{ .Source }}", "{{ .Target }}"]
+
+[git]
+    # autoAdd = true
+    autoCommit = true # add + commit
+    # If you automate the push as well, sensitive files could accidentally be uploaded to the remote repository.
+    # autoPush = true
+
+{{- $git_email := promptStringOnce . "git_email" "Git email address" -}}
+{{- $git_name := promptStringOnce . "git_name" "Git name" -}}
+
+[data]
+    git_email = {{ $git_email | quote }}
+    git_name = {{ $git_name | quote }}
