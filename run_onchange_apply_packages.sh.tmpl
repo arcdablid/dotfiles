@@ -110,8 +110,16 @@ brew {{ . | quote }}
 flatpak {{ . | quote }}
 {{ end -}}
 
+{{ range .packages.go -}}
+go {{ . | quote }}
+{{ end -}}
+
 {{ range .packages.cargo -}}
 cargo {{ . | quote }}
+{{ end -}}
+
+{{ range .packages.uv -}}
+uv {{ . | quote }}
 {{ end -}}
 
 {{ range .packages.vscode_extensions -}}
@@ -155,42 +163,8 @@ fi
 
 # ------------------------------------------------------------------------------
 
-if command -v uv &> /dev/null; then
-    cat <<EOF > "${cache}"/requirements_current_uv.txt
-{{ range .packages.uv -}}
-{{ . }}
-{{ end -}}
-EOF
-    if [[ -f "${cache}"/requirements_previous_uv.txt ]]; then
-
-        # unique lines found in second input compared to first input
-        mapfile -t uv_to_install < <( \grep -Fxvf "${cache}"/requirements_previous_uv.txt "${cache}"/requirements_current_uv.txt )
-        mapfile -t uv_to_uninstall < <( \grep -Fxvf "${cache}"/requirements_current_uv.txt "${cache}"/requirements_previous_uv.txt )
-
-        if [[ ${#uv_to_uninstall[@]} -gt 0 ]]; then
-            for utu in "${uv_to_uninstall[@]}"; do
-                uv tool uninstall "${utu}"
-            done
-        fi
-        if [[ ${#uv_to_install[@]} -gt 0 ]]; then
-            for uti in "${uv_to_install[@]}"; do
-                uv tool install "${uti}"
-            done
-        fi
-
-    else
-        mapfile -t requirements_current_uv < <( cat "${cache}"/requirements_current_uv.txt )
-        if [[ ${#requirements_current_uv[@]} -gt 0 ]]; then
-            for rcu in "${requirements_current_uv[@]}"; do
-                uv tool install "${rcu}"
-            done
-        fi
-    fi
-
-    [[ -f "${cache}"/requirements_previous_uv.txt ]] && rm "${cache}"/requirements_previous_uv.txt
-    mv "${cache}"/requirements_current_uv.txt "${cache}"/requirements_previous_uv.txt
-else
-    printf "${BRed}ERROR${Color_Off} - Python pip not available!\n"
+if [[ -f "${cache}"/requirements_previous_uv.txt ]]; then
+    rm "${cache}"/requirements_previous_uv.txt
 fi
 
 # ------------------------------------------------------------------------------
