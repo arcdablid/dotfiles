@@ -83,6 +83,8 @@ packages:
       - mods
       - ramalama
 
+      - exiftool # Perl lib for reading and writing EXIF metadata | https://exiftool.org
+
   vscode_extensions:
     - adsoncicilioti.yaru-vscode
     - alefragnani.bookmarks
