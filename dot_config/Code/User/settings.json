@@ -42,7 +42,6 @@
   "workbench.list.smoothScrolling": true,
   "update.mode": "none",
   "telemetry.telemetryLevel": "off",
-  "chat.disableAIFeatures": true,
   "files.associations": {
     "flake.lock": "json",
     ".env*": "dotenv"
@@ -110,5 +109,9 @@
       "source.organizeImports": "explicit"
     },
     "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "github.copilot.nextEditSuggestions.enabled": false,
+  "github.copilot.enable": {
+    "*": false
   }
 }
