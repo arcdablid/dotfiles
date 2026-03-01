@@ -99,44 +99,20 @@ done
 
 # ------------------------------------------------------------------------------
 
-function expand_path {
-    local py_v="$( python -V | cut -d ' ' -f 2 )"
-    if [[ "${py_v}" == '3.'* ]]; then
-        python - "$@" << EOF
-import argparse
-import pathlib
-
-parser = argparse.ArgumentParser(
-    description="Normalize input paths",
-    formatter_class=argparse.RawDescriptionHelpFormatter,
-)
-
-parser.add_argument(
-    "paths",
-    metavar="P",
-    type=str,
-    nargs="+",
-    help="path to file/folder",
-)
-
-args = parser.parse_args()
-
-for p in args.paths:
-    p = pathlib.Path(f"{p}").expanduser().resolve()
-    print(f"{str(p)}")
-EOF
-    fi
-}
-
 yaml_file_path="$( expand_path "${1}" )"
-if [[ -f "${yaml_file_path}" ]]; then
-    yaml_file_parent="$( dirname "${yaml_file_path}" )"
-    yaml_file="$( basename -- "$yaml_file_path" )"
-    yaml_file_name="${yaml_file%.*}"
-    yaml_file_extension="${yaml_file##*.}"
-    podman run --interactive --rm --security-opt label=disable \
-    --volume "${PWD}:/pwd" --workdir /pwd quay.io/coreos/butane:release \
-    --pretty --strict "${yaml_file_path}" > "${yaml_file_parent}"/"${yaml_file_name}".ign
-else
+if [[ ! -f "${yaml_file_path}" ]]; then
     printf "\n[${executor}] ${BRed}ERROR${Color_Off} File %s not found...\n" "${yaml_file_path}"
+    exit 1
+fi
+
+yaml_file_parent="$( dirname "${yaml_file_path}" )"
+yaml_file="$( basename -- "$yaml_file_path" )"
+yaml_file_name="${yaml_file%.*}"
+yaml_file_extension="${yaml_file##*.}"
+
+if command -v "docker" &> /dev/null ; then
+    cat "${yaml_file_path}" | docker run --rm -i quay.io/coreos/butane:latest > "${yaml_file_parent}"/"${yaml_file_name}".json
+elif command -v "podman" &> /dev/null ; then
+    podman run --interactive --rm quay.io/coreos/butane:release \
+    --pretty --strict < "${yaml_file_path}" > "${yaml_file_parent}"/"${yaml_file_name}".json
 fi
