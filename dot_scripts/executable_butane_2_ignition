@@ -110,9 +110,9 @@ yaml_file="$( basename -- "$yaml_file_path" )"
 yaml_file_name="${yaml_file%.*}"
 yaml_file_extension="${yaml_file##*.}"
 
-if command -v "docker" &> /dev/null ; then
-    cat "${yaml_file_path}" | sudo docker run --rm -i quay.io/coreos/butane:latest > "${yaml_file_parent}"/"${yaml_file_name}".json
-elif command -v "podman" &> /dev/null ; then
-    podman run --interactive --rm quay.io/coreos/butane:release \
+if command -v "podman" &> /dev/null ; then
+    podman run --rm -i quay.io/coreos/butane:latest \
     --pretty --strict < "${yaml_file_path}" > "${yaml_file_parent}"/"${yaml_file_name}".json
+elif command -v "docker" &> /dev/null ; then
+    cat "${yaml_file_path}" | sudo docker run --rm -i quay.io/coreos/butane:latest > "${yaml_file_parent}"/"${yaml_file_name}".json
 fi
