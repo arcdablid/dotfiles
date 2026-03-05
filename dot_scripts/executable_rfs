@@ -418,7 +418,7 @@ def generate_rfs_files(
                 [[ -f /var/lib/{systemd_name}.env ]] && rm -v /var/lib/{systemd_name}.env
 
             else
-                if [[ \"${{host_reachable_address}}\" != \"${{stored_address}}\" ]]; then
+                if [[ \"${{host_reachable_address}}\" != \"${{stored_address}}\" || ! -f /var/lib/{systemd_name}.env ]]; then
                     echo -e \"ADDRESS=${{host_reachable_address}}\" | tee /var/lib/{systemd_name}.env > /dev/null
                 fi
 
