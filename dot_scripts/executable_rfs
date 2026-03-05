@@ -4,32 +4,32 @@
 # dependencies = [
 #   "rich",
 #   "ruamel.yaml",
+#   "validators",
 # ]
 # ///
 
 from __future__ import annotations
 
 import argparse
+import getpass
+import glob
 import inspect
-import ipaddress
 import json
 import os
 import pathlib
-import getpass
 import random
+import shutil
 import subprocess
 import sys
 import tempfile
-import tomllib
-import glob
-import shutil
-import validators
-from pwd import getpwnam
 from grp import getgrnam
+from pwd import getpwnam
+
+import tomllib
+import validators
 
 
 class ptc:  # print text colours
-
     # Reset
     Color_Off = "\033[0m"  # Text Reset
 
@@ -108,7 +108,6 @@ class ptc:  # print text colours
 
 
 def unit_tests(tests: list[list]) -> None:
-
     results = []
 
     t_result_pending = f"{ptc.Yellow}[PENDING]{ptc.Color_Off}"
@@ -134,7 +133,7 @@ def unit_tests(tests: list[list]) -> None:
                 assert not validators.hostname(t[1], may_have_port=False)
             t_output[0] = t_result_pass
             # print(f'{ptc.Green}[PASS]{ptc.Color_Off} {t[0]}("{t[1]}") == {t[2]}')
-        except AssertionError as e:
+        except AssertionError:
             t_output[0] = t_result_fail
             # print(f'{ptc.Red}[FAIL]{ptc.Color_Off} {t[0]}("{t[1]}") == {t[2]}')
 
@@ -160,7 +159,7 @@ def exec_cmd(*cmd: str, fail_action="return") -> tuple[bool, str]:
                 return False, e.stdout
             else:
                 sys.exit(1)
-    except OSError as e:
+    except OSError:
         if fail_action == "return":
             return False, str(sys.stderr)
         else:
@@ -216,7 +215,6 @@ def print_error(msg):
 
 
 def select_from_list(input_message: str, options: list) -> str:
-
     input_message = f"{input_message}:\n"
     for index, item in enumerate(options):
         input_message += f"{index + 1}) {item}\n"
@@ -254,9 +252,8 @@ def delete_rfs_files(
     share_name: str,
     share_mount_under: str,
 ) -> None:
-
     mountpoint = str(
-        f"{pathlib.Path( f"{share_mount_under}" ).expanduser().resolve()}/{server_name}/{share_name}"
+        f"{pathlib.Path(f'{share_mount_under}').expanduser().resolve()}/{server_name}/{share_name}"
     )
     systemd_name = str(mountpoint).replace("/", "-").replace("-", "", 1)
 
@@ -320,7 +317,7 @@ def delete_rfs_files(
         )
 
     if exec_cmd(
-        f"sudo systemctl daemon-reload",
+        "sudo systemctl daemon-reload",
         fail_action="exit",
     ):
         print(f"{ptc.Blue}[INFO]{ptc.Color_Off} Completed systemctl daemon-reload")
@@ -348,7 +345,6 @@ def generate_rfs_files(
     share_domain: str,
     simulate: bool,
 ) -> None:
-
     for addr in server_addresses:
         if not validators.hostname(addr, may_have_port=False):
             print_error(f"Invalid server address: {addr}")
@@ -357,7 +353,7 @@ def generate_rfs_files(
     server_addresses_oneliner = " ".join(server_addresses)
 
     mountpoint = str(
-        f"{pathlib.Path( f"{share_mount_under}" ).expanduser().resolve()}/{server_name}/{share_name}"
+        f"{pathlib.Path(f'{share_mount_under}').expanduser().resolve()}/{server_name}/{share_name}"
     )
     systemd_name = str(mountpoint).replace("/", "-").replace("-", "", 1)
 
@@ -509,7 +505,7 @@ def generate_rfs_files(
     )
 
     log_namespace = inspect.cleandoc(
-        f"""\
+        """\
             [Journal]
             #Storage=auto
             #Compress=yes
@@ -606,7 +602,6 @@ def generate_rfs_files(
 
         print(f"{ptc.Blue}[INFO]{ptc.Color_Off} Simulation complete!")
     else:
-
         print(f"{ptc.Blue}[INFO]{ptc.Color_Off} Generating files & enabling...")
 
         if not os.path.isdir(f"{mountpoint}"):
@@ -702,7 +697,6 @@ def generate_rfs_files(
 
 
 def main():
-
     try:
         print(f"\n{ptc.BBlack}{ptc.On_White} [RFS] {ptc.Color_Off}\n")
 
@@ -746,10 +740,10 @@ def main():
             metavar="P",
             type=str,
             nargs="*",  # n: n values, can be any number you want
-                        # ?: a single value, which can be optional
-                        # *: a flexible number of values, which will be gathered into a list
-                        # +: like *, but requiring at least one value
-                        # argparse.REMAINDER: all the values that are remaining in the command line
+            # ?: a single value, which can be optional
+            # *: a flexible number of values, which will be gathered into a list
+            # +: like *, but requiring at least one value
+            # argparse.REMAINDER: all the values that are remaining in the command line
             help="Paths to YAML files.",
         )
 
@@ -761,13 +755,15 @@ def main():
         if len(args.paths) == 0:
             if args.remove:
                 options = list(
-                    f"/{str(pathlib.Path(f"{opt}").expanduser().resolve().stem).replace(
-                        "-", "/"
-                    )}"
+                    f"/{
+                        str(pathlib.Path(f'{opt}').expanduser().resolve().stem).replace(
+                            '-', '/'
+                        )
+                    }"
                     for opt in glob.glob("/var/lib/*.rfs")
                 )
 
-                selection = f"/var/lib/{select_from_list("Pick a rfs entry", options).replace("/", "-").replace("-", "", 1)}.rfs"
+                selection = f"/var/lib/{select_from_list('Pick a rfs entry', options).replace('/', '-').replace('-', '', 1)}.rfs"
 
                 with open(selection, "r") as jsonfile:
                     data = json.load(jsonfile)
@@ -836,13 +832,12 @@ def main():
                     for server in toml_data["servers"]:
                         print("=" * os.get_terminal_size().columns)
                         print(
-                            f"{ptc.Blue}[INFO]{ptc.Color_Off} Server {server["name"]} @ {'|'.join(server["addresses"])}"
+                            f"{ptc.Blue}[INFO]{ptc.Color_Off} Server {server['name']} @ {'|'.join(server['addresses'])}"
                         )
 
                         if len(server["shares"]) == 0:
                             print(f"{ptc.Red}[ERROR]{ptc.Color_Off} No shares defined!")
                         else:
-
                             share_index = 0
                             shares_number = len(server["shares"])
                             for share in server["shares"]:
@@ -850,7 +845,7 @@ def main():
 
                                 print("-" * os.get_terminal_size().columns)
                                 print(
-                                    f"{ptc.Blue}[INFO]{ptc.Color_Off} Share [{share_index}/{shares_number}] {share["name"]}\n"
+                                    f"{ptc.Blue}[INFO]{ptc.Color_Off} Share [{share_index}/{shares_number}] {share['name']}\n"
                                 )
 
                                 if args.remove:
@@ -885,7 +880,6 @@ def main():
 
 
 if __name__ == "__main__":
-
     # tests = [
     #     ["valid_fqdn", "homestarrunner.net", True],
     #     ["valid_fqdn", "zombo.lan.com", True],
