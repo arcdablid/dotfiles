@@ -113,6 +113,7 @@ export On_IWhite='\033[0;107m'   # White
 # Functions
 # ------------------------------------------------------------------------------
 
+
 # Use sudo on functions and aliases
 # https://unix.stackexchange.com/a/438712
 function sudo_af {
@@ -226,13 +227,52 @@ fi
 # Aliases
 # ------------------------------------------------------------------------------
 
+# https://commandmasters.com/commands/systemd-inhibit-linux/
+# https://man.archlinux.org/man/systemd-inhibit.1
+# https://kd8bny.com/posts/session_inhibit/
+alias inhibit='systemd-inhibit --no-ask-password --what=idle --who="$USER" --why="Obvious reasons..."'
+function inhibit_background {
+    systemd-inhibit --no-ask-password --what=idle --who="$USER" --why="Obvious reasons..." $@ & disown
+    if [[ ! -v INHIBIT_PID_LIST ]]; then
+        declare -a INHIBIT_PID_LIST=()
+    fi
+    export INHIBIT_PID_LIST+=( "$!" )
+    # export INHIBIT_PID=$!
+}
+function inhibit_no_more {
+    if [[ ! -v INHIBIT_PID_LIST ]]; then
+        printf '%s\n' "No background PIDs found."
+    else
+        mapfile -t selected_pids < <( printf '%s\n' "${INHIBIT_PID_LIST[@]}" | fzf --multi )
+        for INHIBIT_PID in "${selected_pids[@]}"; do
+            kill -SIGKILL "${INHIBIT_PID}"
+
+            # Loop through original pids, put all not matching killed pid in new array, replace pid array with new.
+            declare -a INHIBIT_PID_LIST_NEW=()
+            for pid in "${INHIBIT_PID_LIST[@]}"; do
+                if [[ "${pid}" != "${INHIBIT_PID}" ]]; then
+                    INHIBIT_PID_LIST_NEW+=( "${pid}" )
+                fi
+            done
+            export INHIBIT_PID_LIST+=("${INHIBIT_PID_LIST_NEW[@]}")
+            unset INHIBIT_PID_LIST_NEW
+
+            # INHIBIT_PID=
+        done
+    fi
+}
+# ------------------------------------------------------------------------------
+
 alias e="exit"
 alias c="clear"
 alias clean="clear"
 
-alias sshgen="ssh-keygen -t ed25519 -C "${USER}@$(hostname)""
+alias gen_ssh="ssh-keygen -t ed25519 -C "${USER}@$(hostname)""
+alias ssh_gen='gen_ssh'
+alias sshgen='gen_ssh'
 
-function print_path_as_list {
+
+function path_print_as_list {
     echo "${PATH//:/$'\n'}"
 }
 alias lspath='print_path_as_list'
@@ -258,6 +298,7 @@ alias untar="tar -xJf"
 
 alias diff="difft" # Use difftastic, syntax-aware diffing
 
+# ------------------------------------------------------------------------------
 function lsip {
     printf "[${BPurple}WAN${Color_Off}]\n%s\n" "$( curl -s https://icanhazip.com || curl -s https://ifconfig.me || curl -s https://ipecho.net/plain || curl -s ipinfo.io/ip || wget -qO- https://icanhazip.com || wget -qO- https://ifconfig.me )"
     printf "[${BPurple}LAN${Color_Off}]\n%s\n%s\n" "$( ip -c -h -brief address show )" "$( ip -c -h -brief link show )"
@@ -269,6 +310,7 @@ alias lsnet="lsip"
 alias idnic="ethtool -p"    # ethtool [ FLAGS ] -p|--identify DEVNAME   Show visible port identification (e.g. blinking)
                             # [ TIME-IN-SECONDS ]
 alias idif="idnic"
+# ------------------------------------------------------------------------------
 
 alias jfs="journalctl --follow --unit"
 alias jfu="journalctl --follow --user-unit"
