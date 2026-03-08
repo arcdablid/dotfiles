@@ -15,7 +15,7 @@ shopt -s histappend
 # First, you need to append to the history file immediately with history -a.
 # Next, you must clear the current history in your shell session with history -c.
 # Finally, to load the updated history back into your shell session, use the history -r command.
-export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
 
 HISTTIMEFORMAT="%F %T "
 
