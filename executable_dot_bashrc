@@ -3,30 +3,6 @@
 # Source global definitions
 [[ -f "/etc/bashrc" ]] && source /etc/bashrc
 
-setterm -linewrap on
-
-# ------------------------------------------------------------------------------
-# Bash History sync after every command across all sessions
-# ------------------------------------------------------------------------------
-
-shopt -s histappend
-
-# Immediately add commands to your history instead of waiting for the end of each session.
-# First, you need to append to the history file immediately with history -a.
-# Next, you must clear the current history in your shell session with history -c.
-# Finally, to load the updated history back into your shell session, use the history -r command.
-PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
-
-HISTTIMEFORMAT="%F %T "
-
-# ------------------------------------------------------------------------------
-# Session Variables
-# ------------------------------------------------------------------------------
-# Uncomment the following line if you don't like systemctl's auto-paging feature:
-# export SYSTEMD_PAGER=
-export XDG_STATE_HOME="$HOME/.local/state" # for flatpak mpv
-export MOZ_ENABLE_WAYLAND=1
-export PAGER="less"
 
 # ------------------------------------------------------------------------------
 # ANSI escape code variables.
@@ -110,46 +86,33 @@ export On_ICyan='\033[0;106m'    # Cyan
 export On_IWhite='\033[0;107m'   # White
 
 # ------------------------------------------------------------------------------
-# Functions
+# Bash options
 # ------------------------------------------------------------------------------
 
+setterm -linewrap on
 
-# Use sudo on functions and aliases
-# https://unix.stackexchange.com/a/438712
-function sudo_af {
-    local firstArg=$1
-    if [ $(type -t $firstArg) = function ]
-    then
-        shift && command sudo bash -c "$(declare -f $firstArg);$firstArg $*"
-    elif [ $(type -t $firstArg) = alias ]
-    then
-        alias sudo='\sudo '
-        eval "sudo $@"
-    else
-        command sudo "$@"
-    fi
-}
+# ------------------------------------------------------------------------------
+# Bash History sync after every command across all sessions
+# ------------------------------------------------------------------------------
 
-function hlt {
-    grep --color=always -E "${1}|$"
-}
+shopt -s histappend
 
-# Make new direcotry and move to it
-function mkdcd {
-    cd -- "$( mkd -d "$*" )"
-}
+# Immediately add commands to your history instead of waiting for the end of each session.
+# First, you need to append to the history file immediately with history -a.
+# Next, you must clear the current history in your shell session with history -c.
+# Finally, to load the updated history back into your shell session, use the history -r command.
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
 
-function lns {
-    # -s, --symbolic
-    #     make symbolic links instead of hard links
-    # -i, --interactive
-    #     prompt whether to remove destinations
-    # -n, --no-dereference
-    #     treat LINK_NAME as a normal file if it is a symbolic link to a directory
-    # -v, --verbose
-    #     print name of each linked file
-    [[ $# == 2 ]] && ln -sinv "$( expand_path "${1}" )" "$( expand_path "${2}" )"
-}
+HISTTIMEFORMAT="%F %T "
+
+# ------------------------------------------------------------------------------
+# Session Variables
+# ------------------------------------------------------------------------------
+# Uncomment the following line if you don't like systemctl's auto-paging feature:
+# export SYSTEMD_PAGER=
+export XDG_STATE_HOME="$HOME/.local/state" # for flatpak mpv
+export MOZ_ENABLE_WAYLAND=1
+export PAGER="less"
 
 # ------------------------------------------------------------------------------
 # PATH
@@ -224,9 +187,95 @@ if command -v nano &> /dev/null ; then
 fi
 
 # ------------------------------------------------------------------------------
-# Aliases
+# Functions & Aliases
 # ------------------------------------------------------------------------------
 
+declare -a cmds=( nmcli btop bat eza ug apt dnf rpm brew pip pipx docker code gext)
+# Setup aliases if commands exist
+for cmd in "${cmds[@]}"; do
+    command -v "$cmd" >/dev/null && {
+        case "$cmd" in
+            nmcli)  alias lsnm="nmcli dev show";;
+            btop)   alias b="btop";;
+            bat)    alias bat='bat --style=plain --pager=never'
+                    alias cat='bat'
+                    ;;
+            eza)    alias ll='eza -l --icons=auto --group-directories-first'
+                    alias l.='eza -d .*'
+                    alias l1='eza -1'
+                    alias lt="eza --icons --group-directories-first --tree --level=1"
+                    alias lsa="eza --icons --group-directories-first --all"
+                    alias lta="eza --icons --group-directories-first --all --tree --level=1"
+                    alias eza="eza -lhao --group-directories-first"
+                    ;;
+            ug) alias grep='ug'
+                alias grepe='ug -E'
+                alias grepf='ug -F'
+                alias grepz='ug -z'
+                alias grepze='ug -zE'
+                alias grepzf='ug -zF'
+                ;;
+            apt)    alias aptli="apt list --installed";;
+            dnf)    alias dnfli="dnf list --installed";;
+            rpm)    alias rpmli="rpm -qa | sort";;
+            flatpak)    alias flatpaklrs="flatpak remotes --columns=name"
+                        alias flatpaklru="flatpak remotes --user --columns=name"
+                        alias flatpaklis="flatpak list --columns=application"
+                        alias flatpakliu="flatpak list --user --columns=application"
+                        ;;
+            brew)   alias brewlt="brew tap"
+                    alias brewlf="brew list --formula -1"
+                    ;;
+            pip)    alias pip-ls="pip list";;
+            pipx)   alias pipx-ls="pipx list --short";;
+            docker) alias docker-gc="docker system prune --force";;
+            code)   alias code-ls-ext="code --list-extensions";;
+            gext)   alias gext-ls="gext list -a";;
+        esac
+    }
+done
+unset cmds
+
+# ------------------------------------------------------------------------------
+
+# Use sudo on functions and aliases
+# https://unix.stackexchange.com/a/438712
+function sudo_af {
+    local firstArg=$1
+    if [ $(type -t $firstArg) = function ]
+    then
+        shift && command sudo bash -c "$(declare -f $firstArg);$firstArg $*"
+    elif [ $(type -t $firstArg) = alias ]
+    then
+        alias sudo='\sudo '
+        eval "sudo $@"
+    else
+        command sudo "$@"
+    fi
+}
+
+function hlt {
+    grep --color=always -E "${1}|$"
+}
+
+# Make new directory and move to it
+function mkdcd {
+    cd -- "$( mkd -d "$*" )"
+}
+
+function lns {
+    # -s, --symbolic
+    #     make symbolic links instead of hard links
+    # -i, --interactive
+    #     prompt whether to remove destinations
+    # -n, --no-dereference
+    #     treat LINK_NAME as a normal file if it is a symbolic link to a directory
+    # -v, --verbose
+    #     print name of each linked file
+    [[ $# == 2 ]] && ln -sinv "$( expand_path "${1}" )" "$( expand_path "${2}" )"
+}
+
+# ------------------------------------------------------------------------------
 # https://commandmasters.com/commands/systemd-inhibit-linux/
 # https://man.archlinux.org/man/systemd-inhibit.1
 # https://kd8bny.com/posts/session_inhibit/
@@ -271,7 +320,6 @@ alias gen_ssh="ssh-keygen -t ed25519 -C "${USER}@$(hostname)""
 alias ssh_gen='gen_ssh'
 alias sshgen='gen_ssh'
 
-
 function path_print_as_list {
     echo "${PATH//:/$'\n'}"
 }
@@ -307,18 +355,20 @@ function lsip {
 alias lsnic="lsip"
 alias lsnet="lsip"
 
-alias idnic="ethtool -p"    # ethtool [ FLAGS ] -p|--identify DEVNAME   Show visible port identification (e.g. blinking)
-                            # [ TIME-IN-SECONDS ]
-alias idif="idnic"
+# Show visible port identification (e.g. blinking)
+alias idnic="ethtool -p" # ethtool [ FLAGS ] -p|--identify DEVNAME [ TIME-IN-SECONDS ]
+alias idnif='idnic'
+alias idif='idnic'
+alias idport='idnic'
 # ------------------------------------------------------------------------------
 
 alias jfs="journalctl --follow --unit"
 alias jfu="journalctl --follow --user-unit"
 
 alias dns-flush="sudo resolvectl flush-caches"
-alias flush-dns="sudo resolvectl flush-caches"
-alias dns-refresh="sudo resolvectl flush-caches"
-alias refresh-dns="sudo resolvectl flush-caches"
+alias flush-dns="dns-flush"
+alias dns-refresh="dns-flush"
+alias refresh-dns="dns-flush"
 
 # https://github.com/walles/px#killing-processes
 alias pxk="px --sort=cpupercent | fzf --bind 'ctrl-r:reload(px --sort=cpupercent)' --height=20 --no-hscroll --tac --no-sort --header-lines=1 | awk '{print $1}' | xargs kill -9"
@@ -330,6 +380,7 @@ alias secureboot-get-status='mokutil --sb-state'
 # https://jordanelver.co.uk/blog/2010/11/27/automatically-attaching-to-a-tmux-session-via-ssh/
 # servername="ssh servername -t tmux a"
 
+# ------------------------------------------------------------------------------
 alias serve="python3 -m http.server 3333"
 
 if command -v miniserve &> /dev/null ; then
@@ -373,52 +424,6 @@ function copyparty {
             copyparty/dj \
             -v /w::r
 }
-
-declare -a cmds=( nmcli btop bat eza ug apt dnf rpm brew pip pipx docker code gext)
-# Setup aliases if commands exist
-for cmd in "${cmds[@]}"; do
-    command -v "$cmd" >/dev/null && {
-        case "$cmd" in
-            nmcli)  alias lsnet="nmcli dev show";;
-            btop)   alias b="btop";;
-            bat)    alias cat='bat --style=plain --pager=never'
-                    alias bat='bat --style=plain --pager=never'
-                    ;;
-            eza)    alias ll='eza -l --icons=auto --group-directories-first'
-                    alias l.='eza -d .*'
-                    alias l1='eza -1'
-                    alias lt="eza --icons --group-directories-first --tree --level=1"
-                    alias lsa="eza --icons --group-directories-first --all"
-                    alias lta="eza --icons --group-directories-first --all --tree --level=1"
-                    alias eza="eza -lhao --group-directories-first"
-                    ;;
-            ug) alias grep='ug'
-                alias grepe='ug -E'
-                alias grepf='ug -F'
-                alias grepz='ug -z'
-                alias grepze='ug -zE'
-                alias grepzf='ug -zF'
-                ;;
-            apt)    alias aptli="apt list --installed";;
-            dnf)    alias dnfli="dnf list --installed";;
-            rpm)    alias rpmli="rpm -qa | sort";;
-            flatpak)    alias flatpaklrs="flatpak remotes --columns=name"
-                        alias flatpaklru="flatpak remotes --user --columns=name"
-                        alias flatpaklis="flatpak list --columns=application"
-                        alias flatpakliu="flatpak list --user --columns=application"
-                        ;;
-            brew)   alias brewlt="brew tap"
-                    alias brewlf="brew list --formula -1"
-                    ;;
-            pip)    alias pipli="pip list";;
-            pipx)   alias pipxi="pipx list --short";;
-            docker) alias docker-gc="docker system prune --force";;
-            code)   alias codelsext="code --list-extensions";;
-            gext)   alias gextle="gext list -a";;
-        esac
-    }
-done
-unset cmds
 
 # ------------------------------------------------------------------------------
 # Other user specific aliases and functions
