@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # ANSI escape code variables.
 # ------------------------------------------------------------------------------
 
@@ -85,13 +85,21 @@ On_IWhite='\033[0;107m'   # White
 # ------------------------------------------------------------------------------
 
 executor="${0##*/}"
+executor_path="${BASH_SOURCE}"
+while [ -L "${executor_path}" ]; do
+    executor_dir="$(cd -P "$(dirname "${executor_path}")" >/dev/null 2>&1 && pwd)"
+    executor_path="$(readlink "${executor_path}")"
+    [[ ${executor_path} != /* ]] && executor_path="${executor_dir}/${executor_path}"
+done
+executor_path="$(readlink -f "${executor_path}")"
+executor_dir="$(cd -P "$(dirname -- "${executor_path}")" >/dev/null 2>&1 && pwd)"
 
-declare -a required_cmds=( "ffmpeg" )
+declare -a required_cmds=( "podman" )
 
 fail=false
 for rc in "${required_cmds[@]}"; do
     if ! command -v "${rc}" &> /dev/null ; then
-        printf "[${executor}] ${BRed}ERROR${Color_Off} - '${rc}' command not available!"
+        printf "[${executor}] [ERROR] Command '${rc}' unavailable!?"
         fail=true
     fi
 done
@@ -99,4 +107,26 @@ done
 
 # ------------------------------------------------------------------------------
 
-ffmpeg -f concat -safe 0 -i <(find ./ -iregex '.*\.\(mp4\|mkv\|webm\)' -printf "file '$PWD/%f'\n") -c copy ./vmerge_output.mkv
+if [[ $# -lt 2 ]]; then
+    print_msg -e -c -t -g -x "${executor}" -- "At least 2 input paths are needed!"
+fi
+declare -a inputs=()
+abort='false'
+for i in "$@"; do
+    input="$( expand_path "${i}" )"
+    if [[ -f "${input}" ]]; then
+        inputs+=( "${input}" )
+    else
+        print_msg -e -c -t -g -x "${executor}" -- "File not found: " "${i}"
+        abort='true'
+    fi
+done
+
+[[ "${abort}" == "true" ]] && exit 1
+
+if [[ ${#inputs[@]} -gt 2 ]]; then
+    ffmpeg -f concat -safe 0 -i <( printf '%s\n' "${inputs[@]}" ) -c copy ./vjoin_output.mkv
+else
+    print_msg -e -c -t -g -x "${executor}" -- "Insufficient valid input paths"
+    exit 1
+fi
