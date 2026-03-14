@@ -131,7 +131,7 @@ if [[ ${#inputs[@]} -gt 1 ]]; then
     trap 'rm -f -- "$TMP_FILE"' EXIT
 
     cat << EOF > "${TMP_FILE}"
-$( printf '%s\n' "${inputs[@]}" )
+$( printf '"%s"\n' "${inputs[@]}" )
 EOF
 
     ffmpeg -f concat -safe 0 -c copy -i "${TMP_FILE}" -- ./vjoin_output.mkv
