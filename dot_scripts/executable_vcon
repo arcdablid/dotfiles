@@ -131,7 +131,7 @@ if [[ ${#inputs[@]} -gt 1 ]]; then
     trap 'rm -f -- "$TMP_FILE"' EXIT
 
     cat << EOF > "${TMP_FILE}"
-$( printf '"%s"\n' "${inputs[@]}" )
+$( printf '%s\n' "${inputs[@]}" | str_replace_part -t ' ' -r '\ ' -- )
 EOF
 
     echo
