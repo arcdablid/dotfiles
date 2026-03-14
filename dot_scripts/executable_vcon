@@ -138,7 +138,7 @@ EOF
     cat "${TMP_FILE}"
     echo
 
-    ffmpeg -f concat -safe 0 -c copy -i "${TMP_FILE}" -- ./vjoin_output.mkv
+    ffmpeg -f concat -safe 0 -i "${TMP_FILE}" -c copy -- ./vjoin_output.mkv
 
 else
     print_msg -e -c -t -g -x "${executor}" -- "Insufficient valid input paths"
