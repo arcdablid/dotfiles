@@ -125,10 +125,16 @@ done
 [[ "${abort}" == "true" ]] && exit 1
 
 if [[ ${#inputs[@]} -gt 1 ]]; then
+    # now make a temp file
+    TMP_FILE=$(mktemp -q /tmp/vjoin.XXXXXX || exit 1)
+    # Set trap to clean up file
+    trap 'rm -f -- "$TMP_FILE"' EXIT
 
-    ffmpeg -f concat -safe 0 -c copy -i <<EOF
+    cat << EOF > "${TMP_FILE}"
 $( printf '%s\n' "${inputs[@]}" )
-EOF -- ./vjoin_output.mkv
+EOF
+
+    ffmpeg -f concat -safe 0 -c copy -i "${TMP_FILE}" -- ./vjoin_output.mkv
 
 else
     print_msg -e -c -t -g -x "${executor}" -- "Insufficient valid input paths"
