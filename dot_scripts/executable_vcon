@@ -125,9 +125,9 @@ done
 [[ "${abort}" == "true" ]] && exit 1
 
 if [[ ${#inputs[@]} -gt 1 ]]; then
-    ffmpeg -f concat -safe 0 -i <( cat << EOF
+    ffmpeg -f concat -safe 0 -i << EOF
 $( printf '%s\n' "${inputs[@]}" )
-EOF ) -c copy ./vjoin_output.mkv
+EOF -c copy ./vjoin_output.mkv
 else
     print_msg -e -c -t -g -x "${executor}" -- "Insufficient valid input paths"
     exit 1
