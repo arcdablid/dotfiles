@@ -134,6 +134,10 @@ if [[ ${#inputs[@]} -gt 1 ]]; then
 $( printf '"%s"\n' "${inputs[@]}" )
 EOF
 
+    echo
+    cat "${TMP_FILE}"
+    echo
+
     ffmpeg -f concat -safe 0 -c copy -i "${TMP_FILE}" -- ./vjoin_output.mkv
 
 else
