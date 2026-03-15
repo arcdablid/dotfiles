@@ -214,6 +214,8 @@ packages:
     - io.github.input_leap.input-leap
     - org.deskflow.deskflow
 
+    - com.freerdp.FreeRDP
+
     - io.github.justinrdonnelly.bouncer # Bouncer | An application to choose the correct firewall zone for wireless connections.
 
     - org.keepassxc.KeePassXC
