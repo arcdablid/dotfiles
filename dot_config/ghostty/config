@@ -21,7 +21,6 @@
 # ------------------------------------------------------------------------------
 
 theme = Snazzy
-palette-harmonious = true
 background = #1e1f29
 foreground = #ebece6
 selection-background = #81aec6
