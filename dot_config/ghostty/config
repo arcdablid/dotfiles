@@ -18,9 +18,36 @@
 # config-file = ?optional/config # If the value is prefixed with ?, the file is optional and if it doesn't exist, it is ignored.
 # config-file = /absolute/path/config
 
+# ------------------------------------------------------------------------------
+
+theme = Snazzy
+palette-harmonious = true
+background = #1e1f29
+foreground = #ebece6
+selection-background = #81aec6
+selection-foreground = #000000
+cursor-color = #e4e4e4
+cursor-text = #a9a9a9
+cursor-style = bar
+palette = 0=#000000
+palette = 1=#fc4346
+palette = 2=#50fb7c
+palette = 3=#f0fb8c
+palette = 4=#49baff
+palette = 5=#fc4cb4
+palette = 6=#8be9fe
+palette = 7=#ededec
+palette = 8=#555555
+palette = 9=#fc4346
+palette = 10=#50fb7c
+palette = 11=#f0fb8c
+palette = 12=#49baff
+palette = 13=#fc4cb4
+palette = 14=#8be9fe
+palette = 15=#ededec
+font-family = Hack Nerd Font Mono
+mouse-hide-while-typing = true
 background-opacity = "0.9"
-font-family = "Hack Nerd Font"
 font-size = "13"
-# theme = "Dark Pastel"
 window-height = "48"
 window-width = "128"
