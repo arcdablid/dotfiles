@@ -26,52 +26,58 @@ packages:
     taps:
       - sinelaw/fresh
     formulae:
-      - sd # Intuitive find & replace CLI | https://github.com/chmln/sd
       - eza # Modern, maintained replacement for ls | https://github.com/eza-community/eza
       - moor # Nice to use pager for humans | https://github.com/walles/moor
+      - sd # Intuitive find & replace CLI | https://github.com/chmln/sd
+      - ripgrep-all # Ripgrep, but also search in PDFs, E-Books, Office documents, zip, tar.gz, and more | https://github.com/phiresky/ripgrep-all
+      - zellij # tmux alternative | https://github.com/zellij-org/zellij
+      - superfile # Modern and pretty fancy file manager for the terminal | https://github.com/MHNightCat/superfile
+      - ox # Terminal text editor | https://github.com/curlpipe/ox
+      - xxh # Bring your favorite shell wherever you go through SSH | https://github.com/xxh/xxh
+      - uutils-coreutils # Rust rewrite of the GNU coreutils
+
+      - miniserve # a CLI tool to serve files and dirs over HTTP | https://github.com/svenstaro/miniserve
+      - monolith # Bundle any web page into a single HTML file | https://github.com/Y2Z/monolith
+
+      - yt-dlp # Feature-rich command-line audio/video downloader | https://github.com/yt-dlp/yt-dlp
+      - gallery-dl # Command-line downloader for image-hosting site galleries and collections | https://github.com/mikf/gallery-dl
+      - instaloader # Download media from Instagram | https://instaloader.github.io/
+      - tvnamer # Automatic TV episode file renamer that uses data from thetvdb.com | https://github.com/dbr/tvnamer
+      - media-info # Unified display of technical and tag data for audio/video | https://mediaarea.net/
+      - handbrake # Open-source video transcoder available for Linux, Mac, and Windows | https://handbrake.fr/
+      - ffmpeg # Play, record, convert, and stream audio and video | https://ffmpeg.org/
+
+      - rust-parallel # Run commands in parallel with Rust's Tokio framework | https://github.com/aaronriekenberg/rust-parallel
+
       - gnupg # GNU Pretty Good Privacy (PGP) package | https://gnupg.org/
       - cosign # A tool for setting up container signing using Sigstore | https://github.com/sigstore/cosign
 
       - ansible-lint # Checks ansible playbooks for practices and behaviour | https://ansible-lint.readthedocs.io/
 
-      - ffmpeg # Play, record, convert, and stream audio and video | https://ffmpeg.org/
       - rage # Simple, modern, secure file encryption | https://github.com/str4d/rage
-      - zellij # tmux alternative | https://github.com/zellij-org/zellij
       - tabiew # A lightweight TUI application that allows users to view and query using SQL tabular data files - CSV, Parquet, JSON, JSONL, Arrow, and FWF | https://github.com/shshemi/tabiew
-      - ox # Terminal text editor | https://github.com/curlpipe/ox
       - fresh-editor # Text editor for your terminal: easy, powerful and fast | https://sinelaw.github.io/fresh/
-      - ripgrep-all # Ripgrep, but also search in PDFs, E-Books, Office documents, zip, tar.gz, and more | https://github.com/phiresky/ripgrep-all
       - watchexec # Execute commands when watched files change | https://watchexec.github.io/
-      - superfile # Modern and pretty fancy file manager for the terminal | https://github.com/MHNightCat/superfile
       - curlie # Power of curl, ease of use of httpie | https://github.com/rs/curlie
-      - xxh # Bring your favorite shell wherever you go through SSH | https://github.com/xxh/xxh
       - mask # CLI task runner defined by a simple markdown file | https://github.com/jakedeichert/mask/
-      - rust-parallel # Run commands in parallel with Rust's Tokio framework | https://github.com/aaronriekenberg/rust-parallel
       - rustscan # Modern Day Portscanner | https://github.com/rustscan/rustscan
       - bandwhich # Terminal bandwidth utilization tool | https://github.com/imsnif/bandwhich
       - dysk # Linux utility to get information on filesystems, like df but better | https://dystroy.org/dysk/
-      - gallery-dl # Command-line downloader for image-hosting site galleries and collections | https://github.com/mikf/gallery-dl
-      - yt-dlp # Feature-rich command-line audio/video downloader | https://github.com/yt-dlp/yt-dlp
-      - instaloader # Download media from Instagram | https://instaloader.github.io/
-      - tvnamer # Automatic TV episode file renamer that uses data from thetvdb.com | https://github.com/dbr/tvnamer
-      - monolith # Bundle any web page into a single HTML file | https://github.com/Y2Z/monolith
       - wthrr # Weather Companion for the Terminal | https://github.com/ttytm/wthrr-the-weathercrab
-      - handbrake # Open-source video transcoder available for Linux, Mac, and Windows | https://handbrake.fr/
-      - media-info # Unified display of technical and tag data for audio/video | https://mediaarea.net/
       - imagemagick
       - ghostscript # Tools and libraries to manipulate images in many formats | https://imagemagick.org/index.php
       - pngquant # PNG image optimizing utility | https://pngquant.org/
       - jpegoptim # Utility to optimize JPEG files | https://github.com/tjko/jpegoptim
       - graphviz # Make diagrams from text language | https://graphviz.org/
-      - grex # Command-line tool for generating regular expressions | https://github.com/pemistahl/grex
       - tokei # Program that allows you to count code, quickly | https://github.com/XAMPPRocky/tokei
       - nomino # Batch rename utility | https://github.com/yaa110/nomino
       - qrtool # Utility for encoding or decoding QR code | https://github.com/sorairolake/qrtool
       - licensor # Write licenses to stdout | https://github.com/raftario/licensor
       - jnv # Interactive JSON viewer and jq filter editor | https://github.com/ynqa/jnv
-      - miniserve # a CLI tool to serve files and dirs over HTTP | https://github.com/svenstaro/miniserve
       - gptfdisk # Text-mode partitioning tools | https://www.rodsbooks.com/gdisk/
       - lazydocker # Lazier way to manage everything docker | https://github.com/jesseduffield/lazydocker
+
+      - grex # Command-line tool for generating regular expressions | https://github.com/pemistahl/grex
       - melody # A language that compiles to regular expressions | https://github.com/yoav-lavi/melody
 
       - carapace
