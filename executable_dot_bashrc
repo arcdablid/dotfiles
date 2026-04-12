@@ -205,6 +205,11 @@ if command -v nano &> /dev/null ; then
     export EDITOR="nano"
 fi
 
+if command -v moor &> /dev/null ; then
+    export PAGER="moor"
+    export MOOR='--statusbar=bold --no-linenumbers'
+fi
+
 # ------------------------------------------------------------------------------
 # Functions & Aliases
 # ------------------------------------------------------------------------------

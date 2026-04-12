@@ -25,19 +25,58 @@ packages:
   homebrew:
     taps:
       - sinelaw/fresh
+
     formulae:
-      - eza # Modern, maintained replacement for ls | https://github.com/eza-community/eza
-      - moor # Nice to use pager for humans | https://github.com/walles/moor
-      - sd # Intuitive find & replace CLI | https://github.com/chmln/sd
-      - ripgrep-all # Ripgrep, but also search in PDFs, E-Books, Office documents, zip, tar.gz, and more | https://github.com/phiresky/ripgrep-all
-      - zellij # tmux alternative | https://github.com/zellij-org/zellij
-      - superfile # Modern and pretty fancy file manager for the terminal | https://github.com/MHNightCat/superfile
-      - ox # Terminal text editor | https://github.com/curlpipe/ox
-      - xxh # Bring your favorite shell wherever you go through SSH | https://github.com/xxh/xxh
+
+
       - uutils-coreutils # Rust rewrite of the GNU coreutils
 
+      - starship # Cross-shell prompt for astronauts | https://starship.rs/
+      - zellij # tmux alternative | https://github.com/zellij-org/zellij
+      - direnv # Load/unload environment variables based on $PWD | https://direnv.net/
+
+      - rust-parallel # Run commands in parallel with Rust's Tokio framework | https://github.com/aaronriekenberg/rust-parallel
+      - parallel # Shell command parallelization utility | https://savannah.gnu.org/projects/parallel/
+      - mask # CLI task runner defined by a simple markdown file | https://github.com/jakedeichert/mask/
+      - watchexec # Execute commands when watched files change | https://watchexec.github.io/
+
+      - thefuck # Programmatically correct mistyped console commands | https://github.com/nvbn/thefuck
+      - cheat # Create and view interactive cheat sheets for *nix commands | https://github.com/cheat/cheat
+      - tealdeer # Very fast implementation of tldr in Rust | https://tealdeer-rs.github.io/tealdeer/
+
+      - eza # Modern, maintained replacement for ls | https://github.com/eza-community/eza
+      - tree # Display directories as trees (with optional color/HTML output) | https://oldmanprogrammer.net/source.php?dir=projects/tree
+      - superfile # Modern and pretty fancy file manager for the terminal | https://github.com/MHNightCat/superfile
+      - nnn # Tiny, lightning fast, feature-packed file manager | https://github.com/jarun/nnn
+      - zoxide # Shell extension to navigate your filesystem faster | https://github.com/ajeetdsouza/zoxide
+      - dysk # Linux utility to get information on filesystems, like df but better | https://dystroy.org/dysk/
+      - nomino # Batch rename utility | https://github.com/yaa110/nomino
+
+      - moor # Nice to use pager for humans | https://github.com/walles/moor
+      - sd # Intuitive find & replace CLI | https://github.com/chmln/sd
+      - fd # Simple, fast and user-friendly alternative to find | https://github.com/sharkdp/fd
+      - bat # Clone of cat(1) with syntax highlighting and Git integration | https://github.com/sharkdp/bat
+      - miller # Like sed, awk, cut, join & sort for name-indexed data such as CSV | https://github.com/johnkerl/miller
+
+      - fzf # Command-line fuzzy finder written in Go | https://github.com/junegunn/fzf
+      - ugrep # A more powerful, ultra fast, user-friendly, compatible grep | https://github.com/Genivia/ugrep
+      - ripgrep # A line-oriented search tool that recursively searches the current directory for a regex pattern | https://github.com/BurntSushi/ripgrep
+      - ripgrep-all # Ripgrep, but also search in PDFs, E-Books, Office documents, zip, tar.gz, and more | https://github.com/phiresky/ripgrep-all
+      - television # General purpose fuzzy finder TUI | https://github.com/alexpasmantier/television
+      - ack # Search tool like grep, but optimized for programmers | https://beyondgrep.com/
+
+      - xxh # Bring your favorite shell wherever you go through SSH | https://github.com/xxh/xxh
+      - mosh # Mobile shell (ssh replacement) - https://mosh.org/
+
+      - ox # Terminal text editor | https://github.com/curlpipe/ox
+      - fresh-editor # Text editor for your terminal: easy, powerful and fast | https://sinelaw.github.io/fresh/
+      - shellcheck # Static analysis and lint tool, for (ba)sh scripts | https://www.shellcheck.net/
+
+      - grex # Command-line tool for generating regular expressions | https://github.com/pemistahl/grex
+      - melody # A language that compiles to regular expressions | https://github.com/yoav-lavi/melody
+
       - miniserve # a CLI tool to serve files and dirs over HTTP | https://github.com/svenstaro/miniserve
-      - monolith # Bundle any web page into a single HTML file | https://github.com/Y2Z/monolith
+      - rclone # Rsync for cloud storage | https://rclone.org/
 
       - yt-dlp # Feature-rich command-line audio/video downloader | https://github.com/yt-dlp/yt-dlp
       - gallery-dl # Command-line downloader for image-hosting site galleries and collections | https://github.com/mikf/gallery-dl
@@ -47,48 +86,63 @@ packages:
       - handbrake # Open-source video transcoder available for Linux, Mac, and Windows | https://handbrake.fr/
       - ffmpeg # Play, record, convert, and stream audio and video | https://ffmpeg.org/
 
-      - rust-parallel # Run commands in parallel with Rust's Tokio framework | https://github.com/aaronriekenberg/rust-parallel
 
       - gnupg # GNU Pretty Good Privacy (PGP) package | https://gnupg.org/
       - cosign # A tool for setting up container signing using Sigstore | https://github.com/sigstore/cosign
+      - age # File encryption tool | https://github.com/FiloSottile/age
+      - rage # Simple, modern, secure file encryption | https://github.com/str4d/rage
 
       - ansible-lint # Checks ansible playbooks for practices and behaviour | https://ansible-lint.readthedocs.io/
 
-      - rage # Simple, modern, secure file encryption | https://github.com/str4d/rage
-      - tabiew # A lightweight TUI application that allows users to view and query using SQL tabular data files - CSV, Parquet, JSON, JSONL, Arrow, and FWF | https://github.com/shshemi/tabiew
-      - fresh-editor # Text editor for your terminal: easy, powerful and fast | https://sinelaw.github.io/fresh/
-      - watchexec # Execute commands when watched files change | https://watchexec.github.io/
+      - gh # GitHub command-line tool | https://cli.github.com/
+      - glab # A GitLab CLI tool bringing GitLab to your command line | https://gitlab.com/gitlab-org/cli
+      - gitui # Blazing fast terminal-ui for git written in rust | https://github.com/extrawurst/gitui
+
+      - httpie # User-friendly cURL replacement (command-line HTTP client) | https://httpie.io/
       - curlie # Power of curl, ease of use of httpie | https://github.com/rs/curlie
-      - mask # CLI task runner defined by a simple markdown file | https://github.com/jakedeichert/mask/
+      - aria2 #Download with resuming and segmented downloading | https://aria2.github.io/
+
+      - imagemagick-full # Tools and libraries to manipulate images in many formats | https://imagemagick.org/index.php
+      - pandoc # Conversion between documentation formats | https://pandoc.org
+      - jpegoptim # Utility to optimize JPEG files | https://github.com/tjko/jpegoptim
+      - pngquant # PNG image optimizing utility | https://pngquant.org/
+      - qpdf # Tools for and transforming and inspecting PDF files | https://github.com/qpdf/qpdf
+      - monolith # Bundle any web page into a single HTML file | https://github.com/Y2Z/monolith
+      - tabiew # TUI application to view and query using SQL tabular data files - CSV, Parquet, JSON, JSONL, Arrow, and FWF | https://github.com/shshemi/tabiew
+      - jnv # Interactive JSON viewer and jq filter editor | https://github.com/ynqa/jnv
       - rustscan # Modern Day Portscanner | https://github.com/rustscan/rustscan
       - bandwhich # Terminal bandwidth utilization tool | https://github.com/imsnif/bandwhich
-      - dysk # Linux utility to get information on filesystems, like df but better | https://dystroy.org/dysk/
       - wthrr # Weather Companion for the Terminal | https://github.com/ttytm/wthrr-the-weathercrab
-      - imagemagick
       - ghostscript # Tools and libraries to manipulate images in many formats | https://imagemagick.org/index.php
-      - pngquant # PNG image optimizing utility | https://pngquant.org/
-      - jpegoptim # Utility to optimize JPEG files | https://github.com/tjko/jpegoptim
       - graphviz # Make diagrams from text language | https://graphviz.org/
+      - glow # Render markdown on the CLI | https://github.com/charmbracelet/glow
       - tokei # Program that allows you to count code, quickly | https://github.com/XAMPPRocky/tokei
-      - nomino # Batch rename utility | https://github.com/yaa110/nomino
-      - qrtool # Utility for encoding or decoding QR code | https://github.com/sorairolake/qrtool
       - licensor # Write licenses to stdout | https://github.com/raftario/licensor
-      - jnv # Interactive JSON viewer and jq filter editor | https://github.com/ynqa/jnv
+
       - gptfdisk # Text-mode partitioning tools | https://www.rodsbooks.com/gdisk/
+
       - lazydocker # Lazier way to manage everything docker | https://github.com/jesseduffield/lazydocker
 
-      - grex # Command-line tool for generating regular expressions | https://github.com/pemistahl/grex
-      - melody # A language that compiles to regular expressions | https://github.com/yoav-lavi/melody
+      - qrtool # Utility for encoding or decoding QR code | https://github.com/sorairolake/qrtool
 
-      - carapace
+      - carapace # Multi-shell multi-command argument completer | https://carapace.sh
+      - lolcat # Rainbows and unicorns in your console! | https://github.com/busyloop/lolcat
+      - cmatrix # Console Matrix | https://github.com/abishekvashok/cmatrix/
 
-      - trash-cli
-      - television
+      - trash-cli # Command-line interface to the freedesktop.org trashcan | https://github.com/andreafrancia/trash-cli
 
-      - block-goose-cli
-      - mods
-      - ramalama
+      - stress # Tool to impose load on and stress test a computer system | https://github.com/resurrecting-open-source-projects/stress
+      - stress-ng # Stress test a computer system in various selectable ways | https://wiki.ubuntu.com/Kernel/Reference/stress-ng
+      - hyperfine # Command-line benchmarking tool | https://github.com/sharkdp/hyperfine
 
+      - diffutils # File comparison utilities | https://www.gnu.org/s/diffutils/
+      - difftastic # A syntax-aware diff | https://github.com/Wilfred/difftastic
+
+      - block-goose-cli # Open source, extensible AI agent that goes beyond code suggestions | https://block.github.io/goose/
+      - mods # AI on the command-line | https://github.com/charmbracelet/mods
+      - ramalama # Goal of RamaLama is to make working with AI boring | https://github.com/containers/ramalama
+
+      - exiv2 # EXIF and IPTC metadata manipulation library and tools | https://exiv2.org/
       - exiftool # Perl lib for reading and writing EXIF metadata | https://exiftool.org
 
   vscode_extensions:
@@ -159,30 +213,50 @@ packages:
     - streetsidesoftware.code-spell-checker-scientific-terms
 
   flatpaks:
-    - io.github.nroduit.Weasis
 
-    - io.github.swordpuffin.rewaita
-    - org.kde.dolphin
+    - io.github.flattool.Warehouse # Manage all things Flatpak | https://flathub.org/en/apps/io.github.flattool.Warehouse
+    - com.github.tchx84.Flatseal # Manage Flatpak permissions | https://flathub.org/en/apps/com.github.tchx84.Flatseal
+    - io.github.kolunmi.Bazaar # Discover and manage applications | https://flathub.org/en/apps/io.github.kolunmi.Bazaar
+    - com.mattjakeman.ExtensionManager # Browse and install GNOME Shell extensions | https://flathub.org/en/apps/com.mattjakeman.ExtensionManager
+    - io.github.flattool.Ignition # Manage startup apps and scripts | https://flathub.org/en/apps/io.github.flattool.Ignition
+    - io.missioncenter.MissionCenter # Monitor system resource usage | https://flathub.org/en/apps/io.missioncenter.MissionCenter
+    - page.tesk.Refine
+    - io.github.realmazharhussain.GdmSettings
+    - io.github.pwr_solaar.solaar
 
+    - org.mozilla.firefox
+    - net.waterfox.waterfox
+    - io.gitlab.librewolf-community
     - app.zen_browser.zen
+    - one.ablaze.floorp
     - io.github.ungoogled_software.ungoogled_chromium
     - org.torproject.torbrowser-launcher
 
+    # Games
     - com.github.k4zmu2a.spacecadetpinball
+    - com.github.Matoking.protontricks
+    - com.vysp3r.ProtonPlus
+    - page.kramo.Cartridges # A simple game launcher for all of your games | https://flathub.org/en/apps/page.kramo.Cartridges
+    - com.github.mtkennerly.ludusavi # Cross-platform savegame backups/restores
 
     - io.github.alainm23.planify # Project/task manager
 
     - org.libreoffice.LibreOffice
     - org.onlyoffice.desktopeditors
     - com.github.jeromerobert.pdfarranger
+    - me.broken_by.PdfMetadataEditor # Advanced editor for PDF metadata | https://flathub.org/en/apps/me.broken_by.PdfMetadataEditor
+    - it.mijorus.smile # An emoji picker | https://flathub.org/en/apps/it.mijorus.smile
+    - dev.geopjr.Calligraphy # Turn text into ASCII banners | https://flathub.org/en/apps/dev.geopjr.Calligraphy
 
     - io.github.peazip.PeaZip
     - de.leopoldluley.Clapgrep
+    - dev.geopjr.Collision # Check hashes for your files | https://flathub.org/en/apps/dev.geopjr.Collision
+
+    - org.gnome.Builder
 
     - com.github.marhkb.Pods
-    - com.ranfdev.DistroShelf
+    - com.ranfdev.DistroShelf # Graphical interface for managing Distrobox containers | https://flathub.org/en/apps/com.ranfdev.DistroShelf
     - com.usebottles.bottles
-    - io.github.flattool.Warehouse
     - io.podman_desktop.PodmanDesktop
     - it.mijorus.gearlever
 
@@ -194,17 +268,28 @@ packages:
     - org.gimp.GIMP
     - org.upscayl.Upscayl
     - io.github.tobagin.scramble
-    - fr.handbrake.ghb
+    - io.github.nroduit.Weasis
+    - be.alexandervanhee.gradia # Annotate your screenshots
+    - com.github.finefindus.eyedropper # Pick and format colors | https://flathub.org/en/apps/com.github.finefindus.eyedropper
+    - com.github.huluti.Curtail # Compress your images | https://flathub.org/en/apps/com.github.huluti.Curtail
+
     - org.freecad.FreeCAD
 
+    - fr.handbrake.ghb
     - org.bunkus.mkvtoolnix-gui
     - com.obsproject.Studio
-    - be.alexandervanhee.gradia # Annotate your screenshots
-
     - io.github.mhogomchungu.media-downloader
     - io.freetubeapp.FreeTube
-    - org.kde.plasmatube
     - org.nickvision.tubeconverter
+
+    - com.github.neithern.g4music # a light weight music player | https://flathub.org/en/apps/com.github.neithern.g4music
+    - com.github.taiko2k.tauonmb # a modern, comfortable and streamlined music player | https://flathub.org/en/apps/com.github.taiko2k.tauonmb
+    - org.gnome.Decibels
+    - app.drey.EarTag
+    - de.haeckerfelix.AudioSharing # Share your computer audio | https://flathub.org/en/apps/de.haeckerfelix.AudioSharing
+
+    - com.github.johnfactotum.Foliate # Read e-books | https://flathub.org/en/apps/com.github.johnfactotum.Foliate
+    - info.febvre.Komikku
 
     - com.github.zocker_160.SyncThingy
     - app.drey.Warp
@@ -234,58 +319,54 @@ packages:
     - io.github.mfat.sshpilot
     - io.github.plrigaux.sysd-manager
 
-    - me.iepure.devtoolbox
-    - org.gnome.meld
-    - org.zealdocs.Zeal
+    - com.github.hugolabe.Wike # Search and read Wikipedia articles | https://flathub.org/en/apps/com.github.hugolabe.Wike
     - dev.mufeed.Wordbook # Wordbook | An offline English-English dictionary application powered by WordNet and eSpeak.
+    - me.iepure.devtoolbox
+    - org.zealdocs.Zeal
+    - org.gnome.meld
 
-    - io.gitlab.adhami3310.Impression
+    - io.gitlab.adhami3310.Impression # Create bootable drives | https://flathub.org/en/apps/io.gitlab.adhami3310.Impression
     - com.github.wwmm.easyeffects
     - com.belmoussaoui.Decoder
 
+    - ai.jan.Jan # Private offline AI assistant | https://flathub.org/en/apps/ai.jan.Jan
     - com.jeffser.Alpaca
     - com.jeffser.Alpaca.Plugins.Ollama
     - com.jeffser.Alpaca.Plugins.AMD
 
-    - com.github.mtkennerly.ludusavi # Cross-platform savegame backups/restores
-
-    # System
-    - com.github.Matoking.protontricks
-    - com.vysp3r.ProtonPlus
-    - io.missioncenter.MissionCenter
-    - org.altlinux.Tuner
+    - org.gnome.Calculator
     - org.gnome.Calendar
     - org.gnome.Characters
-    - org.gnome.Contacts
-    - org.gnome.NautilusPreviewer
-    - org.gnome.font-viewer
-    - com.github.tchx84.Flatseal
-    - io.github.fabrialberio.pinapp
-    - com.mattjakeman.ExtensionManager
-    - org.gnome.Extensions
-    - ca.desrt.dconf-editor
-    - org.mozilla.firefox
-    - org.gnome.Weather
-    - org.gnome.Calculator
-    - org.gnome.Loupe # Image viewer
-    - org.gnome.Snapshot # Camera
-    - org.gnome.Showtime # Video player
-    - org.gnome.Loupe
-    - org.gnome.baobab # Disk Usage Analyzer
-    - org.gnome.Maps
-    - org.gnome.SimpleScan
-    - org.gnome.Papers
-    - org.gnome.TextEditor
-    - org.gnome.Geary
-    - org.gnome.Decibels
-    - org.gnome.Logs
     - org.gnome.Connections
+    - org.gnome.Contacts
+    - org.gnome.DejaDup
+    - org.gnome.FileRoller
+    - org.gnome.Firmware
+    - org.gnome.Logs
+    - org.gnome.Loupe # Image viewer
+    - org.gnome.Maps
+    - org.gnome.NautilusPreviewer
+    - org.gnome.Papers
+    - org.gnome.Showtime # Video player
+    - org.gnome.SimpleScan
+    - org.gnome.Snapshot
+    - org.gnome.SoundRecorder
+    - org.gnome.TextEditor
+    - org.gnome.Weather
+    - org.gnome.baobab # Disk Usage Analyzer
     - org.gnome.clocks
-    - org.gnome.Mahjongg
-    - org.gnome.Sudoku
-    - page.tesk.Refine
-    - io.github.realmazharhussain.GdmSettings
-    - io.github.pwr_solaar.solaar
+    - org.gnome.font-viewer
+
+    - org.mozilla.Thunderbird
+    - org.gnome.Geary
+
+    - org.altlinux.Tuner # Extensible control center | https://flathub.org/en/apps/org.altlinux.Tuner
+    - io.github.fabrialberio.pinapp # Create and edit app shortcuts | https://flathub.org/en/apps/io.github.fabrialberio.pinapp
+    - ca.desrt.dconf-editor
+
+
+    - org.gtk.Gtk3theme.adw-gtk3
+    - org.gtk.Gtk3theme.adw-gtk3-dark
 
     # Yaru
     - org.gtk.Gtk3theme.Yaru
