@@ -141,6 +141,7 @@ packages:
       - block-goose-cli # Open source, extensible AI agent that goes beyond code suggestions | https://block.github.io/goose/
       - mods # AI on the command-line | https://github.com/charmbracelet/mods
       - ramalama # Goal of RamaLama is to make working with AI boring | https://github.com/containers/ramalama
+      - llama.cpp # LLM inference in C/C++ | https://github.com/ggml-org/llama.cpp
 
       - exiv2 # EXIF and IPTC metadata manipulation library and tools | https://exiv2.org/
       - exiftool # Perl lib for reading and writing EXIF metadata | https://exiftool.org
@@ -240,6 +241,7 @@ packages:
     - com.github.mtkennerly.ludusavi # Cross-platform savegame backups/restores
 
     - io.github.alainm23.planify # Project/task manager
+    - codes.merritt.bargain # Compare items when shopping | https://flathub.org/apps/codes.merritt.bargain
 
     - org.libreoffice.LibreOffice
     - org.onlyoffice.desktopeditors
@@ -282,11 +284,12 @@ packages:
     - io.freetubeapp.FreeTube
     - org.nickvision.tubeconverter
 
-    - com.github.neithern.g4music # a light weight music player | https://flathub.org/en/apps/com.github.neithern.g4music
-    - com.github.taiko2k.tauonmb # a modern, comfortable and streamlined music player | https://flathub.org/en/apps/com.github.taiko2k.tauonmb
+    - de.haeckerfelix.AudioSharing # Share your computer audio | https://flathub.org/en/apps/de.haeckerfelix.AudioSharing
+    - com.github.taiko2k.tauonmb # A modern, comfortable and streamlined music player | https://flathub.org/en/apps/com.github.taiko2k.tauonmb
+    - io.github.mmarco94.tambourine # Music player with waveform seekbar | https://flathub.org/apps/io.github.mmarco94.tambourine
+    - com.github.neithern.g4music # A light weight music player | https://flathub.org/en/apps/com.github.neithern.g4music
     - org.gnome.Decibels
     - app.drey.EarTag
-    - de.haeckerfelix.AudioSharing # Share your computer audio | https://flathub.org/en/apps/de.haeckerfelix.AudioSharing
 
     - com.github.johnfactotum.Foliate # Read e-books | https://flathub.org/en/apps/com.github.johnfactotum.Foliate
     - info.febvre.Komikku
@@ -309,6 +312,7 @@ packages:
 
     - io.github.justinrdonnelly.bouncer # Bouncer | An application to choose the correct firewall zone for wireless connections.
 
+    - com.bitwarden.desktop
     - org.keepassxc.KeePassXC
     - com.belmoussaoui.Authenticator
 
@@ -329,7 +333,6 @@ packages:
     - com.github.wwmm.easyeffects
     - com.belmoussaoui.Decoder
 
-    - ai.jan.Jan # Private offline AI assistant | https://flathub.org/en/apps/ai.jan.Jan
     - com.jeffser.Alpaca
     - com.jeffser.Alpaca.Plugins.Ollama
     - com.jeffser.Alpaca.Plugins.AMD
