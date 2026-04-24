@@ -344,6 +344,8 @@ alias gen_ssh="ssh-keygen -t ed25519 -C "${USER}@$(hostname)""
 alias ssh_gen='gen_ssh'
 alias sshgen='gen_ssh'
 
+alias linger="loginctl enable-linger $USER"
+
 function path_print_as_list {
     echo "${PATH//:/$'\n'}"
 }
