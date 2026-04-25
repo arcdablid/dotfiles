@@ -502,13 +502,14 @@ heredoc
 --embed-subs
 heredoc
     else
-# --merge-output-format mkv
-# --format 'ba'
+
+# -x
+# --no-keep-video
+# --audio-format best
 #yt‑dlp -x --audio-format flac --embed-thumbnail --add-metadata
         cat >> "${ytdlp_config}" <<'heredoc'
--x
---no-keep-video
---audio-format best
+--merge-output-format mkv
+--format 'ba'
 --format-sort acodec:opus,abr
 --remux-video mka
 --embed-thumbnail
