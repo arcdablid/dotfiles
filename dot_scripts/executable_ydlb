@@ -510,7 +510,7 @@ heredoc
         cat >> "${ytdlp_config}" <<'heredoc'
 --merge-output-format mkv
 --format 'ba'
---format-sort acodec:opus,abr
+--format-sort acodec:flac,opus,abr
 --remux-video mka
 --embed-thumbnail
 --add-metadata
