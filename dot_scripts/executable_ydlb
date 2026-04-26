@@ -527,12 +527,12 @@ heredoc
             [[ "${list_formats}" = 'false' ]] && echo -e "--print ' ${BWhite}[%(autonumber)s/%(n_entries)s]${Color_Off} %(uploader)s - %(playlist_title)s ${BPurple}//${Color_Off} %(title)s ${BPurple}//${Color_Off} %(resolution)s %(fps)sfps (%(vcodec)s,%(acodec)s) ${BPurple}//${Color_Off} %(duration_string)s'" >> "${ytdlp_config}"
 
             if [[ "${no_sort}" == 'true' ]]; then
-                append_line_to_file "-o '${output_folder}/%(uploader)s_-_%(playlist_title)s_-_%(playlist_index)s_of_%(playlist_count)s_-_%(upload_date)s_-_%(title)s.%(ext)s'" "${ytdlp_config}"
+                append_line_to_file "-o '${output_folder}/%(uploader)s_-_%(playlist_title)s_-_%(playlist_index)s_of_%(playlist_count)s_-_%(title)s.%(ext)s'" "${ytdlp_config}"
             else
                 if [[ "${audio}" == 'true' ]]; then
-                    append_line_to_file "-o '${output_folder}/ydl/audio/youtube/%(uploader)s/%(playlist_title)s/%(uploader)s_-_%(playlist_title)s_-_%(playlist_index)s_of_%(playlist_count)s_-_%(upload_date)s_-_%(title)s.%(ext)s'" "${ytdlp_config}"
+                    append_line_to_file "-o '${output_folder}/ydl/audio/youtube/%(uploader)s/%(playlist_title)s/%(playlist_index)s_of_%(playlist_count)s_-_%(title)s.%(ext)s'" "${ytdlp_config}"
                 else
-                    append_line_to_file "-o '${output_folder}/ydl/video/youtube/%(uploader)s/%(playlist_title)s/%(uploader)s_-_%(playlist_title)s_-_%(playlist_index)s_of_%(playlist_count)s_-_%(upload_date)s_-_%(title)s.%(ext)s'" "${ytdlp_config}"
+                    append_line_to_file "-o '${output_folder}/ydl/video/youtube/%(uploader)s/%(playlist_title)s/%(playlist_index)s_of_%(playlist_count)s_-_%(title)s.%(ext)s'" "${ytdlp_config}"
                 fi
             fi
 
@@ -541,12 +541,12 @@ heredoc
             [[ "${list_formats}" == 'false' ]] && echo -e "--print ' %(uploader)s - %(title)s ${BPurple}//${Color_Off} %(resolution)s %(fps)sfps (%(vcodec)s,%(acodec)s) ${BPurple}//${Color_Off} %(duration_string)s'" >> "${ytdlp_config}"
 
             if [[ "${no_sort}" == 'true' ]]; then
-                append_line_to_file "-o '${output_folder}/%(uploader)s-%(upload_date)s-%(title)s.%(ext)s'" "${ytdlp_config}"
+                append_line_to_file "-o '${output_folder}/%(uploader)s_-_%(upload_date)s_-_%(title)s.%(ext)s'" "${ytdlp_config}"
             else
                 if [[ "${audio}" == 'true' ]]; then
-                    append_line_to_file "-o '${output_folder}/ydl/audio/youtube/%(uploader)s/%(uploader)s_-_%(upload_date)s_-_%(title)s.%(ext)s'" "${ytdlp_config}"
+                    append_line_to_file "-o '${output_folder}/ydl/audio/youtube/%(uploader)s/%(upload_date)s_-_%(title)s.%(ext)s'" "${ytdlp_config}"
                 else
-                    append_line_to_file "-o '${output_folder}/ydl/video/youtube/%(uploader)s/%(uploader)s_-_%(upload_date)s_-_%(title)s.%(ext)s'" "${ytdlp_config}"
+                    append_line_to_file "-o '${output_folder}/ydl/video/youtube/%(uploader)s/%(upload_date)s_-_%(title)s.%(ext)s'" "${ytdlp_config}"
                 fi
             fi
         fi
