@@ -27,8 +27,6 @@ packages:
       - sinelaw/fresh
 
     formulae:
-
-
       - uutils-coreutils # Rust rewrite of the GNU coreutils
 
       - starship # Cross-shell prompt for astronauts | https://starship.rs/
@@ -283,6 +281,7 @@ packages:
     - io.github.mhogomchungu.media-downloader
     - io.freetubeapp.FreeTube
     - org.nickvision.tubeconverter
+    - org.gnome.gitlab.YaLTeR.VideoTrimmer # Trim videos quickly | https://flathub.org/apps/org.gnome.gitlab.YaLTeR.VideoTrimmer
 
     - de.haeckerfelix.AudioSharing # Share your computer audio | https://flathub.org/en/apps/de.haeckerfelix.AudioSharing
     - com.github.taiko2k.tauonmb # A modern, comfortable and streamlined music player | https://flathub.org/en/apps/com.github.taiko2k.tauonmb
@@ -307,7 +306,7 @@ packages:
     - com.rustdesk.RustDesk
     - io.github.input_leap.input-leap
     - org.deskflow.deskflow
-
+    - io.github.totoshko88.RustConn # Manage SSH, RDP, VNC, SPICE, MOSH, Telnet, Serial, Kubernetes, and Zero Trust connections | https://flathub.org/apps/io.github.totoshko88.RustConn
     - com.freerdp.FreeRDP
 
     - io.github.justinrdonnelly.bouncer # Bouncer | An application to choose the correct firewall zone for wireless connections.
@@ -326,6 +325,7 @@ packages:
     - com.github.hugolabe.Wike # Search and read Wikipedia articles | https://flathub.org/en/apps/com.github.hugolabe.Wike
     - dev.mufeed.Wordbook # Wordbook | An offline English-English dictionary application powered by WordNet and eSpeak.
     - me.iepure.devtoolbox
+    - io.github.shonebinu.Brief # Browse command-line cheatsheets | https://flathub.org/apps/io.github.shonebinu.Brief
     - org.zealdocs.Zeal
     - org.gnome.meld
 
@@ -366,7 +366,6 @@ packages:
     - org.altlinux.Tuner # Extensible control center | https://flathub.org/en/apps/org.altlinux.Tuner
     - io.github.fabrialberio.pinapp # Create and edit app shortcuts | https://flathub.org/en/apps/io.github.fabrialberio.pinapp
     - ca.desrt.dconf-editor
-
 
     - org.gtk.Gtk3theme.adw-gtk3
     - org.gtk.Gtk3theme.adw-gtk3-dark
