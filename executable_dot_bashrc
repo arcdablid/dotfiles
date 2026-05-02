@@ -568,6 +568,7 @@ unset bash_preexec_locations
 [ "$(command -v starship)" ] && eval "$(starship init bash)"
 [ "$(command -v thefuck)" ] && eval "$(thefuck --alias)"
 [ "$(command -v zoxide)" ] && eval "$(zoxide init bash)"
+[ "$(command -v carapace)" ] && source <(carapace _carapace)
 
 # ------------------------------------------------------------------------------
 # Use bash-completion, if available
