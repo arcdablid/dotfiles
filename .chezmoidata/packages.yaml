@@ -482,3 +482,13 @@ packages:
     - org.gtk.Gtk3theme.Yaru-dark
     - org.gtk.Gtk3theme.Yaru-bark
     - org.gtk.Gtk3theme.Yaru-bark-dark
+
+  gnome-extentions:
+    - 307   # Dash to Dock | https://micheleg.github.io/dash-to-dock/
+    - 1160  # Dash to Panel | https://github.com/home-sweet-gnome/dash-to-panel
+    - 1460  # Vitals | https://github.com/corecoding/Vitals
+    - 5470  # Weather O'Clock | https://github.com/CleoMenezesJr/weather-oclock
+    - 7065  # Tiling Shell | https://github.com/domferr/tilingshell
+    - 8745  # App Grid Tuner | https://codeberg.org/m-lab/app-grid-tuner
+    - 6099  # PaperWM | https://github.com/paperwm/PaperWM
+    - 973   # Switcher | https://github.com/daniellandau/switcher
