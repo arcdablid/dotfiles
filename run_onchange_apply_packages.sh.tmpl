@@ -88,54 +88,39 @@ if command -v brew &> /dev/null; then
 
     printf "\n${BRed}INFO${Color_Off} - Update Homebrew\n"
     brew update --force
+    brew upgrade
 
-    printf "\n${BRed}INFO${Color_Off} - Installing .packages.homebrew.taps\n"
+    printf "\n${BRed}INFO${Color_Off} - Installing packages\n"
     brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
+
 {{ range .packages.homebrew.taps -}}
 tap {{ . | quote }}
 {{ end -}}
-EOF
 
-    printf "\n${BRed}INFO${Color_Off} - Installing .packages.homebrew.formulae\n"
-    brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
 {{ range .packages.homebrew.formulae -}}
 brew {{ . | quote }}
 {{ end -}}
-EOF
 
-    printf "\n${BRed}INFO${Color_Off} - Installing .packages.flatpaks\n"
-    brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
 {{ range .packages.flatpaks -}}
 flatpak {{ . | quote }}
 {{ end -}}
-EOF
 
-    printf "\n${BRed}INFO${Color_Off} - Installing .packages.go\n"
-    brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
 {{ range .packages.go -}}
 go {{ . | quote }}
 {{ end -}}
-EOF
 
-    printf "\n${BRed}INFO${Color_Off} - Installing .packages.cargo\n"
-    brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
 {{ range .packages.cargo -}}
 cargo {{ . | quote }}
 {{ end -}}
-EOF
 
-    printf "\n${BRed}INFO${Color_Off} - Installing .packages.uv\n"
-    brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
 {{ range .packages.uv -}}
 uv {{ . | quote }}
 {{ end -}}
-EOF
 
-    printf "\n${BRed}INFO${Color_Off} - Installing .packages.vscode_extensions\n"
-    brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
 {{ range .packages.vscode_extensions -}}
 vscode {{ . | quote }}
 {{ end -}}
+
 EOF
 
 else
