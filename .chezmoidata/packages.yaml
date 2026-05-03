@@ -84,13 +84,13 @@ packages:
       - handbrake # Open-source video transcoder available for Linux, Mac, and Windows | https://handbrake.fr/
       - ffmpeg # Play, record, convert, and stream audio and video | https://ffmpeg.org/
 
-
       - gnupg # GNU Pretty Good Privacy (PGP) package | https://gnupg.org/
       - cosign # A tool for setting up container signing using Sigstore | https://github.com/sigstore/cosign
       - age # File encryption tool | https://github.com/FiloSottile/age
       - rage # Simple, modern, secure file encryption | https://github.com/str4d/rage
 
       - ansible-lint # Checks ansible playbooks for practices and behaviour | https://ansible-lint.readthedocs.io/
+      - ty # Extremely fast Python type checker, written in Rust | https://docs.astral.sh/ty/
 
       - gh # GitHub command-line tool | https://cli.github.com/
       - glab # A GitLab CLI tool bringing GitLab to your command line | https://gitlab.com/gitlab-org/cli
