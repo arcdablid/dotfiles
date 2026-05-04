@@ -10,6 +10,8 @@ packages:
     # - OSMPythonTools # A library to access OpenStreetMap related services | https://pypi.org/project/OSMPythonTools/
 
   uv:
+    - gnome-extensions-cli # Manage Gnome Shell extensions from the terminal | https://github.com/essembeh/gnome-extensions-cli
+
     # - requests
     # - urllib3
     # - isort # Sort Python imports automatically | https://pycqa.github.io/isort/
