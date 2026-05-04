@@ -91,6 +91,7 @@ packages:
 
       - ansible-lint # Checks ansible playbooks for practices and behaviour | https://ansible-lint.readthedocs.io/
       - ty # Extremely fast Python type checker, written in Rust | https://docs.astral.sh/ty/
+      - python-lsp-server # Python Language Server for the Language Server Protocol also known as: pylsp | https://github.com/python-lsp/python-lsp-server | KEEP FOR XONSH VSCODE EXTENSION
 
       - gh # GitHub command-line tool | https://cli.github.com/
       - glab # A GitLab CLI tool bringing GitLab to your command line | https://gitlab.com/gitlab-org/cli
