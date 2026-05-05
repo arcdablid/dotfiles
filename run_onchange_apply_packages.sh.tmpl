@@ -101,6 +101,10 @@ tap {{ . | quote }}
 brew {{ . | quote }}
 {{ end -}}
 
+{{ range .packages.homebrew.casks -}}
+cask {{ . | quote }}
+{{ end -}}
+
 {{ range .packages.flatpaks -}}
 flatpak {{ . | quote }}
 {{ end -}}
@@ -153,6 +157,33 @@ EOF
 
     [[ -f "${cache}"/requirements_previous_pip.txt ]] && rm "${cache}"/requirements_previous_pip.txt
     mv "${cache}"/requirements_current_pip.txt "${cache}"/requirements_previous_pip.txt
+else
+    printf "${BRed}ERROR${Color_Off} - Python pip not available!\n"
+fi
+
+if command -v gext &> /dev/null; then
+    cat <<EOF > "${cache}"/requirements_current_gnome_extentions.txt
+{{ range .packages.gnome_extentions -}}
+{{ . }}
+{{ end -}}
+EOF
+    if [[ -f "${cache}"/requirements_previous_gnome_extentions.txt ]]; then
+
+        # unique lines found in second input compared to first input
+        mapfile -t gnome_extentions_to_install < <( \grep -Fxvf "${cache}"/requirements_previous_gnome_extentions.txt "${cache}"/requirements_current_gnome_extentions.txt )
+        mapfile -t gnome_extentions_to_uninstall < <( \grep -Fxvf "${cache}"/requirements_current_gnome_extentions.txt "${cache}"/requirements_previous_gnome_extentions.txt )
+
+        [[ ${#gnome_extentions_to_uninstall[@]} -gt 0 ]] && gext uninstall ${gnome_extentions_to_uninstall[@]}
+        [[ ${#gnome_extentions_to_install[@]} -gt 0 ]] && gext update --install --yes ${gnome_extentions_to_install[@]}
+
+    else
+        gext update --install --yes $( cat "${cache}"/requirements_current_gnome_extentions.txt | awk '{print}' ORS=' ' )
+    fi
+
+    [[ -f "${cache}"/requirements_previous_gnome_extentions.txt ]] && rm "${cache}"/requirements_previous_gnome_extentions.txt
+    mv "${cache}"/requirements_current_gnome_extentions.txt "${cache}"/requirements_previous_gnome_extentions.txt
+
+    gext update
 else
     printf "${BRed}ERROR${Color_Off} - Python pip not available!\n"
 fi
