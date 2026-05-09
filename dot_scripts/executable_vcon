@@ -128,21 +128,17 @@ else
     fi
 fi
 
-# # now make a temp file
-# TMP_FILE=$(mktemp -q /tmp/vjoin.XXXXXX || exit 1)
-# # Set trap to clean up file
-# trap 'rm -f -- "$TMP_FILE"' EXIT
+# now make a temp file
+TMP_FILE=$(mktemp -q /tmp/vjoin.XXXXXX || exit 1)
+# Set trap to clean up file
+trap 'rm -f -- "$TMP_FILE"' EXIT
 
-# cat << EOF > "${TMP_FILE}"
-# $( printf 'file '%s'\n' "${inputs[@]}" )
-# EOF
-
-# echo
-# cat "${TMP_FILE}"
-# echo
-
-# ffmpeg -f concat -safe 0 -i "${TMP_FILE}" -c copy -- ./vjoin_output.mkv
-
-ffmpeg -f concat -safe 0 -i << EOF -c copy -- ./vjoin_output.mkv
+cat << EOF > "${TMP_FILE}"
 $( printf 'file '%s'\n' "${inputs[@]}" )
 EOF
+
+echo
+cat "${TMP_FILE}"
+echo
+
+ffmpeg -f concat -safe 0 -i "${TMP_FILE}" -c copy -- ./vjoin_output.mkv
