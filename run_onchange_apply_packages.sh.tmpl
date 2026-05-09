@@ -107,11 +107,11 @@ done
 
 # ------------------------------------------------------------------------------
 
-printf "[${executor}] ${BBlue}INFO${Color_Off} - Update Homebrew...\n"
+printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Update Homebrew...\n"
 brew update --force
 brew upgrade
 
-printf "[${executor}] ${BBlue}INFO${Color_Off} - Installing packages via brew bundle...\n"
+printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating pkgs via brew bundle...\n"
 brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
 
 {{ range .packages.homebrew.taps -}}
@@ -208,6 +208,6 @@ fi
 
 # sudo usermod -s /usr/bin/xonsh <user>
 
-printf "[${executor}] ${BBlue}INFO${Color_Off} - All done!\n"
+printf "\n[${executor}] ${BBlue}INFO${Color_Off} - All done!\n"
 
 {{ end -}}
