@@ -281,6 +281,7 @@ packages:
 
     - org.freecad.FreeCAD
 
+    - org.shotcut.Shotcut # Video editor | https://flathub.org/apps/org.shotcut.Shotcut
     - fr.handbrake.ghb
     - org.bunkus.mkvtoolnix-gui
     - com.obsproject.Studio
