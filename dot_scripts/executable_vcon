@@ -122,7 +122,7 @@ if [[ $# -gt 1 ]]; then
     [[ "${abort}" == "true" ]] && exit 1
 else
     mapfile -t inputs < <( find . -type f | fzf --multi )
-    if [[ -z "$inputs" || ${#inputs[@]} -lt 2 ]]; then
+    if [[ ! -v inputs || ${#inputs[@]} -lt 2 ]]; then
         print_msg -e -c -t -g -x "${executor}" -- "Insufficient valid input paths"
         exit 1
     fi
