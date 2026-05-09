@@ -107,40 +107,42 @@ done
 
 # ------------------------------------------------------------------------------
 
-if [[ $# -lt 2 ]]; then
-    print_msg -e -c -t -g -x "${executor}" -- "At least 2 input paths are needed!"
-fi
-declare -a inputs=()
-abort='false'
-for i in "$@"; do
-    input="$( expand_path "${i}" )"
-    if [[ -f "${input}" ]]; then
-        inputs+=( "${input}" )
-    else
-        print_msg -e -c -t -g -x "${executor}" -- "File not found: " "${i}"
-        abort='true'
+if [[ $# -gt 1 ]]; then
+    declare -a inputs=()
+    abort='false'
+    for i in "$@"; do
+        input="$( expand_path "${i}" )"
+        if [[ -f "${input}" ]]; then
+            inputs+=( "${input}" )
+        else
+            print_msg -e -c -t -g -x "${executor}" -- "File not found: " "${i}"
+            abort='true'
+        fi
+    done
+    [[ "${abort}" == "true" ]] && exit 1
+else
+    mapfile -t inputs < <( find . -type f | fzf --multi )
+    if [ ! -n "$inputs" && ${#inputs[@]} -lt 2]; then
+        print_msg -e -c -t -g -x "${executor}" -- "Insufficient valid input paths"
+        exit 1
     fi
-done
+fi
 
-[[ "${abort}" == "true" ]] && exit 1
+# # now make a temp file
+# TMP_FILE=$(mktemp -q /tmp/vjoin.XXXXXX || exit 1)
+# # Set trap to clean up file
+# trap 'rm -f -- "$TMP_FILE"' EXIT
 
-if [[ ${#inputs[@]} -gt 1 ]]; then
-    # now make a temp file
-    TMP_FILE=$(mktemp -q /tmp/vjoin.XXXXXX || exit 1)
-    # Set trap to clean up file
-    trap 'rm -f -- "$TMP_FILE"' EXIT
+# cat << EOF > "${TMP_FILE}"
+# $( printf 'file '%s'\n' "${inputs[@]}" )
+# EOF
 
-    cat << EOF > "${TMP_FILE}"
+# echo
+# cat "${TMP_FILE}"
+# echo
+
+# ffmpeg -f concat -safe 0 -i "${TMP_FILE}" -c copy -- ./vjoin_output.mkv
+
+ffmpeg -f concat -safe 0 -i << EOF -c copy -- ./vjoin_output.mkv
 $( printf 'file '%s'\n' "${inputs[@]}" )
 EOF
-
-    echo
-    cat "${TMP_FILE}"
-    echo
-
-    ffmpeg -f concat -safe 0 -i "${TMP_FILE}" -c copy -- ./vjoin_output.mkv
-
-else
-    print_msg -e -c -t -g -x "${executor}" -- "Insufficient valid input paths"
-    exit 1
-fi
