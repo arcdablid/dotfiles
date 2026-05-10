@@ -109,6 +109,8 @@ done
 
 read -e -p "Enter config location:" -i "$HOME/.config/quadlets/open-webui" config_location
 
+printf 'config_location=%s\n' "${config_location}"
+
 echo
 printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
 mkdir -pv "$HOME/.config/containers/systemd"
