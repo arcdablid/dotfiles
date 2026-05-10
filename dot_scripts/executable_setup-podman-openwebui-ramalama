@@ -107,10 +107,12 @@ done
 
 # ------------------------------------------------------------------------------
 
+read -e -p "Enter config location:" -i "$HOME/.config/quadlets/open-webui" config_location
+
 echo
-printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating directories\n"
+printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
 mkdir -pv "$HOME/.config/containers/systemd"
-mkdir -pv "$HOME/.config/open-webui"
+mkdir -pv "${config_location}"
 
 declare -A MODELS=(
     ["huihui-ai_Huihui-Qwen3.6-27B-abliterated"]="hf.co/huihui-ai/Huihui-Qwen3.6-27B-abliterated"
