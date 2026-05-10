@@ -133,7 +133,7 @@ done
 
 echo
 printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating open-webui quadlet...\n"
-cat > "$HOME/.config/containers/systemd/open-webui.container" << QUADLET
+cat > "$HOME"/.config/containers/systemd/open-webui.container << QUADLET
 [Unit]
 Description=Open WebUI Container
 After=network-online.target
