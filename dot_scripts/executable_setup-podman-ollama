@@ -107,44 +107,28 @@ done
 
 # ------------------------------------------------------------------------------
 
-read -e -p "Enter config location:" -i "$HOME/.config/quadlets/open-webui" config_location
-
-printf 'config_location=%s\n' "${config_location}"
+read -e -p "Enter config location:" -i "$HOME/.config/quadlets/ollama" ollama_data_location
 
 echo
 printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
 mkdir -pv "$HOME/.config/containers/systemd"
-mkdir -pv "${config_location}"
-
-declare -A MODELS=(
-    ["huihui-ai_Huihui-Qwen3.6-27B-abliterated"]="hf.co/huihui-ai/Huihui-Qwen3.6-27B-abliterated"
-    ["unsloth_Qwen3.6-27B-GGUF"]="hf.co/unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL"
-)
-
-for name in "${!MODELS[@]}"; do
-    echo
-    printf "[${executor}] ${BPurple}INFO${Color_Off} - Generating ramalama quadlet for model: %s\n" "${name}"
-    ramalama serve --name "ramalama_${name}" --generate=quadlet:"$HOME/.config/containers/systemd" "${MODELS[${name}]}"
-
-    printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd and start/enable quadlet for model: %s\n" "ramalama_${name}"
-    systemctl --user daemon-reload
-    # [[ "$(systemctl is-active {systemd_name}.mount)" != active ]] &&
-    systemctl start --user "ramalama_${name}"
-    # systemctl enable --user "ramalama_${name}"
-done
+mkdir -pv "${ollama_data_location}"
 
 echo
-printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating open-webui quadlet...\n"
-cat > "$HOME"/.config/containers/systemd/open-webui.container << QUADLET
+printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating Ollama quadlet...\n"
+cat > "$HOME"/.config/containers/systemd/ollama.container << QUADLET
 [Unit]
-Description=Open WebUI Container
+Description=Ollama Container
 After=network-online.target
 
 [Container]
-Image=ghcr.io/open-webui/open-webui:main
-ContainerName=open-webui
-PublishPort=3000:8080
-Volume=${config_location}:/app/backend/data
+ContainerName=ollama
+Image=docker.io/ollama/ollama:rocm
+PublishPort=11434:11434
+Volume=${ollama_data_location}:/root/.ollama:Z
+AddDevice=-/dev/kfd
+AddDevice=-/dev/dri
+AutoUpdate=registry
 
 # Networking: Pasta is used by default in Podman 5+
 # If you need to access host services (like Ollama on the host):
@@ -152,19 +136,25 @@ AddHost=host.containers.internal:host-gateway
 
 [Service]
 Restart=always
+RestartSec=5
+# Give image pulls/builds enough time during startup
+TimeoutStartSec=900
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target default.target
 QUADLET
 
-printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd and start/enable quadlet for: open-webui \n"
+printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
 systemctl --user daemon-reload
-systemctl --user start open-webui
-systemctl --user enable open-webui
+
+
+printf "[${executor}] ${BPurple}INFO${Color_Off} - Start/enable quadlet...\n"
+systemctl --user restart ollama
+
 # Start user services even when not logged in
 loginctl enable-linger $USER
 
-printf "[${executor}] ${BPurple}INFO${Color_Off} - Enabling automatic updates & start on boot...\n"
+printf "[${executor}] ${BPurple}INFO${Color_Off} - Enable automatic podman updates...\n"
 # 'AutoUpdate=registry' in the systemd definition allows the container to be auto-updated,
 # manually by calling 'podman auto-update'
 # or automatically by enabling the relative systemd service:
