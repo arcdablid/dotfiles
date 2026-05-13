@@ -107,6 +107,8 @@ done
 
 # ------------------------------------------------------------------------------
 
+mkdir -pv "$HOME/.config/containers/systemd"
+
 declare -A MODELS=(
     ["hf.co/huihui-ai/Huihui-granite-4.1-3b-abliterated:BF16"]="8301"
     ["hf.co/unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL"]="8302"
