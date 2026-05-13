@@ -108,18 +108,25 @@ done
 # ------------------------------------------------------------------------------
 
 declare -A MODELS=(
-    ["huihui-ai_Huihui-granite-4.1-3b-abliterated:BF16"]="hf.co/huihui-ai/Huihui-granite-4.1-3b-abliterated:BF16"
-    ["unsloth_Qwen3.6-27B-GGUF"]="hf.co/unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL"
+    ["hf.co/huihui-ai/Huihui-granite-4.1-3b-abliterated:BF16"]="8301"
+    ["hf.co/unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL"]="8302"
 )
 
-for name in "${!MODELS[@]}"; do
+for url in "${!MODELS[@]}"; do
+
+    name="$( str_replace_part -t '/' -r '_' "ramalama_${url}" )"
+    port="${MODELS[${url}]}"
+
     echo
-    printf "[${executor}] ${BPurple}INFO${Color_Off} - Generating quadlet via ramalama for model: %s\n" "${name}"
-    ramalama serve --name "ramalama_${name}" --generate=quadlet:"$HOME/.config/containers/systemd" "${MODELS[${name}]}"
+    printf "[${executor}] ${BPurple}INFO${Color_Off} - Generating quadlet via ramalama for model: %s @ %s\n" "${url}" "${port}"
+    ramalama serve --name "${name}" --port "${port}" --generate=quadlet:"$HOME/.config/containers/systemd" "${url}"
+
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
     systemctl --user daemon-reload
-    printf "[${executor}] ${BPurple}INFO${Color_Off} - Start/enable ramalama quadlet for model: %s\n" "ramalama_${name}"
-    systemctl restart --user "ramalama_${name}"
+
+    printf "[${executor}] ${BPurple}INFO${Color_Off} - Start/enable ramalama quadlet: %s\n" "${name}"
+    systemctl restart --user "${name}"
+
 done
 
 loginctl enable-linger $USER
