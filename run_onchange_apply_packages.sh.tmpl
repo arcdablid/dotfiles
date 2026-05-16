@@ -153,6 +153,8 @@ EOF
 cache=~/.var/lib/chezmoi/run_onchange_apply_packages.d
 [[ ! -d "${cache}" ]] && mkdir -p "${cache}"
 
+# ------------------------------------------------------------------------------
+
 if command -v pip &> /dev/null; then
     cat <<EOF > "${cache}"/requirements_current_pip.txt
 {{ range .packages.pip -}}
@@ -178,6 +180,8 @@ else
     printf "[${executor}] ${BRed}ERROR${Color_Off} - Python pip not available!\n"
 fi
 
+# ------------------------------------------------------------------------------
+
 if command -v gext &> /dev/null; then
     cat <<EOF > "${cache}"/requirements_current_gnome_extentions.txt
 {{ range .packages.gnome_extentions -}}
@@ -199,6 +203,45 @@ EOF
 
     [[ -f "${cache}"/requirements_previous_gnome_extentions.txt ]] && rm "${cache}"/requirements_previous_gnome_extentions.txt
     mv "${cache}"/requirements_current_gnome_extentions.txt "${cache}"/requirements_previous_gnome_extentions.txt
+
+else
+    printf "[${executor}] ${BRed}ERROR${Color_Off} - Python pip not available!\n"
+fi
+
+# ------------------------------------------------------------------------------
+
+if command -v ramalama &> /dev/null; then
+    cat <<EOF > "${cache}"/requirements_current_ramalama.txt
+{{ range .packages.ramalama -}}
+{{ .url }} @ {{ .port }}
+{{ end -}}
+EOF
+    if [[ -f "${cache}"/requirements_previous_ramalama.txt ]]; then
+
+        # unique lines found in second input compared to first input
+        mapfile -t ramalama_to_install < <( \grep -Fxvf "${cache}"/requirements_previous_ramalama.txt "${cache}"/requirements_current_ramalama.txt )
+        mapfile -t ramalama_to_uninstall < <( \grep -Fxvf "${cache}"/requirements_current_ramalama.txt "${cache}"/requirements_previous_ramalama.txt )
+
+        if [[ ${#ramalama_to_uninstall[@]} -gt 0 ]]; then
+            for rtu in "${ramalama_to_uninstall[@]}"; do
+                setup-ramalama-models -r -u "$( str_cut -d ' @ ' -p 1 -- "${rtu}" )" -p "$( str_cut -d ' @ ' -p 2 -- "${rtu}" )"
+            done
+        fi
+        if [[ ${#ramalama_to_install[@]} -gt 0 ]]; then
+            for rti in "${ramalama_to_install[@]}"; do
+                setup-ramalama-models -u "$( str_cut -d ' @ ' -p 1 -- "${rti}" )" -p "$( str_cut -d ' @ ' -p 2 -- "${rti}" )"
+            done
+        fi
+
+    else
+        mapfile -t ramalama_to_install < <( cat "${cache}"/requirements_current_ramalama.txt )
+        for rti in "${ramalama_to_install[@]}"; do
+            setup-ramalama-models -u "$( str_cut -d ' @ ' -p 1 -- "${rti}" )" -p "$( str_cut -d ' @ ' -p 2 -- "${rti}" )"
+        done
+    fi
+
+    [[ -f "${cache}"/requirements_previous_ramalama.txt ]] && rm "${cache}"/requirements_previous_ramalama.txt
+    mv "${cache}"/requirements_current_ramalama.txt "${cache}"/requirements_previous_ramalama.txt
 
 else
     printf "[${executor}] ${BRed}ERROR${Color_Off} - Python pip not available!\n"

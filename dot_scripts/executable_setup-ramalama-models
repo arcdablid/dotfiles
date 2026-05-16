@@ -94,12 +94,12 @@ done
 executor_path="$(readlink -f "${executor_path}")"
 executor_dir="$(cd -P "$(dirname -- "${executor_path}")" >/dev/null 2>&1 && pwd)"
 
-declare -a required_cmds=( "podman" "ramalama" )
+declare -a required_cmds=( "podman" "ramalama" "str_is_url" "str_replace_part" )
 
 fail=false
 for rc in "${required_cmds[@]}"; do
     if ! command -v "${rc}" &> /dev/null ; then
-        printf "[${executor}] [ERROR] Command '${rc}' unavailable!?"
+        printf "[${executor}] ${BRed}ERROR${Color_Off} - '${rc}' not available!"
         fail=true
     fi
 done
@@ -107,17 +107,67 @@ done
 
 # ------------------------------------------------------------------------------
 
-mkdir -pv "$HOME/.config/containers/systemd"
+function print_usage {
+    local msg="
+usage: ${executor} -u URL -p PORT
 
-declare -A MODELS=(
-    ["hf.co/huihui-ai/Huihui-granite-4.1-3b-abliterated:BF16"]="8301"
-    ["hf.co/unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL"]="8302"
-)
+options:
+    -h      show this help message and exit
+    -r      remove given model
+    -u URL
+            The character(s) or string(s) to target.
+    -p PORT
+            The character or string to use as the replacement.
+    "
+    echo "${msg}"
+}
 
-for url in "${!MODELS[@]}"; do
+remove="false"
+while getopts "ru:p:" flag; do
+    case "${flag}" in
+        r ) remove="true";;
+        u ) url="${OPTARG}";;
+        p ) port="${OPTARG}";;
+        h ) print_usage && exit 0 ;;
+        ? ) print_usage && exit 1 ;;
+    esac
+done
 
-    name="$( str_replace_part -t '/' -r '_' "ramalama_${url}" )"
-    port="${MODELS[${url}]}"
+# unset or empty
+if [[ -z ${url+x} || -z "${url}" || "$( str_is_url "${url}" )" == "false" ]]; then
+    printf "[${executor}] ${BRed}ERROR${Color_Off} - A valid url is needed!\n"
+    echo
+    print_usage
+    exit 1
+fi
+
+# unset or empty or not int
+if [[ -z ${port+x} || -z "${port}" || ! ${port} =~ '^[0-9]+$' ]]; then
+    printf "[${executor}] ${BRed}ERROR${Color_Off} - A valid port is needed!\n"
+    echo
+    print_usage
+    exit 1
+fi
+
+name="$( str_replace_part -t ':' -t '/' -r '_' "ramalama_${url}" )"
+
+if [[ "${remove}" == "true" ]]; then
+
+    printf "[${executor}] ${BPurple}INFO${Color_Off} - Stop ramalama quadlet: %s\n" "${name}"
+    [[ "$( systemctl is-active "${name}" )" == "active" ]] && systemctl stop --user "${name}"
+
+    printf "[${executor}] ${BPurple}INFO${Color_Off} - Remove quadlet container file...\n"
+    [[ -f "$HOME/.config/containers/systemd/${name}.container" ]] && rm -rfv "$HOME/.config/containers/systemd/${name}.container"
+
+    printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
+    systemctl --user daemon-reload
+
+    printf "[${executor}] ${BPurple}INFO${Color_Off} - Remove ramalama model file...\n"
+    ramalama rm --ignore -- "${url}" # ignore errors when specified Model does not exist
+
+else
+
+    mkdir -pv "$HOME/.config/containers/systemd"
 
     echo
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Generating quadlet via ramalama for model: %s @ %s\n" "${url}" "${port}"
@@ -129,12 +179,12 @@ for url in "${!MODELS[@]}"; do
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Start/enable ramalama quadlet: %s\n" "${name}"
     systemctl restart --user "${name}"
 
-done
+    loginctl enable-linger $USER
 
-loginctl enable-linger $USER
+    printf "[${executor}] ${BPurple}INFO${Color_Off} - Enable podman automatic updates...\n"
+    # 'AutoUpdate=registry' in the systemd definition allows the container to be auto-updated,
+    # manually by calling 'podman auto-update'
+    # or automatically by enabling the relative systemd service:
+    systemctl enable --user --now podman-auto-update.timer
 
-printf "[${executor}] ${BPurple}INFO${Color_Off} - Enable podman automatic updates...\n"
-# 'AutoUpdate=registry' in the systemd definition allows the container to be auto-updated,
-# manually by calling 'podman auto-update'
-# or automatically by enabling the relative systemd service:
-systemctl enable --user --now podman-auto-update.timer
+fi
