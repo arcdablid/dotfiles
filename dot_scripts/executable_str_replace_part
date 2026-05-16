@@ -12,10 +12,10 @@ def str_replace():
 
     parser.add_argument(
         "-t",
-        "--target",
-        required=True,
+        "--targets",
         type=str,
-        help="The character or string to target.",
+        nargs="+",
+        help="The character(s) or string(s) to target.",
     )
 
     parser.add_argument(
@@ -27,17 +27,20 @@ def str_replace():
     )
 
     parser.add_argument(
-        "strings",
-        metavar="S",
+        "inputs",
+        metavar="I",
         type=str,
         nargs="+",
-        help="Strings to join.",
+        help="Strings to process.",
     )
 
     args = parser.parse_args()
 
-    for input in args.strings:
-        print(input.replace(args.target, args.replacement))
+    for input in args.inputs:
+        output: str = input
+        for target in args.targets:
+            output: str = output.replace(target, args.replacement)
+        print(output)
 
 
 if __name__ == "__main__":
