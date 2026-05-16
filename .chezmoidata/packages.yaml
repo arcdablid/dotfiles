@@ -307,7 +307,7 @@ packages:
     - org.qbittorrent.qBittorrent
     - io.github.giantpinkrobots.varia
 
-    - org.signal.Signal
+    # - org.signal.Signal
     - org.gnome.Fractal # A Matrix messaging app for GNOME written in Rust
 
     - com.rustdesk.RustDesk
@@ -501,7 +501,7 @@ packages:
     - 973   # Switcher | https://github.com/daniellandau/switcher
 
   ramalama:
-    - url: hf.co/huihui-ai/Huihui-granite-4.1-3b-abliterated:BF16
-      port: 8301
     - url: hf.co/unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL
+      port: 8301
+    - url: hf.co/huihui-ai/Huihui-granite-4.1-3b-abliterated:BF16
       port: 8302
