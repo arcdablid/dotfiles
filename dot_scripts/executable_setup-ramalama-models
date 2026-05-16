@@ -134,7 +134,7 @@ while getopts "ru:p:" flag; do
 done
 
 # unset or empty
-if [[ -z ${url+x} || -z "${url}" || "$( str_is_url "${url}" )" == "false" ]]; then
+if [[ -z ${url+x} || -z "${url}" ]]; then
     printf "[${executor}] ${BRed}ERROR${Color_Off} - A valid url is needed!\n"
     echo
     print_usage
