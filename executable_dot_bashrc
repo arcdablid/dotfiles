@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# TODO add printed warnings for missing cmds
+
 # Source global definitions
 [[ -f "/etc/bashrc" ]] && source /etc/bashrc
 
@@ -214,57 +216,44 @@ fi
 # Functions & Aliases
 # ------------------------------------------------------------------------------
 
-declare -a cmds=( nmcli btop bat eza ug apt dnf rpm brew pip pipx docker code gext)
-# Setup aliases if commands exist
-for cmd in "${cmds[@]}"; do
-    command -v "$cmd" >/dev/null && {
-        case "$cmd" in
-            nmcli)  alias lsnm="nmcli dev show";;
-            btop)   alias b="btop";;
-            bat)    alias bat='bat --style=plain --pager=never'
-                    alias cat='bat'
-                    ;;
-            eza)    alias ll='eza -l --icons=auto --group-directories-first'
-                    alias l.='eza -d .*'
-                    alias l1='eza -1'
-                    alias lt="eza --icons --group-directories-first --tree --level=1"
-                    alias lsa="eza --icons --group-directories-first --all"
-                    alias lta="eza --icons --group-directories-first --all --tree --level=1"
-                    alias eza="eza -lhao --group-directories-first"
-                    ;;
-            ug) alias grep='ug'
-                alias grepe='ug -E'
-                alias grepf='ug -F'
-                alias grepz='ug -z'
-                alias grepze='ug -zE'
-                alias grepzf='ug -zF'
-                ;;
-            apt)    alias aptli="apt list --installed";;
-            dnf)    alias dnfli="dnf list --installed";;
-            rpm)    alias rpmli="rpm -qa | sort";;
-            flatpak)    alias flatpaklrs="flatpak remotes --columns=name"
-                        alias flatpaklru="flatpak remotes --user --columns=name"
-                        alias flatpaklis="flatpak list --columns=application"
-                        alias flatpakliu="flatpak list --user --columns=application"
-                        ;;
-            brew)   alias brewlt="brew tap"
-                    alias brewlf="brew list --formula -1"
-                    ;;
-            pip)    alias pip-ls="pip list";;
-            pipx)   alias pipx-ls="pipx list --short";;
-            docker) alias docker-gc="docker system prune --force";;
-            code)   alias code-ls-ext="code --list-extensions";;
-            gext)   alias gext-ls="gext list -a";;
-        esac
-    }
-done
-unset cmds
+function path_print_as_list {
+    echo "${PATH//:/$'\n'}"
+}
+alias lspath='print_path_as_list'
 
 # ------------------------------------------------------------------------------
 
+# You can use the bash(1) built-in compgen:
+#   compgen -c                  will list all the commands you could run.
+#   compgen -a                  will list all the aliases you could run.
+#   compgen -b                  will list all the built-ins you could run.
+#   compgen -k                  will list all the keywords you could run.
+#   compgen -A function         will list all the functions you could run.
+#   compgen -A function -abck   will list all the above in one go.
+# Check the man page for other completions you can generate.
+# To list & search e.g. all available commands and aliases:
+#   compgen -ac PATTERN
+
+function r { (
+    set ${SET_X:+-x} -eou pipefail
+    compgen -A function -abck | fzf
+); }
+
+function ra { (
+    set ${SET_X:+-x} -eou pipefail
+    compgen -a | fzf
+); }
+
+function rf { (
+    set ${SET_X:+-x} -eou pipefail
+    compgen -A function | fzf
+); }
+
+alias sudo='sudo ' # keep aliases, https://unix.stackexchange.com/a/349290
+
 # Use sudo on functions and aliases
 # https://unix.stackexchange.com/a/438712
-function sudo_af {
+function sudoaf {
     local firstArg=$1
     if [ $(type -t $firstArg) = function ]
     then
@@ -278,41 +267,24 @@ function sudo_af {
     fi
 }
 
-function hlt {
-    grep --color=always -E "${1}|$"
-}
-
-# Make new directory and move to it
-function mkdcd {
-    cd -- "$( mkd -d "$*" )"
-}
-
-function lns {
-    # -s, --symbolic
-    #     make symbolic links instead of hard links
-    # -i, --interactive
-    #     prompt whether to remove destinations
-    # -n, --no-dereference
-    #     treat LINK_NAME as a normal file if it is a symbolic link to a directory
-    # -v, --verbose
-    #     print name of each linked file
-    [[ $# == 2 ]] && ln -sinv "$( expand_path "${1}" )" "$( expand_path "${2}" )"
-}
-
-# ------------------------------------------------------------------------------
 # https://commandmasters.com/commands/systemd-inhibit-linux/
 # https://man.archlinux.org/man/systemd-inhibit.1
 # https://kd8bny.com/posts/session_inhibit/
 alias inhibit='systemd-inhibit --no-ask-password --what=idle --who="$USER" --why="Obvious reasons..."'
-function inhibit_background {
+
+# run in the background & inhibit
+function rib { (
+    set ${SET_X:+-x} -eou pipefail
     systemd-inhibit --no-ask-password --what=idle --who="$USER" --why="Obvious reasons..." $@ & disown
     if [[ ! -v INHIBIT_PID_LIST ]]; then
         declare -a INHIBIT_PID_LIST=()
     fi
     export INHIBIT_PID_LIST+=( "$!" )
-    # export INHIBIT_PID=$!
-}
-function inhibit_no_more {
+); }
+
+# inhibit_no_more
+function ribz { (
+    set ${SET_X:+-x} -eou pipefail
     if [[ ! -v INHIBIT_PID_LIST ]]; then
         printf '%s\n' "No background PIDs found."
     else
@@ -330,38 +302,176 @@ function inhibit_no_more {
             export INHIBIT_PID_LIST+=("${INHIBIT_PID_LIST_NEW[@]}")
             unset INHIBIT_PID_LIST_NEW
 
-            # INHIBIT_PID=
         done
     fi
-}
+); }
+
 # ------------------------------------------------------------------------------
-
-alias e="exit"
-alias c="clear"
-alias clean="clear"
-
-alias gen_ssh="ssh-keygen -t ed25519 -C "${USER}@$(hostname)""
-alias ssh_gen='gen_ssh'
-alias sshgen='gen_ssh'
 
 alias linger="loginctl enable-linger $USER"
 
-function path_print_as_list {
-    echo "${PATH//:/$'\n'}"
-}
-alias lspath='print_path_as_list'
+# A set of smooth, fzf-powered shell aliases & functions for systemctl
+# https://silverrainz.me/blog/2025-09-systemd-fzf-aliases.html
 
-function gen_pass {
-    [[ -v 1 ]] && length=$1 || length=32
-    </dev/urandom tr -dc '1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM!$%^&*@~#<>?\|/' | head -c $length ; echo ""
+# Simple aliases.
+alias s='sudo systemctl'
+alias sj='journalctl'
+alias u='systemctl --user'
+alias uj='journalctl --user'
+
+# SystemD unit selector.
+function _sysls {
+    # $1: --system or --user
+    # $2: states, see also "systemctl list-units --state=help"
+    WIDE=$1
+    [ -n $2 ] && STATE="--state=$2"
+    \cat \
+        <(echo 'UNIT/FILE LOAD/STATE ACTIVE/PRESET SUB DESCRIPTION') \
+        <(\systemctl $WIDE list-units --legend=false $STATE) \
+        <(\systemctl $WIDE list-unit-files --legend=false $STATE) \
+    | \sed 's/●/ /' \
+    | \grep . \
+    | \column --table --table-columns-limit=5 \
+    | \fzf --header-lines=1 \
+          --accept-nth=1 \
+          --no-hscroll \
+          --preview="SYSTEMD_COLORS=1 systemctl $WIDE status {1}" \
+          --preview-window=down
 }
+
+# Aliases for unit selector.
+alias sls='_sysls --system'
+alias uls='_sysls --user'
+alias sjf='sj --unit $(uls) --all --follow'
+alias ujf='uj --unit $(uls) --all --follow'
+
+_SYS_ALIASES=(
+    sstart sstop sre
+    ustart ustop ure
+)
+_SYS_CMDS=(
+    's start $(sls static,disabled,failed)'
+    's stop $(sls running,failed)'
+    's restart $(sls)'
+    'u start $(uls static,disabled,failed)'
+    'u stop $(uls running,failed)'
+    'u restart $(uls)'
+)
+
+function _sysexec {
+    for ((j=0; j < ${#_SYS_ALIASES[@]}; j++)); do
+        if [ "$1" == "${_SYS_ALIASES[$j]}" ]; then
+            cmd=$(eval echo "${_SYS_CMDS[$j]}") # expand service name
+            wide=${cmd:0:1}
+            cmd="$cmd && ${wide} status \$_ || ${wide}j -xeu \$_"
+            eval $cmd
+
+            # Push to history.
+            [ -n "$BASH_VERSION" ] && history -s $cmd
+            [ -n "$ZSH_VERSION" ] && print -s $cmd
+            return
+        fi
+    done
+}
+
+# Generate bash function/zsh widgets.
+for i in ${_SYS_ALIASES[@]}; do
+    source /dev/stdin <<EOF
+$i() {
+    _sysexec $i
+}
+EOF
+done
+
+# ------------------------------------------------------------------------------
+
+alias jfs="journalctl --follow --unit"
+alias jfu="journalctl --follow --user-unit"
+
+# https://github.com/walles/px#killing-processes
+alias pxk="px --sort=cpupercent | fzf --bind 'ctrl-r:reload(px --sort=cpupercent)' --height=20 --no-hscroll --tac --no-sort --header-lines=1 | awk '{print $1}' | xargs kill -9"
+alias pxkp="px --sort=cpupercent --no-username | fzf --preview='px --color {1}' --bind 'ctrl-r:reload(px --sort=cpupercent --no-username)' --height=20 --no-hscroll --tac --no-sort --header-lines=1 | awk '{print $1}' | xargs kill -9"
+
+# ------------------------------------------------------------------------------
+
+alias c="clear"
+alias clean="clear"
+
+alias t='tmux new-session -A'
+alias ta='tmux new-session -A'
+alias ts='tmux-select-sessions'
+alias tr='reset; tmux clear-history'
+
+# ------------------------------------------------------------------------------
 
 alias ~="cd ~"
-alias ..="cd .."
-alias ...="cd ../.."
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias .....='cd ../../../..'
+
+# Frequently used paths
+alias 1='cd ~/Downloads'
+alias 2='cd ~/syncthing/qed'
+alias 3='cd ~/rfs/nasgard/nas'
+
+# Workspace manager
+alias ws='cd ~/workspace/$( \ls ~/workspace | fzf )'
+function _wsnew { (
+    set ${SET_X:+-x} -eou pipefail
+    fn="$(date +%Y-%m)_$1" # TODO Check input
+    mkdir -p ~/workspace/$fn
+    cd ~/workspace/$fn
+); }
+alias wsnew='_wsnew'
 
 alias ls="ls -1a --color=auto"
 alias lsl="ls -lha --color=auto"
+
+if command -v eza 2>&1 >/dev/null; then
+    # https://gist.github.com/AppleBoiy/04a249b6f64fd0fe1744aff759a0563b
+    alias _eza='eza --color=always --group-directories-first --icons --classify=always --all --hyperlink --mounts'
+    alias l='_eza -1'
+    alias l1='_eza -1'
+    alias ll='_eza --long --header --smart-group' # display extended file metadata as a table
+    alias lll="_eza --long --header --group --created --accessed --modified --time-style='+%F %T %z '"
+    alias llll='_eza --long --header --group --created --accessed --modified --time-style='+%F %T %z ' --links --context'
+
+    alias lg='l1 --git' # list each file's Git status, if tracked or ignored
+
+    alias lod='l1 --only-dirs'
+    alias l1od='l1 --only-dirs'
+    alias lof='l1 --only-files'
+    alias l1of='l1 --only-files'
+
+    alias ldot='l1 -d .*'
+    alias l.='l1 -d .*'
+
+    alias ltd='_eza --tree'
+    alias lts='_eza --tree --level=2'
+fi
+
+alias o='xdg-open'
+alias tsh='trash' # use trash rather than rm
+
+if command -v mkd 2>&1 >/dev/null; then
+    # Make new directory and move to it
+    function mkdcd { (
+        set ${SET_X:+-x} -eou pipefail
+        cd -- "$( mkd -d "$*" )"
+    ); }
+fi
+
+if command -v expand_path 2>&1 >/dev/null; then
+    function lns { (
+        set ${SET_X:+-x} -eou pipefail
+        # -s, --symbolic        make symbolic links instead of hard links
+        # -i, --interactive     prompt whether to remove destinations
+        # -n, --no-dereference  treat LINK_NAME as a normal file if it is a symbolic link to a directory
+        # -v, --verbose         print name of each linked file
+        [[ $# == 2 ]] && ln -sinv "$( expand_path "${1}" )" "$( expand_path "${2}" )"
+    ); }
+fi
 
 alias cp="cp -vai"
 alias mv="mv -vi"
@@ -370,132 +480,30 @@ alias mkdir="mkdir -vp"
 
 alias untar="tar -xJf"
 
-alias diff="difft" # Use difftastic, syntax-aware diffing
+alias diff="difft" # difftastic, syntax-aware diffing
+# alias diff="delta" # git-delta
 
 # ------------------------------------------------------------------------------
-function lsip {
-    printf "[${BPurple}WAN${Color_Off}]\n%s\n" "$( curl -s https://icanhazip.com || curl -s https://ifconfig.me || curl -s https://ipecho.net/plain || curl -s ipinfo.io/ip || wget -qO- https://icanhazip.com || wget -qO- https://ifconfig.me )"
-    printf "[${BPurple}LAN${Color_Off}]\n%s\n%s\n" "$( ip -c -h -brief address show )" "$( ip -c -h -brief link show )"
 
-}
-alias lsnic="lsip"
-alias lsnet="lsip"
+# alias f='yazi'
 
-# Show visible port identification (e.g. blinking)
-alias idnic="ethtool -p" # ethtool [ FLAGS ] -p|--identify DEVNAME [ TIME-IN-SECONDS ]
-alias idnif='idnic'
-alias idif='idnic'
-alias idport='idnic'
-# ------------------------------------------------------------------------------
+# Superfile terminal file manager 'cd_on_quit' | https://superfile.dev/
+if command -v spf 2>&1 >/dev/null; then
+    function f { (
+        set ${SET_X:+-x} -eou pipefail
+        export SPF_LAST_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/superfile/lastdir"
 
-alias jfs="journalctl --follow --unit"
-alias jfu="journalctl --follow --user-unit"
+        command spf "$@"
 
-alias dns-flush="sudo resolvectl flush-caches"
-alias flush-dns="dns-flush"
-alias dns-refresh="dns-flush"
-alias refresh-dns="dns-flush"
-
-# https://github.com/walles/px#killing-processes
-alias pxk="px --sort=cpupercent | fzf --bind 'ctrl-r:reload(px --sort=cpupercent)' --height=20 --no-hscroll --tac --no-sort --header-lines=1 | awk '{print $1}' | xargs kill -9"
-alias pxkp="px --sort=cpupercent --no-username | fzf --preview='px --color {1}' --bind 'ctrl-r:reload(px --sort=cpupercent --no-username)' --height=20 --no-hscroll --tac --no-sort --header-lines=1 | awk '{print $1}' | xargs kill -9"
-
-alias py="python"
-alias secureboot-get-status='mokutil --sb-state'
-
-# https://jordanelver.co.uk/blog/2010/11/27/automatically-attaching-to-a-tmux-session-via-ssh/
-# servername="ssh servername -t tmux a"
-
-# ------------------------------------------------------------------------------
-alias serve="python3 -m http.server 3333"
-
-if command -v miniserve &> /dev/null ; then
-    alias miniserve="miniserve -p 3333 --pretty-urls --no-symlinks --enable-tar-gz --enable-zip --dirs-first --show-wget-footer ./"
-else
-    function miniserve {
-        if command -v podman &> /dev/null ; then
-            podman run \
-                    --rm -it \
-                    -v ./:/tmp \
-                    -p 3333:8080 \
-                    docker.io/svenstaro/miniserve \
-                    --pretty-urls --no-symlinks \
-                    --enable-tar-gz --enable-zip \
-                    --dirs-first --show-wget-footer \
-                    /tmp
-        elif command -v docker &> /dev/null ; then
-            docker run \
-                --rm -it \
-                -v ./:/tmp \
-                -p 3333:8080 \
-                docker.io/svenstaro/miniserve \
-                --pretty-urls --no-symlinks \
-                --enable-tar-gz --enable-zip \
-                --dirs-first --show-wget-footer \
-                /tmp
-        fi
-    }
+        [ ! -f "$SPF_LAST_DIR" ] || {
+            . "$SPF_LAST_DIR"
+            rm -f -- "$SPF_LAST_DIR" > /dev/null
+        }
+    ); }
 fi
 
-function copyparty {
-    docker run \
-            --rm \
-            -it \
-            --label com.centurylinklabs.watchtower.enable=true \
-            -u 1000 \
-            -p 3923:3923 \
-            -v "$( pwd )":/w:z \
-            -v $HOME/.config/copyparty:/cfg:z \
-            -e LD_PRELOAD=/usr/lib/libmimalloc-secure.so.2 \
-            copyparty/dj \
-            -v /w::r
-}
-
-# ------------------------------------------------------------------------------
-# Other user specific aliases and functions
-# ------------------------------------------------------------------------------
-# if [[ -d "$HOME/.bashrc.d" ]]; then
-#     mapfile -t bashrc_d_f < <( find "$HOME/.bashrc.d" -type f )
-#     for rc in "${bashrc_d_f[@]}"; do
-#         if [[ -f "${rc}" ]]; then
-#             source "${rc}"
-#         fi
-#     done
-#     unset rc bashrc_d_f
-# fi
-
-# ------------------------------------------------------------------------------
-# aliases from justfiles
-# https://just.systems/man/en/chapter_73.html#global-and-user-justfiles
-# ------------------------------------------------------------------------------
-
-if command -v just &> /dev/null; then
-
-    # Aliases from other user justfiles ala `just --global-justfile`
-    declare -a justfiles=(
-        "$HOME/.config/just/justfile"
-        "$HOME/.justfile"
-    )
-
-    for jf in "${justfiles[@]}"; do
-        if [[ -f "${jf}" ]]; then
-            for recipe in `just --justfile "${jf}" --summary`; do
-                alias $recipe="just --justfile ${jf} --working-directory . $recipe"
-            done
-        fi
-    done
-
-    unset justfiles
-fi
-
-# ------------------------------------------------------------------------------
 # nnn with autocd on exit
-# ------------------------------------------------------------------------------
-
-# Must be in barshrc because of subshelling
-# https://www.baeldung.com/linux/cd-command-bash-script
-
-if command -v nnn &> /dev/null; then
+if command -v nnn 2>&1 >/dev/null; then
     function n {
         # Block nesting of nnn in subshells
         [ "${NNNLVL:-0}" -eq 0 ] || {
@@ -528,20 +536,258 @@ if command -v nnn &> /dev/null; then
 fi
 
 # ------------------------------------------------------------------------------
-# superfile cd_on_quit
+
+alias grep='grep --color=auto'
+alias g='grep --color=auto -r'
+function hlt { (
+    set ${SET_X:+-x} -eou pipefail
+    grep --color=always -E "${1}|$"
+); }
+
+if command -v ug 2>&1 >/dev/null; then
+    alias uge='ug -E'
+    alias ugf='ug -F' # search for matching strings, not regex patterns, like GNU fgrep or grep -F
+    alias ugz='ug -z' # recursively search for files, archives and compressed files matching PATTERN
+    alias ugze='ug -zE'
+    alias ugzf='ug -zF'
+fi
+
 # ------------------------------------------------------------------------------
-if command -v spf &> /dev/null; then
-    function fm {
-        export SPF_LAST_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/superfile/lastdir"
 
-        command spf "$@"
+if command -v git 2>&1 >/dev/null; then
+    alias gl='git log --color --graph --decorate -M --pretty=oneline --abbrev-commit -M'
+    alias gp='git push'
+    alias gpl='git pull'
+    alias gf='git fetch'
+    alias gs='git status'
+    alias ga='git add'
+    alias gd='git diff'
+    alias gcm='git commit'
+    alias gco='git checkout'
+    alias gst='git stash'
+    alias grs='git restore --staged'
+    alias gr='cd $(git rev-parse --show-toplevel)' # cd to git root
+    alias gg='git grep'
+fi
 
-        [ ! -f "$SPF_LAST_DIR" ] || {
-            . "$SPF_LAST_DIR"
-            rm -f -- "$SPF_LAST_DIR" > /dev/null
-        }
+# ------------------------------------------------------------------------------
+
+alias gen_ssh='ssh-keygen -t ed25519 -C "${USER}@$(hostname)"'
+alias ssh_gen='gen_ssh'
+alias sshgen='gen_ssh'
+
+# https://jordanelver.co.uk/blog/2010/11/27/automatically-attaching-to-a-tmux-session-via-ssh/
+# servername="ssh servername -t tmux a"
+
+# ------------------------------------------------------------------------------
+
+alias dns-flush="sudo resolvectl flush-caches"
+alias flush-dns="dns-flush"
+alias dns-refresh="dns-flush"
+alias refresh-dns="dns-flush"
+
+function lsip { (
+    set ${SET_X:+-x} -eou pipefail
+    printf "[${BPurple}WAN${Color_Off}]\n%s\n" "$( curl -s https://icanhazip.com || curl -s https://ifconfig.me || curl -s https://ipecho.net/plain || curl -s ipinfo.io/ip || wget -qO- https://icanhazip.com || wget -qO- https://ifconfig.me )"
+    printf "[${BPurple}LAN${Color_Off}]\n%s\n%s\n" "$( ip -c -h -brief address show )" "$( ip -c -h -brief link show )"
+); }
+
+alias lsnic="lsip"
+alias lsnet="lsip"
+
+# Show visible port identification (e.g. blinking)
+alias idnic="ethtool -p" # ethtool [ FLAGS ] -p|--identify DEVNAME [ TIME-IN-SECONDS ]
+alias idnif='idnic'
+alias idif='idnic'
+alias idport='idnic'
+
+if command -v nmcli 2>&1 >/dev/null; then
+    alias nmls="nmcli dev show"
+fi
+
+# ------------------------------------------------------------------------------
+
+if command -v chezmoi 2>&1 >/dev/null; then
+    alias czm="chezmoi"
+    alias czmi="chezmoi init"
+    alias czma="chezmoi apply"
+    function chezmoi-rerun-scripts { (
+        set ${SET_X:+-x} -eou pipefail
+        chezmoi state delete-bucket --bucket=entryState
+        chezmoi state delete-bucket --bucket=scriptState
+        # rm -f "${HOME}/.config/chezmoi/chezmoistate.boltdb"
+        chezmoi init --apply
+    ); }
+fi
+
+if command -v btop 2>&1 >/dev/null; then
+    alias b="btop"
+fi
+
+if command -v bat 2>&1 >/dev/null; then
+    alias bat='bat --style=plain --pager=never'
+fi
+
+# ------------------------------------------------------------------------------
+
+function gen_pass {
+    [[ -v 1 ]] && length=$1 || length=32
+    </dev/urandom tr -dc '1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM!$%^&*@~#<>?\|/' | head -c $length ; echo ""
+}
+alias genpass='gen_pass'
+alias passgen='gen_pass'
+
+# ------------------------------------------------------------------------------
+
+if command -v apt 2>&1 >/dev/null; then
+    alias aptli="apt list --installed"
+fi
+
+if command -v dnf 2>&1 >/dev/null; then
+    alias dnfli="dnf list --installed"
+fi
+
+if command -v rpm 2>&1 >/dev/null; then
+    alias rpmli="rpm -qa | sort"
+fi
+
+if command -v flatpak 2>&1 >/dev/null; then
+    alias flatpaklrs="flatpak remotes --columns=name"
+    alias flatpaklru="flatpak remotes --user --columns=name"
+    alias flatpaklis="flatpak list --columns=application"
+    alias flatpakliu="flatpak list --user --columns=application"
+fi
+
+if command -v brew 2>&1 >/dev/null; then
+    alias brewlt="brew tap"
+    alias brewlf="brew list --formula -1"
+fi
+
+if command -v pip 2>&1 >/dev/null; then
+    alias pipls="pip list"
+fi
+
+if command -v pipx 2>&1 >/dev/null; then
+    alias pipxls="pipx list --short"
+fi
+
+if command -v code 2>&1 >/dev/null; then
+    alias codels="code --list-extensions"
+fi
+
+if command -v gext 2>&1 >/dev/null; then
+    alias gextls="gext list -a"
+fi
+
+# ------------------------------------------------------------------------------
+
+if command -v docker 2>&1 >/dev/null; then
+    alias docker-gc="docker system prune --force"
+fi
+
+# ------------------------------------------------------------------------------
+
+alias secureboot-status='mokutil --sb-state'
+alias secure-boot-status='mokutil --sb-state'
+
+# ------------------------------------------------------------------------------
+
+alias py="python"
+
+# ------------------------------------------------------------------------------
+
+alias serve="python3 -m http.server 3333"
+
+if command -v miniserve 2>&1 >/dev/null; then
+    alias miniserve="miniserve -p 3333 --pretty-urls --no-symlinks --enable-tar-gz --enable-zip --dirs-first --show-wget-footer ./"
+else
+    function miniserve {
+        if command -v podman 2>&1 >/dev/null; then
+            podman run \
+                --rm -it \
+                -v ./:/tmp \
+                -p 3333:8080 \
+                docker.io/svenstaro/miniserve \
+                --pretty-urls --no-symlinks \
+                --enable-tar-gz --enable-zip \
+                --dirs-first --show-wget-footer \
+                /tmp
+        elif command -v docker 2>&1 >/dev/null; then
+            docker run \
+                --rm -it \
+                -v ./:/tmp \
+                -p 3333:8080 \
+                docker.io/svenstaro/miniserve \
+                --pretty-urls --no-symlinks \
+                --enable-tar-gz --enable-zip \
+                --dirs-first --show-wget-footer \
+                /tmp
+        fi
     }
 fi
+
+function copyparty {
+    docker run \
+        --rm \
+        -it \
+        --label com.centurylinklabs.watchtower.enable=true \
+        -u 1000 \
+        -p 3923:3923 \
+        -v "$( pwd )":/w:z \
+        -v $HOME/.config/copyparty:/cfg:z \
+        -e LD_PRELOAD=/usr/lib/libmimalloc-secure.so.2 \
+        copyparty/dj \
+        -v /w::r
+}
+
+# ------------------------------------------------------------------------------
+# aliases from justfiles
+# https://just.systems/man/en/chapter_73.html#global-and-user-justfiles
+# ------------------------------------------------------------------------------
+
+if command -v just 2>&1 >/dev/null; then
+
+    # Aliases from other user justfiles ala `just --global-justfile`
+    declare -a justfiles=(
+        "$HOME/.config/just/justfile"
+        "$HOME/.justfile"
+    )
+
+    for jf in "${justfiles[@]}"; do
+        if [[ -f "${jf}" ]]; then
+            for recipe in `just --justfile "${jf}" --summary`; do
+                alias $recipe="just --justfile ${jf} --working-directory . $recipe"
+            done
+        fi
+    done
+
+    unset justfiles
+fi
+
+# ------------------------------------------------------------------------------
+# Other user specific aliases and functions
+# ------------------------------------------------------------------------------
+# if [[ -d "$HOME/.bashrc.d" ]]; then
+#     mapfile -t bashrc_d_f < <( find "$HOME/.bashrc.d" -type f )
+#     for rc in "${bashrc_d_f[@]}"; do
+#         if [[ -f "${rc}" ]]; then
+#             source "${rc}"
+#         fi
+#     done
+#     unset rc bashrc_d_f
+# fi
+
+# declare -a cmds=( nmcli docker )
+# # Setup aliases if commands exist
+# for cmd in "${cmds[@]}"; do
+#     command -v "$cmd" >/dev/null && {
+#         case "$cmd" in
+#             nmcli)  alias lsnm="nmcli dev show";;
+#             docker) alias docker-gc="docker system prune --force";;
+#         esac
+#     }
+# done
+# unset cmds
 
 # ------------------------------------------------------------------------------
 # bash-preexec.sh
@@ -564,15 +810,9 @@ done
 unset bash_preexec_locations
 
 # ------------------------------------------------------------------------------
-[ "$(command -v fzf)" ] && eval "$(fzf --bash)"
-[ "$(command -v starship)" ] && eval "$(starship init bash)"
-[ "$(command -v thefuck)" ] && eval "$(thefuck --alias)"
-[ "$(command -v zoxide)" ] && eval "$(zoxide init bash)"
-[ "$(command -v carapace)" ] && source <(carapace _carapace)
-
-# ------------------------------------------------------------------------------
 # Use bash-completion, if available
 # ------------------------------------------------------------------------------
+
 if ! shopt -oq posix; then
 
     declare -a bash_completion_locations=(
@@ -592,6 +832,15 @@ if ! shopt -oq posix; then
 fi
 
 # ------------------------------------------------------------------------------
+
+[ "$(command -v fzf)" ] && eval "$(fzf --bash)"
+[ "$(command -v starship)" ] && eval "$(starship init bash)"
+[ "$(command -v thefuck)" ] && eval "$(thefuck --alias)"
+[ "$(command -v carapace)" ] && source <(carapace _carapace)
+[ "$(command -v zoxide)" ] && eval "$(zoxide init bash)"
+
+# ------------------------------------------------------------------------------
 # Set directory for new shells on Termux
 # ------------------------------------------------------------------------------
+
 [[ "$( uname -a )" =~ 'Android' && -d "${HOME}/storage/downloads" ]] && cd "${HOME}/storage/downloads"
