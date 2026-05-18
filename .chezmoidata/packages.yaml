@@ -141,6 +141,7 @@ packages:
 
       - diffutils # File comparison utilities | https://www.gnu.org/s/diffutils/
       - difftastic # A syntax-aware diff | https://github.com/Wilfred/difftastic
+      - delta # Syntax-highlighting pager for git and diff output | https://github.com/dandavison/delta
 
       - block-goose-cli # Open source, extensible AI agent that goes beyond code suggestions | https://block.github.io/goose/
       - mods # AI on the command-line | https://github.com/charmbracelet/mods
@@ -149,6 +150,8 @@ packages:
 
       - exiv2 # EXIF and IPTC metadata manipulation library and tools | https://exiv2.org/
       - exiftool # Perl lib for reading and writing EXIF metadata | https://exiftool.org
+
+      - pixi # Package management made easy | https://pixi.sh
 
   vscode_extensions:
     - adsoncicilioti.yaru-vscode
