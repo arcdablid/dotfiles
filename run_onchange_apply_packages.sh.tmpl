@@ -150,11 +150,13 @@ EOF
 
 # ------------------------------------------------------------------------------
 
+printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating cache path presence...\n"
 cache=~/.var/lib/chezmoi/run_onchange_apply_packages.d
-[[ ! -d "${cache}" ]] && mkdir -p "${cache}"
+[[ ! -d "${cache}" ]] && \mkdir -pv "${cache}"
 
 # ------------------------------------------------------------------------------
 
+printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating pip pkgs...\n"
 if command -v pip &> /dev/null; then
     cat <<EOF > "${cache}"/requirements_current_pip.txt
 {{ range .packages.pip -}}
@@ -182,6 +184,7 @@ fi
 
 # ------------------------------------------------------------------------------
 
+printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating GNOME extentions...\n"
 if command -v gext &> /dev/null; then
     cat <<EOF > "${cache}"/requirements_current_gnome_extentions.txt
 {{ range .packages.gnome_extentions -}}
@@ -205,13 +208,14 @@ EOF
     mv "${cache}"/requirements_current_gnome_extentions.txt "${cache}"/requirements_previous_gnome_extentions.txt
 
 else
-    printf "[${executor}] ${BRed}ERROR${Color_Off} - Python pip not available!\n"
+    printf "[${executor}] ${BRed}ERROR${Color_Off} - gext not available!\n"
 fi
 
 # ------------------------------------------------------------------------------
 
+printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating ramalama quadlets...\n"
 if command -v ramalama &> /dev/null; then
-    cat <<EOF > "${cache}"/requirements_current_ramalama.txt
+    \cat <<EOF > "${cache}"/requirements_current_ramalama.txt
 {{ range .packages.ramalama -}}
 {{ .url }} @ {{ .port }}
 {{ end -}}
@@ -240,11 +244,11 @@ EOF
         done
     fi
 
-    [[ -f "${cache}"/requirements_previous_ramalama.txt ]] && rm "${cache}"/requirements_previous_ramalama.txt
-    mv "${cache}"/requirements_current_ramalama.txt "${cache}"/requirements_previous_ramalama.txt
+    [[ -f "${cache}"/requirements_previous_ramalama.txt ]] && \rm "${cache}"/requirements_previous_ramalama.txt
+    \mv "${cache}"/requirements_current_ramalama.txt "${cache}"/requirements_previous_ramalama.txt
 
 else
-    printf "[${executor}] ${BRed}ERROR${Color_Off} - Python pip not available!\n"
+    printf "[${executor}] ${BRed}ERROR${Color_Off} - ramalama not available!\n"
 fi
 
 # ------------------------------------------------------------------------------
