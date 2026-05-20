@@ -435,7 +435,7 @@ if command -v eza 2>&1 >/dev/null; then
     alias l1='_eza -1'
     alias ll='_eza --long --header --smart-group' # display extended file metadata as a table
     alias lll="_eza --long --header --group --created --accessed --modified --time-style='+%F %T %z '"
-    alias llll='_eza --long --header --group --created --accessed --modified --time-style='+%F %T %z ' --links --context'
+    alias llll="_eza --long --header --group --created --accessed --modified --time-style='+%F %T %z ' --links --context"
 
     alias lg='l1 --git' # list each file's Git status, if tracked or ignored
 
