@@ -326,17 +326,17 @@ function _sysls {
     WIDE=$1
     [ -n $2 ] && STATE="--state=$2"
     \cat \
-        <(echo 'UNIT/FILE LOAD/STATE ACTIVE/PRESET SUB DESCRIPTION') \
-        <(\systemctl $WIDE list-units --legend=false $STATE) \
-        <(\systemctl $WIDE list-unit-files --legend=false $STATE) \
+        <( echo 'UNIT/FILE LOAD/STATE ACTIVE/PRESET SUB DESCRIPTION' ) \
+        <( \systemctl $WIDE list-units --legend=false $STATE ) \
+        <( \systemctl $WIDE list-unit-files --legend=false $STATE ) \
     | \sed 's/●/ /' \
     | \grep . \
     | \column --table --table-columns-limit=5 \
     | \fzf --header-lines=1 \
-          --accept-nth=1 \
-          --no-hscroll \
-          --preview="SYSTEMD_COLORS=1 systemctl $WIDE status {1}" \
-          --preview-window=down
+        --accept-nth=1 \
+        --no-hscroll \
+        --preview="SYSTEMD_COLORS=1 systemctl $WIDE status {1}" \
+        --preview-window=down
 }
 
 # Aliases for unit selector.
