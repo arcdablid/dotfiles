@@ -142,7 +142,7 @@ if [[ -z ${url+x} || -z "${url}" ]]; then
 fi
 
 # unset or empty or not int
-if [[ -z ${port+x} || -z "${port}" || ! "${port}" =~ '^[0-9]+$' ]]; then
+if [[ -z ${port+x} || -z "${port}" || ! "${port}" =~ ^[0-9]+$ ]]; then
     printf "[${executor}] ${BRed}ERROR${Color_Off} - A valid port is needed!\n"
     echo
     print_usage
