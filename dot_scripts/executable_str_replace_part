@@ -14,7 +14,6 @@ def str_replace():
         "-t",
         "--targets",
         type=str,
-        action="append",
         nargs="+",
         help="The character(s) or string(s) to target.",
     )
