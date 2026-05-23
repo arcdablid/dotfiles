@@ -116,7 +116,7 @@ mkdir -pv "${invokeai_data_location}"
 
 echo
 printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating quadlet...\n"
-cat > "$HOME"/.config/containers/systemd/ollama.container << QUADLET
+QUADLET="
 [Unit]
 Description=InvokeAI Container
 After=network-online.target
@@ -143,7 +143,8 @@ TimeoutStartSec=900
 
 [Install]
 WantedBy=multi-user.target default.target
-QUADLET
+"
+echo "${QUADLET}" | tee "$HOME/.config/containers/systemd/invokeai.container" > /dev/null
 
 printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
 systemctl --user daemon-reload
