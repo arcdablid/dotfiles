@@ -94,7 +94,7 @@ done
 executor_path="$(readlink -f "${executor_path}")"
 executor_dir="$(cd -P "$(dirname -- "${executor_path}")" >/dev/null 2>&1 && pwd)"
 
-declare -a required_cmds=( "podman" "ramalama" )
+declare -a required_cmds=( "systemctl" "podman" "openssl" "expand_path"  )
 
 fail=false
 for rc in "${required_cmds[@]}"; do
@@ -107,33 +107,53 @@ done
 
 # ------------------------------------------------------------------------------
 
-read -e -p "Enter config location:" -i "$HOME/.config/quadlets/invokeai" invokeai_data_location
+app_name="miniserve"
+base_image="docker.io/svenstaro/miniserve"
+
+read -e -p "Enter config location:" -i "$HOME/.config/quadlets/${app_name}" data_location
+data_location="$( expand_path "${data_location}" )"
+read -e -p "Enter shared location:" -i "$HOME/.shared_by_${app_name}.d" shared_location
+shared_location="$( expand_path "${shared_location}" )"
 
 echo
 printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
 mkdir -pv "$HOME/.config/containers/systemd"
-mkdir -pv "${invokeai_data_location}"
+mkdir -pv "${data_location}"
+mkdir -pv "${shared_location}"
+
+[[ ! -f "${data_location}/tls/key.pem" || ! -f "${data_location}/tls/cert.pem" ]] && openssl req -x509 -newkey rsa:4096 -keyout "${data_location}/tls/key.pem" -out "${data_location}/tls/cert.pem" -sha256 -days 3650 -nodes -subj "/C=CU/ST=${app_name}/L=${app_name}/O=${app_name}/OU=${app_name}/CN=${app_name}"
 
 echo
 printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating quadlet...\n"
-QUADLET="
+CONTAINER="
 [Unit]
-Description=InvokeAI Container
+Description=${app_name} quadlet
 After=network-online.target
 
 [Container]
-ContainerName=invokeai
-Image=ghcr.io/invoke-ai/invokeai:main-rocm
-PublishPort=8189:9090
-Volume=${invokeai_data_location}:/invokeai:Z
-SeccompProfile=unconfined
-AddDevice=-/dev/kfd
-AddDevice=-/dev/dri
+ContainerName=${app_name}
+Image=${base_image}
+PublishPort=8080:8080
 AutoUpdate=registry
+
+# persist your tls certs:
+Volume=${data_location}/tls:/tls:Z
+# mount shared location
+Volume=${shared_location}:/tmp:Z
 
 # Networking: Pasta is used by default in Podman 5+
 # If you need to access host services (like Ollama on the host):
 AddHost=host.containers.internal:host-gateway
+
+Environment=MINISERVE_NO_SYMLINKS=true
+Environment=MINISERVE_ENABLE_ZIP=true
+Environment=MINISERVE_ENABLE_TAR=true
+Environment=MINISERVE_ENABLE_TAR_GZ=true
+Environment=MINISERVE_DIRS_FIRST=true
+Environment=MINISERVE_SHOW_WGET_FOOTER=true
+Environment=MINISERVE_TLS_KEY=/tls/key.pem
+Environment=MINISERVE_TLS_CERT=/tls/cert.pem
+Environment=MINISERVE_PRETTY_URLS=true
 
 [Service]
 Restart=always
@@ -144,14 +164,13 @@ TimeoutStartSec=900
 [Install]
 WantedBy=multi-user.target default.target
 "
-echo "${QUADLET}" | tee "$HOME/.config/containers/systemd/invokeai.container" > /dev/null
+echo "${CONTAINER}" | tee "$HOME/.config/containers/systemd/${app_name}.container" > /dev/null
 
 printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
 systemctl --user daemon-reload
 
-
 printf "[${executor}] ${BPurple}INFO${Color_Off} - Start/enable quadlet...\n"
-systemctl --user restart invokeai
+systemctl --user restart "${app_name}"
 
 # Start user services even when not logged in
 loginctl enable-linger $USER

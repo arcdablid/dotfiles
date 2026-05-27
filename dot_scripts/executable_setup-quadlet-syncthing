@@ -13,12 +13,12 @@ done
 executor_path="$(readlink -f "${executor_path}")"
 executor_dir="$(cd -P "$(dirname -- "${executor_path}")" >/dev/null 2>&1 && pwd)"
 
-declare -a required_cmds=( "podman" )
+declare -a required_cmds=( "systemctl" "podman" "expand_path"  )
 
 fail=false
 for rc in "${required_cmds[@]}"; do
     if ! command -v "${rc}" &> /dev/null ; then
-        printf "[${executor}] [ERROR] Command '${rc}' unavailable!?"
+        printf "[${executor}] ${BRed}ERROR${Color_Off} - '${rc}' not available!"
         fail=true
     fi
 done
@@ -26,17 +26,29 @@ done
 
 # ------------------------------------------------------------------------------
 
-read -e -p "Enter config location:" -i "$HOME/.config/quadlets/syncthing" config_location
+app_name="syncthing"
+base_image="docker.io/syncthing/syncthing:latest"
+
+read -e -p "Enter config location:" -i "$HOME/.config/quadlets/${app_name}" config_location
+config_location="$( expand_path "${config_location}" )"
 read -e -p "Enter shares location:" -i "$HOME/syncthing" shares_location
+shares_location="$( expand_path "${shares_location}" )"
 
 # $( whoami ) or $( id -un ) for current user
 local_user_uid=$( id -u ) # or $( id -u <username> ) for any other user than current
 local_user_gid=$( id -g ) # or $( id -g <username> ) for any other user than current
 
+echo
+printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
+mkdir -pv "$HOME/.config/containers/systemd"
+mkdir -pv "${config_location}"
+mkdir -pv "${shares_location}"
 
-QUADLET="
+echo
+printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating quadlet...\n"
+CONTAINER="
 [Unit]
-Description=Podman syncthing.service
+Description=${app_name} quadlet
 Wants=network-online.target
 After=network-online.target
 
@@ -45,7 +57,8 @@ Restart=on-failure
 TimeoutStartSec=900
 
 [Container]
-Image=docker.io/syncthing/syncthing:latest
+ContainerName=${app_name}
+Image=${base_image}
 AutoUpdate=registry
 Network=host
 UserNS=keep-id:uid=${local_user_uid},gid=${local_user_gid}
@@ -57,24 +70,19 @@ Volume=${shares_location}:/var/syncthing/shares:Z
 [Install]
 WantedBy=default.target
 "
+echo "${CONTAINER}" | tee "$HOME/.config/containers/systemd/${app_name}.container" > /dev/null
 
-printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating directories...\n"
-mkdir -pv "${config_location}"
-mkdir -pv "${shares_location}"
-
-printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating quadlet...\n"
-echo "${QUADLET}" | tee ~/.config/containers/systemd/syncthing.container > /dev/null
-
-printf "[${executor}] ${BPurple}INFO${Color_Off} - Enabling & starting quadlet...\n"
+printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
 systemctl --user daemon-reload
-systemctl --user start syncthing
 
-printf "[${executor}] ${BPurple}INFO${Color_Off} - Enabling automatic updates & start on boot...\n"
+printf "[${executor}] ${BPurple}INFO${Color_Off} - Start/enable quadlet...\n"
+systemctl --user restart "${app_name}"
 
+# Start user services even when not logged in
+loginctl enable-linger $USER
+
+printf "[${executor}] ${BPurple}INFO${Color_Off} - Enable automatic podman updates...\n"
 # 'AutoUpdate=registry' in the systemd definition allows the container to be auto-updated,
 # manually by calling 'podman auto-update'
 # or automatically by enabling the relative systemd service:
 systemctl enable --user --now podman-auto-update.timer
-
-# Start user services even when not logged in
-loginctl enable-linger $USER

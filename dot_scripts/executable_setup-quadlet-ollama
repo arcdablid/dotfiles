@@ -94,12 +94,12 @@ done
 executor_path="$(readlink -f "${executor_path}")"
 executor_dir="$(cd -P "$(dirname -- "${executor_path}")" >/dev/null 2>&1 && pwd)"
 
-declare -a required_cmds=( "podman" "ramalama" )
+declare -a required_cmds=( "systemctl" "podman" "expand_path"  )
 
 fail=false
 for rc in "${required_cmds[@]}"; do
     if ! command -v "${rc}" &> /dev/null ; then
-        printf "[${executor}] [ERROR] Command '${rc}' unavailable!?"
+        printf "[${executor}] ${BRed}ERROR${Color_Off} - '${rc}' not available!"
         fail=true
     fi
 done
@@ -107,25 +107,31 @@ done
 
 # ------------------------------------------------------------------------------
 
-read -e -p "Enter config location:" -i "$HOME/.config/quadlets/open-webui" open_webui_data_location
+app_name="ollama"
+base_image="docker.io/ollama/ollama:rocm"
+
+read -e -p "Enter config location:" -i "$HOME/.config/quadlets/ollama" ollama_data_location
+ollama_data_location="$( expand_path "${ollama_data_location}" )"
 
 echo
 printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
 mkdir -pv "$HOME/.config/containers/systemd"
-mkdir -pv "${open_webui_data_location}"
+mkdir -pv "${ollama_data_location}"
 
 echo
-printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating Open WebUI quadlet...\n"
-cat > "$HOME"/.config/containers/systemd/open-webui.container << QUADLET
+printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating quadlet...\n"
+CONTAINER="
 [Unit]
-Description=Open WebUI Container
+Description=${app_name} quadlet
 After=network-online.target
 
 [Container]
-ContainerName=open-webui
-Image=ghcr.io/open-webui/open-webui:main
-PublishPort=3000:8080
-Volume=${open_webui_data_location}:/app/backend/data:Z
+ContainerName=${app_name}
+Image=${base_image}
+PublishPort=11434:11434
+Volume=${ollama_data_location}:/root/.ollama:Z
+AddDevice=-/dev/kfd
+AddDevice=-/dev/dri
 AutoUpdate=registry
 
 # Networking: Pasta is used by default in Podman 5+
@@ -140,14 +146,14 @@ TimeoutStartSec=900
 
 [Install]
 WantedBy=multi-user.target default.target
-QUADLET
+"
+echo "${CONTAINER}" | tee "$HOME/.config/containers/systemd/${app_name}.container" > /dev/null
 
 printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
 systemctl --user daemon-reload
 
-
 printf "[${executor}] ${BPurple}INFO${Color_Off} - Start/enable quadlet...\n"
-systemctl --user restart open-webui
+systemctl --user restart "${app_name}"
 
 # Start user services even when not logged in
 loginctl enable-linger $USER
