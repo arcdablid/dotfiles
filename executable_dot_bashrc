@@ -216,6 +216,11 @@ fi
 # Functions & Aliases
 # ------------------------------------------------------------------------------
 
+# Expand aliases with Ctrl+Space
+bind -x '"\C- ": alias-expand-line'
+# Always expand aliases
+# shopt -s expand_aliases
+
 function path_print_as_list {
     echo "${PATH//:/$'\n'}"
 }
@@ -696,34 +701,39 @@ alias py="python"
 
 # ------------------------------------------------------------------------------
 
-alias serve="python3 -m http.server 3333"
+alias serve="python3 -m http.server 33333"
 
 if command -v miniserve 2>&1 >/dev/null; then
-    alias miniserve="miniserve -p 3333 --pretty-urls --no-symlinks --enable-tar-gz --enable-zip --dirs-first --show-wget-footer ./"
-else
-    function miniserve {
-        if command -v podman 2>&1 >/dev/null; then
-            podman run \
-                --rm -it \
-                -v ./:/tmp \
-                -p 3333:8080 \
-                docker.io/svenstaro/miniserve \
-                --pretty-urls --no-symlinks \
-                --enable-tar-gz --enable-zip \
-                --dirs-first --show-wget-footer \
-                /tmp
-        elif command -v docker 2>&1 >/dev/null; then
-            docker run \
-                --rm -it \
-                -v ./:/tmp \
-                -p 3333:8080 \
-                docker.io/svenstaro/miniserve \
-                --pretty-urls --no-symlinks \
-                --enable-tar-gz --enable-zip \
-                --dirs-first --show-wget-footer \
-                /tmp
-        fi
-    }
+    function miniserve { (
+        set ${SET_X:+-x} -eou pipefail
+        miniserve -p 33333 --pretty-urls --no-symlinks --enable-tar-gz --enable-zip --dirs-first --show-wget-footer "${1:-$( pwd )}"
+    ); }
+elif command -v podman 2>&1 >/dev/null; then
+    function miniserve { (
+        set ${SET_X:+-x} -eou pipefail
+        podman run \
+            --rm -it \
+            -v "${1:-$( pwd )}":/tmp \
+            -p 33333:8080 \
+            docker.io/svenstaro/miniserve \
+            --pretty-urls --no-symlinks \
+            --enable-tar-gz --enable-zip \
+            --dirs-first --show-wget-footer \
+            /tmp
+    ); }
+elif command -v docker 2>&1 >/dev/null; then
+    function miniserve { (
+        set ${SET_X:+-x} -eou pipefail
+        docker run \
+            --rm -it \
+            -v "${1:-$( pwd )}":/tmp \
+            -p 33333:8080 \
+            docker.io/svenstaro/miniserve \
+            --pretty-urls --no-symlinks \
+            --enable-tar-gz --enable-zip \
+            --dirs-first --show-wget-footer \
+            /tmp
+    ); }
 fi
 
 function copyparty {
@@ -732,7 +742,7 @@ function copyparty {
         -it \
         --label com.centurylinklabs.watchtower.enable=true \
         -u 1000 \
-        -p 3923:3923 \
+        -p 33923:3923 \
         -v "$( pwd )":/w:z \
         -v $HOME/.config/copyparty:/cfg:z \
         -e LD_PRELOAD=/usr/lib/libmimalloc-secure.so.2 \
