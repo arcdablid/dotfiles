@@ -706,7 +706,7 @@ alias serve="python3 -m http.server 33333"
 if command -v miniserve 2>&1 >/dev/null; then
     function miniserve { (
         set ${SET_X:+-x} -eou pipefail
-        miniserve -p 33333 --pretty-urls --no-symlinks --enable-tar-gz --enable-zip --dirs-first --show-wget-footer "${1:-$( pwd )}"
+        \miniserve -p 33333 --pretty-urls --no-symlinks --enable-tar-gz --enable-zip --dirs-first --show-wget-footer "${1:-$( pwd )}"
     ); }
 elif command -v podman 2>&1 >/dev/null; then
     function miniserve { (
