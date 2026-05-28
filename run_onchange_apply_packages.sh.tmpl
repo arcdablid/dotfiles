@@ -154,6 +154,8 @@ printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating cache path presenc
 cache=~/.var/lib/chezmoi/run_onchange_apply_packages.d
 [[ ! -d "${cache}" ]] && \mkdir -pv "${cache}"
 
+#TODO: per item add to registry
+
 # ------------------------------------------------------------------------------
 
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating pip pkgs...\n"
@@ -228,19 +230,19 @@ EOF
 
         if [[ ${#ramalama_to_uninstall[@]} -gt 0 ]]; then
             for rtu in "${ramalama_to_uninstall[@]}"; do
-                setup-ramalama-models -r -u "$( str_cut -d ' @ ' -p 1 -- "${rtu}" )" -p "$( str_cut -d ' @ ' -p 2 -- "${rtu}" )"
+                setup_quadlet_ramalama_model -r -u "$( str_cut -d ' @ ' -p 1 -- "${rtu}" )" -p "$( str_cut -d ' @ ' -p 2 -- "${rtu}" )"
             done
         fi
         if [[ ${#ramalama_to_install[@]} -gt 0 ]]; then
             for rti in "${ramalama_to_install[@]}"; do
-                setup-ramalama-models -u "$( str_cut -d ' @ ' -p 1 -- "${rti}" )" -p "$( str_cut -d ' @ ' -p 2 -- "${rti}" )"
+                setup_quadlet_ramalama_model -u "$( str_cut -d ' @ ' -p 1 -- "${rti}" )" -p "$( str_cut -d ' @ ' -p 2 -- "${rti}" )"
             done
         fi
 
     else
         mapfile -t ramalama_to_install < <( cat "${cache}"/requirements_current_ramalama.txt )
         for rti in "${ramalama_to_install[@]}"; do
-            setup-ramalama-models -u "$( str_cut -d ' @ ' -p 1 -- "${rti}" )" -p "$( str_cut -d ' @ ' -p 2 -- "${rti}" )"
+            setup_quadlet_ramalama_model -u "$( str_cut -d ' @ ' -p 1 -- "${rti}" )" -p "$( str_cut -d ' @ ' -p 2 -- "${rti}" )"
         done
     fi
 
