@@ -27,6 +27,22 @@ packages:
   homebrew:
     taps:
       - sinelaw/fresh
+      - ublue-os/tap
+      - ublue-os/experimental-tap
+      - anomalyco/tap
+      - charmbracelet/tap
+      - valkyrie00/bbrew
+      - artifacthub/cmd
+      - buildpacks/tap
+      - carvel-dev/carvel
+      - darp/tap
+      - k0sproject/tap
+      - kcl-lang/tap
+      - kitops-ml/kitops
+      - kptdev/kpt
+      - microcks/tap
+      - telepresenceio/telepresence
+      - wasmcloud/wasmcloud
 
     casks:
       - font-jetbrains-mono-nerd-font # Required for VSCode@BazziteDX
