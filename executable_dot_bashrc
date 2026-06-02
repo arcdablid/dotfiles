@@ -116,8 +116,8 @@ for bhd in "${bash_history_dirs[@]}"; do
     fi
 done
 
-HISTFILESIZE=500
-HISTSIZE=500
+HISTFILESIZE=10000
+HISTSIZE=10000
 export HISTTIMEFORMAT='%F %T ' # Same as '%Y-%m-%d %H:%M:%S '
 
 # Immediately add commands to your history instead of waiting for the end of each session.
@@ -125,15 +125,6 @@ export HISTTIMEFORMAT='%F %T ' # Same as '%Y-%m-%d %H:%M:%S '
 # Next, you must clear the current history in your shell session with history -c.
 # Finally, to load the updated history back into your shell session, use the history -r command.
 PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
-
-# ------------------------------------------------------------------------------
-# Session Variables
-# ------------------------------------------------------------------------------
-# Uncomment the following line if you don't like systemctl's auto-paging feature:
-# export SYSTEMD_PAGER=
-export XDG_STATE_HOME="$HOME/.local/state" # for flatpak mpv
-export MOZ_ENABLE_WAYLAND=1
-export PAGER="less"
 
 # ------------------------------------------------------------------------------
 # PATH
@@ -196,20 +187,49 @@ fi
 HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-/home/linuxbrew/.linuxbrew}"
 
 # ------------------------------------------------------------------------------
-# Other exports
+# Session Variables
 # ------------------------------------------------------------------------------
+export XDG_STATE_HOME="$HOME/.local/state" # for flatpak mpv
+export MOZ_ENABLE_WAYLAND=1
 
-if command -v code &> /dev/null ; then
-    export VISUAL="code --wait"
-fi
-
-if command -v nano &> /dev/null ; then
+if command -v fresh 2>&1 >/dev/null; then
+    export EDITOR="fresh"
+if command -v micro 2>&1 >/dev/null; then
+    export EDITOR="micro"
+elif command -v nano 2>&1 >/dev/null; then
     export EDITOR="nano"
 fi
 
-if command -v moor &> /dev/null ; then
+if command -v code 2>&1 >/dev/null; then
+    export VISUAL="code --wait"
+fi
+
+if command -v moor 2>&1 >/dev/null; then
     export PAGER="moor"
     export MOOR='--statusbar=bold --no-linenumbers'
+else
+    export PAGER="less"
+fi
+
+# Uncomment the following line if you don't like systemctl's auto-paging feature:
+# export SYSTEMD_PAGER=
+
+if command -v fzf 2>&1 >/dev/null; then
+    if command -v fd 2>&1 >/dev/null; then
+        # Use the CLI fd to respect ignore files (like '.gitignore'),
+        # display hidden files, and exclude the '.git' directory.
+        export FZF_DEFAULT_COMMAND='fd . --hidden --exclude ".git"'
+    elif command -v rg 2>&1 >/dev/null; then
+        # Use the CLI ripgrep to respect ignore files (like '.gitignore'),
+        # display hidden files, and exclude the '.git' directory.
+        export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git"'
+    elif command -v find 2>&1 >/dev/null; then
+        # Use the CLI find to get all files, excluding any filepath
+        # containing the string "git".
+        export FZF_DEFAULT_COMMAND='find . -type f ! -path "*git*"'
+    fi
+
+    # export FZF_DEFAULT_OPTS='-i --height=50%'
 fi
 
 # ------------------------------------------------------------------------------
@@ -409,11 +429,49 @@ alias tr='reset; tmux clear-history'
 
 # ------------------------------------------------------------------------------
 
+alias h='cd $HOME'
 alias ~="cd ~"
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 alias .....='cd ../../../..'
+
+# pseudo file-manager using fzf | https://thevaluable.dev/practical-guide-fzf-example/
+if command -v fzf 2>&1 >/dev/null; then
+    function . {
+        # Store the STDOUT of fzf in a variable
+        local selection="$( find -type d | fzf --multi --height=80% --border=sharp \
+        --preview='tree -C {}' --preview-window='45%,border-sharp' \
+        --prompt='Dirs > ' \
+        --bind='del:execute(rm -ri {+})' \
+        --bind='ctrl-p:toggle-preview' \
+        --bind='ctrl-d:change-prompt(Dirs > )' \
+        --bind='ctrl-d:+reload(find -type d)' \
+        --bind='ctrl-d:+change-preview(tree -C {})' \
+        --bind='ctrl-d:+refresh-preview' \
+        --bind='ctrl-f:change-prompt(Files > )' \
+        --bind='ctrl-f:+reload(find -type f)' \
+        --bind='ctrl-f:+change-preview(cat {})' \
+        --bind='ctrl-f:+refresh-preview' \
+        --bind='ctrl-a:select-all' \
+        --bind='ctrl-x:deselect-all' \
+        --header '
+        CTRL-D to display directories | CTRL-F to display files
+        CTRL-A to select all | CTRL-x to deselect all
+        ENTER to edit | DEL to delete
+        CTRL-P to toggle preview
+        '
+        )"
+
+        # Determine what to do depending on the selection
+        if [[ -d "${selection}" ]]; then
+            cd "${selection}" || exit
+        else
+            eval "xdg-open ${selection}"
+            # eval "$EDITOR ${selection}"
+        fi
+    }
+fi
 
 # Frequently used paths
 alias 1='cd ~/Downloads'
@@ -422,12 +480,11 @@ alias 3='cd ~/rfs/nasgard/nas'
 
 # Workspace manager
 alias ws='cd ~/workspace/$( \ls ~/workspace | fzf )'
-function _wsnew { (
-    set ${SET_X:+-x} -eou pipefail
-    fn="$(date +%Y-%m)_$1" # TODO Check input
-    mkdir -p ~/workspace/$fn
-    cd ~/workspace/$fn
-); }
+function _wsnew {
+    local fn="$(date +%Y-%m)_$1" # TODO Check input
+    mkdir -p "$HOME/workspace/${fn}"
+    cd "$HOME/workspace/$fn"
+}
 alias wsnew='_wsnew'
 
 alias ls="ls -1a --color=auto"
@@ -461,10 +518,9 @@ alias tsh='trash' # use trash rather than rm
 
 if command -v mkd 2>&1 >/dev/null; then
     # Make new directory and move to it
-    function mkdcd { (
-        set ${SET_X:+-x} -eou pipefail
+    function mkdcd {
         cd -- "$( mkd -d "$*" )"
-    ); }
+    }
 fi
 
 if command -v expand_path 2>&1 >/dev/null; then
@@ -843,11 +899,53 @@ fi
 
 # ------------------------------------------------------------------------------
 
-[ "$(command -v fzf)" ] && eval "$(fzf --bash)"
-[ "$(command -v starship)" ] && eval "$(starship init bash)"
-[ "$(command -v thefuck)" ] && eval "$(thefuck --alias)"
-[ "$(command -v carapace)" ] && source <(carapace _carapace)
-[ "$(command -v zoxide)" ] && eval "$(zoxide init bash)"
+command -v fzf 2>&1 >/dev/null && eval "$(fzf --bash)"
+command -v starship 2>&1 >/dev/null && eval "$(starship init bash)"
+command -v thefuck 2>&1 >/dev/null && eval "$(thefuck --alias)"
+command -v zoxide 2>&1 >/dev/null && eval "$(zoxide init bash)"
+command -v carapace 2>&1 >/dev/null && source <(carapace _carapace)
+
+# ------------------------------------------------------------------------------
+# zellij
+# ------------------------------------------------------------------------------
+if command -v zellij 2>&1 >/dev/null; then
+
+    eval "$(zellij setup --generate-auto-start bash)"
+
+    if command -v fzf 2>&1 >/dev/null; then
+
+        # List current sessions, attach to a running session, or create a new one.
+        function jls {
+            local ZJ_SESSIONS=$(zellij list-sessions)
+            local NO_SESSIONS=$(echo "${ZJ_SESSIONS}" | wc -l)
+
+            if [ "${NO_SESSIONS}" -ge 2 ]; then
+                zellij attach "$( echo "${ZJ_SESSIONS}" | fzf )"
+            else
+                zellij attach -c
+            fi
+        }
+
+        if command -v fd 2>&1 >/dev/null; then
+            # List layout files saved in the default layout directory, opens the selected layout file.
+            function jll {
+                ZJ_LAYOUT_DIR=$(zellij setup --check \
+                    | grep "LAYOUT DIR" - \
+                    | grep -o '".*"' - | tr -d '"')
+
+                if [[ -d "${ZJ_LAYOUT_DIR}" ]];then
+                    ZJ_LAYOUT="$(fd --type file . "${ZJ_LAYOUT_DIR}" \
+                    | sed 's|.*/||' \
+                    | fzf \
+                    || exit)"
+                    zellij --layout "${ZJ_LAYOUT}"
+                fi
+            }
+        fi
+
+    fi
+
+fi
 
 # ------------------------------------------------------------------------------
 # Set directory for new shells on Termux

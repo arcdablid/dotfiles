@@ -2,11 +2,20 @@
 #
 # /// script
 # dependencies = [
-#   "rich",
 #   "ruamel.yaml",
 #   "validators",
+#   "click",
+#   "rich",
+#   "inquirer",
 # ]
 # ///
+
+# https://click.palletsprojects.com/en/stable/options/
+
+# https://rich.readthedocs.io/en/stable/index.html
+
+# https://python-inquirer.readthedocs.io/en/latest/examples.html#list-py
+# https://tutorialreference.com/python/examples/faq/python-how-to-use-user-input-to-select-an-option-from-a-list#method-3-using-the-inquirer-package-interactive-menu
 
 from __future__ import annotations
 

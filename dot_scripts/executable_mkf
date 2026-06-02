@@ -85,13 +85,21 @@ On_IWhite='\033[0;107m'   # White
 # ------------------------------------------------------------------------------
 
 executor="${0##*/}"
+executor_path="${BASH_SOURCE}"
+while [ -L "${executor_path}" ]; do
+    executor_dir="$(cd -P "$(dirname "${executor_path}")" >/dev/null 2>&1 && pwd)"
+    executor_path="$(readlink "${executor_path}")"
+    [[ ${executor_path} != /* ]] && executor_path="${executor_dir}/${executor_path}"
+done
+executor_path="$(readlink -f "${executor_path}")"
+executor_dir="$(cd -P "$(dirname -- "${executor_path}")" >/dev/null 2>&1 && pwd)"
 
-declare -a required_cmds=( "expand_path" "mkd" )
+declare -a required_cmds=( "expand_path" )
 
 fail=false
 for rc in "${required_cmds[@]}"; do
     if ! command -v "${rc}" &> /dev/null ; then
-        printf "[${executor}] ${BRed}ERROR${Color_Off} - '%s' command not available!" "${rc}"
+        printf "[${executor}] ${BRed}ERROR${Color_Off} - '${rc}' not available!"
         fail=true
     fi
 done
@@ -99,7 +107,8 @@ done
 
 # ------------------------------------------------------------------------------
 
-f="$( expand_path "${1}" )"
-d="$( dirname "${f}" )"
-mkd "${d}"
-touch -- "${f}"
+file_path="$( expand_path "${1}" )"
+if [[ ! -f "${file_path}" ]]; then
+    \mkdir -pv "$( dirname "${file_path}" )"
+    touch -- "${file_path}"
+fi

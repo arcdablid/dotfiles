@@ -168,6 +168,7 @@ packages:
     - johnpapa.vscode-peacock
     - kamadorueda.alejandra
     - laktak.hjson
+    - kdl-org.kdl # Language support for the KDL Document Language | https://kdl.dev/
     - mhutchie.git-graph
     - ms-azuretools.vscode-containers
     - ms-azuretools.vscode-docker
