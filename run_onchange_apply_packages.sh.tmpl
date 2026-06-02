@@ -122,8 +122,7 @@ $(  if [[ -f {{ . }} ]]; then
         find {{ . }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u
     else
         echo 'tap {{ . | quote }}'
-    fi
-)
+    fi )
 {{ end -}}
 
 {{ range .packages.homebrew.formulae -}}
@@ -155,11 +154,18 @@ vscode {{ . | quote }}
 {{ end -}}
 
 {{ range .packages.files -}}
-$( [[ -f {{ . }} ]] && cat {{ . }} )
-$( [[ -d {{ . }} ]] && find {{ . }} -name '*.Brewfile' -exec cat {} \; | sort -u )
+$(  if [[ -f {{ . }} ]]; then
+        cat {{ . }}
+    elif [[ -d {{ . }} ]]; then
+        find {{ . }} -name '*.Brewfile' -exec cat {} \; | sort -u
+    else
+        printf "${Red}Unable to locate: {{ . }} ${Color_Off}\n"
+    fi )
 {{ end -}}
 
 EOF
+
+printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Executing brew bundle...\n"
 
 brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
 

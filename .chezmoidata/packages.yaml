@@ -475,3 +475,4 @@ packages:
   # Additional files
   files:
     - /usr/share/ublue-os/homebrew/fonts.Brewfile
+    - /nonexistent/path/to/no/file
