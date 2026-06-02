@@ -113,17 +113,17 @@ brew upgrade
 
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via brew bundle...\n"
 
-function fail_check {
-    [[ "$1" -gt "0" ]] && echo 'FAIL' && exit 1
-}
-
-cat <<EOF | wc -l | fail_check
+fail='false'
+cat <<EOF
 {{ range .packages.files -}}
 $(  if [[ ! -f {{ . }} && ! -d {{ . }} ]]; then
         printf "\n[${executor}] ${BBlue}ERROR${Color_Off} - Unable to locate {{ . | quote }} \n"
+        fail='true'
     fi )
 {{ end -}}
 EOF
+
+[[ "$fail" == 'true' ]] && echo 'FAIL' && exit 1
 
 
 cat <<EOF
