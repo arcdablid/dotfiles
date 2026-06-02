@@ -111,8 +111,9 @@ printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Update Homebrew...\n"
 brew update --force
 brew upgrade
 
-printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating pkgs via brew bundle...\n"
-brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
+printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via brew bundle...\n"
+
+cat <<EOF
 
 {{ range .packages.homebrew.taps -}}
 tap {{ . | quote }}
@@ -150,6 +151,49 @@ vscode {{ . | quote }}
 
 $( [[ -f {{ . | quote }} ]] && $( cat {{ . | quote }} ) || $( find {{ . | quote }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u ) )
 
+{{ end -}}
+
+EOF
+
+brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
+
+{{ range .packages.homebrew.taps -}}
+$( [[ -f {{ . | quote }} ]] && $( cat {{ . | quote }} | grep '^tap' | sort -u ) )
+$( [[ -d {{ . | quote }} ]] && $( find {{ . | quote }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u ) )
+$( [[ ! -f {{ . | quote }} && ! -d {{ . | quote }} ]] && echo 'tap {{ . | quote }}' )
+{{ end -}}
+
+{{ range .packages.homebrew.formulae -}}
+brew {{ . | quote }}
+{{ end -}}
+
+{{ range .packages.homebrew.casks -}}
+cask {{ . | quote }}
+{{ end -}}
+
+{{ range .packages.flatpaks -}}
+flatpak {{ . | quote }}
+{{ end -}}
+
+{{ range .packages.go -}}
+go {{ . | quote }}
+{{ end -}}
+
+{{ range .packages.cargo -}}
+cargo {{ . | quote }}
+{{ end -}}
+
+{{ range .packages.uv -}}
+uv {{ . | quote }}
+{{ end -}}
+
+{{ range .packages.vscode_extensions -}}
+vscode {{ . | quote }}
+{{ end -}}
+
+{{ range .packages.files -}}
+$( [[ -f {{ . | quote }} ]] && $( cat {{ . | quote }} ) )
+$( [[ -d {{ . | quote }} ]] && $( find {{ . | quote }} -name '*.Brewfile' -exec cat {} \; | sort -u ) )
 {{ end -}}
 
 EOF
