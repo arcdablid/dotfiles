@@ -48,6 +48,7 @@ packages:
       - font-jetbrains-mono-nerd-font # Required for VSCode@BazziteDX
 
     formulae:
+      - bbrew
       - chezmoi # Manage your dotfiles across multiple diverse machines, securely | https://chezmoi.io/
 
       - uutils-coreutils # Rust rewrite of the GNU coreutils
