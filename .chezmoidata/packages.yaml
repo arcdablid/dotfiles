@@ -29,9 +29,10 @@ packages:
       - ublue-os/tap
       - valkyrie00/bbrew
       - sinelaw/fresh
+      - /usr/share/ublue-os/homebrew
 
     casks:
-      - font-jetbrains-mono-nerd-font # Required for VSCode@BazziteDX
+      # - font-jetbrains-mono-nerd-font # Required for VSCode@BazziteDX
 
     formulae:
       - bbrew
@@ -474,4 +475,3 @@ packages:
   # Additional files
   files:
     - /usr/share/ublue-os/homebrew/fonts.Brewfile
-    - /usr/share/ublue-os/homebrew
