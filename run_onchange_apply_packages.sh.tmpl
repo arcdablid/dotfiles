@@ -116,9 +116,14 @@ printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via b
 cat <<EOF
 
 {{ range .packages.homebrew.taps -}}
-$( [[ -f {{ . }} ]] && cat {{ . }} | grep '^tap' | sort -u )
-$( [[ -d {{ . }} ]] && find {{ . }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u )
-$( [[ ! -f {{ . }} && ! -d {{ . }} ]] && echo 'tap {{ . | quote }}' )
+$(  if [[ -f {{ . }} ]]; then
+        cat {{ . }} | grep '^tap' | sort -u
+    elif [[ -d {{ . }} ]]; then
+        find {{ . }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u
+    else
+        echo 'tap {{ . | quote }}'
+    fi
+)
 {{ end -}}
 
 {{ range .packages.homebrew.formulae -}}
