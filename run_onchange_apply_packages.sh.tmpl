@@ -116,7 +116,9 @@ printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via b
 cat <<EOF
 
 {{ range .packages.homebrew.taps -}}
-tap {{ . | quote }}
+$( [[ -f {{ . }} ]] && cat {{ . }} | grep '^tap' | sort -u )
+$( [[ -d {{ . }} ]] && find {{ . }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u )
+$( [[ ! -f {{ . }} && ! -d {{ . }} ]] && echo 'tap {{ . | quote }}' )
 {{ end -}}
 
 {{ range .packages.homebrew.formulae -}}
@@ -148,9 +150,8 @@ vscode {{ . | quote }}
 {{ end -}}
 
 {{ range .packages.files -}}
-
-$( [[ -f {{ . | quote }} ]] && $( cat {{ . | quote }} ) || $( find {{ . | quote }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u ) )
-
+$( [[ -f {{ . }} ]] && cat {{ . }} )
+$( [[ -d {{ . }} ]] && find {{ . }} -name '*.Brewfile' -exec cat {} \; | sort -u )
 {{ end -}}
 
 EOF
@@ -158,9 +159,9 @@ EOF
 brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
 
 {{ range .packages.homebrew.taps -}}
-$( [[ -f {{ . | quote }} ]] && $( cat {{ . | quote }} | grep '^tap' | sort -u ) )
-$( [[ -d {{ . | quote }} ]] && $( find {{ . | quote }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u ) )
-$( [[ ! -f {{ . | quote }} && ! -d {{ . | quote }} ]] && echo 'tap {{ . | quote }}' )
+$( [[ -f {{ . }} ]] && cat {{ . }} | grep '^tap' | sort -u )
+$( [[ -d {{ . }} ]] && find {{ . }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u )
+$( [[ ! -f {{ . }} && ! -d {{ . }} ]] && echo 'tap {{ . | quote }}' )
 {{ end -}}
 
 {{ range .packages.homebrew.formulae -}}
@@ -192,8 +193,8 @@ vscode {{ . | quote }}
 {{ end -}}
 
 {{ range .packages.files -}}
-$( [[ -f {{ . | quote }} ]] && $( cat {{ . | quote }} ) )
-$( [[ -d {{ . | quote }} ]] && $( find {{ . | quote }} -name '*.Brewfile' -exec cat {} \; | sort -u ) )
+$( [[ -f {{ . }} ]] && cat {{ . }} )
+$( [[ -d {{ . }} ]] && find {{ . }} -name '*.Brewfile' -exec cat {} \; | sort -u )
 {{ end -}}
 
 EOF
