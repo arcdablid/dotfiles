@@ -114,7 +114,7 @@ brew upgrade
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via brew bundle...\n"
 
 function fail_check {
-    [[ $1 -gt 0 ]] && echo 'FAIL' && exit 1
+    [[ "$1" -gt "0" ]] && echo 'FAIL' && exit 1
 }
 
 cat <<EOF | wc -l | fail_check
