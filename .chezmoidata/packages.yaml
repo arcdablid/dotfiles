@@ -32,6 +32,8 @@ packages:
       - font-jetbrains-mono-nerd-font # Required for VSCode@BazziteDX
 
     formulae:
+      - chezmoi # Manage your dotfiles across multiple diverse machines, securely | https://chezmoi.io/
+
       - uutils-coreutils # Rust rewrite of the GNU coreutils
 
       - starship # Cross-shell prompt for astronauts | https://starship.rs/
@@ -465,3 +467,7 @@ packages:
       port: 8301
     - url: hf.co/huihui-ai/Huihui-granite-4.1-3b-abliterated:BF16
       port: 8302
+
+  # Additional files
+  files:
+    - /usr/share/ublue-os/homebrew/fonts.Brewfile
