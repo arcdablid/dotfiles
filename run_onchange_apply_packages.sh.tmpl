@@ -147,7 +147,9 @@ vscode {{ . | quote }}
 {{ end -}}
 
 {{ range .packages.files -}}
-file {{ . | quote }}
+
+$( [[ -f {{ . | quote }} ]] && $( cat {{ . | quote }} ) || $( find {{ . | quote }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u ) )
+
 {{ end -}}
 
 EOF
