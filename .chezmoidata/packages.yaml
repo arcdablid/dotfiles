@@ -377,7 +377,7 @@ packages:
     - org.gnome.clocks
     - org.gnome.font-viewer
 
-    - org.mozilla.Thunderbird
+    - org.mozilla.thunderbird_esr
     - org.gnome.Geary
 
     - org.altlinux.Tuner # Extensible control center | https://flathub.org/en/apps/org.altlinux.Tuner
