@@ -122,7 +122,7 @@ mapfile -t input_files < <(
 fail="false"
 if [[ -z ${input_files+x} && ${#input_files[@]} -gt 0 ]]; then
     for i_f in "${input_files[@]}"; do
-        if [[ ! -e ${i_f} ]]; then
+        if [[ ! -f "${i_f}" && ! -d "${i_f}" ]]; then
             printf "\n[${executor}] ${BRed}ERROR${Color_Off} - Unable to locate ${i_f} \n"
             fail="true"
         fi
