@@ -113,27 +113,7 @@ brew upgrade
 
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via brew bundle...\n"
 
-mapfile -t input_files < <( cat <<EOF
-{{ range .packages.files -}}
-{{ . }}
-{{ end -}}
-EOF )
-
-fail='false'
-if [[ -z ${input_files+x} && ${#input_files[@]} -gt 0 ]]; then
-    for i_f in "${input_files[@]}"; do
-        if [[ ! -e ${i_f} ]]; then
-            printf "\n[${executor}] ${BRed}ERROR${Color_Off} - Unable to locate ${i_f} \n"
-            fail='true'
-        fi
-    done
-fi
-
-[[ "${fail}" == 'true' ]] && exit 1
-
-
-cat <<EOF
-
+BREWFILE="
 {{ range .packages.homebrew.taps -}}
 $(  if [[ -f {{ . }} ]]; then
         cat {{ . }} | grep '^tap' | sort -u
@@ -177,61 +157,19 @@ $(  if [[ -f {{ . }} ]]; then
         cat {{ . }}
     elif [[ -d {{ . }} ]]; then
         find {{ . }} -name '*.Brewfile' -exec cat {} \; | sort -u
+    else
+        printf "\n[${executor}] ${BRed}ERROR${Color_Off} - Unable to locate {{ . | quote }} \n"
+        exit 1
     fi )
 {{ end -}}
+"
 
-EOF
+echo "$BREWFILE"
 
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Executing brew bundle...\n"
 
 brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
-
-{{ range .packages.homebrew.taps -}}
-$(  if [[ -f {{ . }} ]]; then
-        cat {{ . }} | grep '^tap' | sort -u
-    elif [[ -d {{ . }} ]]; then
-        find {{ . }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u
-    else
-        echo 'tap {{ . | quote }}'
-    fi )
-{{ end -}}
-
-{{ range .packages.homebrew.formulae -}}
-brew {{ . | quote }}
-{{ end -}}
-
-{{ range .packages.homebrew.casks -}}
-cask {{ . | quote }}
-{{ end -}}
-
-{{ range .packages.flatpaks -}}
-flatpak {{ . | quote }}
-{{ end -}}
-
-{{ range .packages.go -}}
-go {{ . | quote }}
-{{ end -}}
-
-{{ range .packages.cargo -}}
-cargo {{ . | quote }}
-{{ end -}}
-
-{{ range .packages.uv -}}
-uv {{ . | quote }}
-{{ end -}}
-
-{{ range .packages.vscode_extensions -}}
-vscode {{ . | quote }}
-{{ end -}}
-
-{{ range .packages.files -}}
-$(  if [[ -f {{ . }} ]]; then
-        cat {{ . }}
-    elif [[ -d {{ . }} ]]; then
-        find {{ . }} -name '*.Brewfile' -exec cat {} \; | sort -u
-    fi )
-{{ end -}}
-
+$( echo "$BREWFILE" )
 EOF
 
 # ------------------------------------------------------------------------------
