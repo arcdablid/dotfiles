@@ -113,11 +113,11 @@ brew upgrade
 
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via brew bundle...\n"
 
-mapfile -t input_files < <( cat <<EOF )
+mapfile -t input_files < <( cat <<EOF
 {{ range .packages.files -}}
 {{ . }}
 {{ end -}}
-EOF
+EOF )
 
 fail='false'
 if [[ -z ${input_files+x} && ${#input_files[@]} -gt 0 ]]; then
