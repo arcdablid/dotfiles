@@ -2,7 +2,6 @@ packages:
   cargo:
     - wrestic # A backup tool built in Rust that provides a wrapper around Restic, a popular backup program. | https://github.com/alvaro17f/wrestic
     - suckit # Recursively visit and download a website's content to your disk. | https://github.com/Skallwar/suckit
-    - cargo-binstall # Install Rust binaries as an alternative to building from source | https://github.com/cargo-bins/cargo-binstall?tab=readme-ov-file
 
   go:
 
@@ -35,6 +34,13 @@ packages:
       # - font-jetbrains-mono-nerd-font # Required for VSCode@BazziteDX
 
     formulae:
+      - uv # Extremely fast Python package installer and resolver, written in Rust | https://docs.astral.sh/uv/
+
+      - rust # Safe, concurrent, practical language | https://www.rust-lang.org/
+      - cargo-binstall # Binary installation for rust projects | https://github.com/cargo-bins/cargo-binstall
+
+      - openjdk # Development kit for the Java programming language | https://openjdk.org/
+
       - bbrew
       - chezmoi # Manage your dotfiles across multiple diverse machines, securely | https://chezmoi.io/
 
