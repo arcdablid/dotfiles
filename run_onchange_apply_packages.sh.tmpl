@@ -113,6 +113,24 @@ brew upgrade
 
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via brew bundle...\n"
 
+mapfile -t input_files < <(
+{{ range .packages.files -}}
+{{ . | quote }}
+{{ end -}}
+)
+
+fail='false'
+if [[ -z ${input_files+x} && ${#input_files[@]} -gt 0 ]]; then
+    for i_f in "${input_files[@]}"; do
+        if [[ ! -e ${i_f} ]]; then
+            printf "\n[${executor}] ${BRed}ERROR${Color_Off} - Unable to locate ${i_f} \n"
+            fail='true'
+        fi
+    done
+fi
+
+[[ "${fail}" == 'true' ]] && exit 1 || unset fail
+
 BREWFILE="
 {{ range .packages.homebrew.taps -}}
 $(  if [[ -f {{ . }} ]]; then
@@ -157,9 +175,6 @@ $(  if [[ -f {{ . }} ]]; then
         cat {{ . }}
     elif [[ -d {{ . }} ]]; then
         find {{ . }} -name '*.Brewfile' -exec cat {} \; | sort -u
-    else
-        printf "\n[${executor}] ${BRed}ERROR${Color_Off} - Unable to locate {{ . | quote }} \n"
-        exit 1
     fi )
 {{ end -}}
 "
