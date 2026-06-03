@@ -113,17 +113,23 @@ brew upgrade
 
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via brew bundle...\n"
 
-fail='false'
-cat <<EOF
+mapfile -t input_files < <( cat <<EOF )
 {{ range .packages.files -}}
-$(  if [[ ! -f {{ . }} && ! -d {{ . }} ]]; then
-        printf "\n[${executor}] ${BBlue}ERROR${Color_Off} - Unable to locate {{ . | quote }} \n"
-        fail='true'
-    fi )
+{{ . }}
 {{ end -}}
 EOF
 
-[[ "$fail" == 'true' ]] && echo 'FAIL' && exit 1
+fail='false'
+if [[ -z ${input_files+x} && ${#input_files[@]} -gt 0 ]]; then
+    for i_f in "${input_files[@]}"; do
+        if [[ ! -e ${i_f} ]]; then
+            printf "\n[${executor}] ${BRed}ERROR${Color_Off} - Unable to locate ${i_f} \n"
+            fail='true'
+        fi
+    done
+fi
+
+[[ "${fail}" == 'true' ]] && exit 1
 
 
 cat <<EOF
