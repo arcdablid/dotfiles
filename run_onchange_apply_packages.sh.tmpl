@@ -113,25 +113,7 @@ brew upgrade
 
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via brew bundle...\n"
 
-mapfile -t input_files < <(
-{{ range .packages.files -}}
-{{ . | quote }}
-{{ end -}}
-)
-
-fail="false"
-if [[ -z ${input_files+x} && ${#input_files[@]} -gt 0 ]]; then
-    for i_f in "${input_files[@]}"; do
-        if [[ ! -f "${i_f}" && ! -d "${i_f}" ]]; then
-            printf "\n[${executor}] ${BRed}ERROR${Color_Off} - Unable to locate ${i_f} \n"
-            fail="true"
-        fi
-    done
-fi
-
-[[ "${fail}" == "true" ]] && exit 1 || unset fail
-
-BREWFILE="
+brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
 {{ range .packages.homebrew.taps -}}
 $(  if [[ -f {{ . }} ]]; then
         cat {{ . }} | grep '^tap' | sort -u
@@ -177,14 +159,6 @@ $(  if [[ -f {{ . }} ]]; then
         find {{ . }} -name '*.Brewfile' -exec cat {} \; | sort -u
     fi )
 {{ end -}}
-"
-
-echo "$BREWFILE"
-
-printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Executing brew bundle...\n"
-
-brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
-$( echo "$BREWFILE" )
 EOF
 
 # ------------------------------------------------------------------------------
