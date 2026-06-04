@@ -27,12 +27,12 @@ done
 # ------------------------------------------------------------------------------
 
 app_name="syncthing"
-base_image="docker.io/syncthing/syncthing:latest"
 
 read -e -p "Enter config location:" -i "$HOME/.config/quadlets/${app_name}" config_location
 config_location="$( expand_path "${config_location}" )"
-read -e -p "Enter shares location:" -i "$HOME/syncthing" shares_location
+read -e -p "Enter shares location:" -i "$HOME/${app_name}" shares_location
 shares_location="$( expand_path "${shares_location}" )"
+read -e -p "Timezone:" -i "$(timedatectl show -P Timezone)" time_zone
 
 # $( whoami ) or $( id -un ) for current user
 local_user_uid=$( id -u ) # or $( id -u <username> ) for any other user than current
@@ -52,23 +52,60 @@ Description=${app_name} quadlet
 Wants=network-online.target
 After=network-online.target
 
-[Service]
-Restart=on-failure
-TimeoutStartSec=900
-
 [Container]
 ContainerName=${app_name}
-Image=${base_image}
+Image=docker.io/syncthing/syncthing:latest
+
+# Podman automatic updates
 AutoUpdate=registry
-Network=host
+
+# User Namespace: Maps container user to host user
+# This is crucial for Syncthing to have correct file permissions
 UserNS=keep-id:uid=${local_user_uid},gid=${local_user_gid}
+
+Environment=TZ=${time_zone}
+
+# Use same hostname as host
+HostName=$( hostname -s )
+
+# Use host mode which is the recommended way to run Syncthing.
+# It allows the service to easily discover other devices on your local network using UPnP/DLNA.
+# Only works for a single instance of Syncthing.
+Network=host
+
+# Alternatively publish ports
+# Application WebUI
+# PublishPort=8384:8384
+# Listening port (TCP)
+# PublishPort=22000:22000/tcp
+# Listening port (UDP)
+# PublishPort=22000:22000/udp
+# Protocol discovery
+# PublishPort=21027:21027/udp
+
+# Networking: Pasta is used by default in Podman 5+
+# If you need to access host services (like Ollama on the host):
+# AddHost=host.containers.internal:host-gateway
+
+# Config
 Volume=${config_location}:/var/syncthing/config:Z
 
-# Folders to share
+# Default folder for shares
 Volume=${shares_location}:/var/syncthing/shares:Z
 
+# Maintenance & Logging
+# Log to JSON files
+LogDriver=k8s-file
+PodmanArgs=--log-opt=max-size=10m --log-opt=max-file=3
+
+[Service]
+Restart=unless-stopped
+RestartSec=5
+# Give image pulls/builds enough time during startup
+TimeoutStartSec=900
+
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target default.target
 "
 echo "${CONTAINER}" | tee "$HOME/.config/containers/systemd/${app_name}.container" > /dev/null
 
@@ -86,3 +123,5 @@ printf "[${executor}] ${BPurple}INFO${Color_Off} - Enable automatic podman updat
 # manually by calling 'podman auto-update'
 # or automatically by enabling the relative systemd service:
 systemctl enable --user --now podman-auto-update.timer
+
+printf "[${executor}] ${BGreen}DONE${Color_Off} - Check logs with: podman logs -tf ${app_name}\n"
