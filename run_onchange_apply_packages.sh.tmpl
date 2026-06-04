@@ -113,7 +113,7 @@ brew upgrade
 
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via brew bundle...\n"
 
-brew bundle install --upgrade --cleanup --file=/dev/stdin <<EOF
+brew bundle upgrade --cleanup --force --jobs auto --file=/dev/stdin <<EOF
 {{ range .packages.homebrew.taps -}}
 $(  if [[ -f {{ . }} ]]; then
         cat {{ . }} | grep '^tap' | sort -u
