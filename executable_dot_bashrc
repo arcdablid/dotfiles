@@ -440,7 +440,7 @@ alias .....='cd ../../../..'
 
 # pseudo file-manager using fzf | https://thevaluable.dev/practical-guide-fzf-example/
 if command -v fzf 2>&1 >/dev/null; then
-    function . {
+    function fzfm {
         # Store the STDOUT of fzf in a variable
         local selection="$( find -type d | fzf --multi --height=80% --border=sharp \
         --preview='tree -C {}' --preview-window='45%,border-sharp' \
