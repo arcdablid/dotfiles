@@ -34,15 +34,36 @@ packages:
       # - font-jetbrains-mono-nerd-font # Required for VSCode@BazziteDX
 
     formulae:
+      - git # Distributed revision control system | https://git-scm.com
+
+      - xonsh # Python-powered, cross-platform, Unix-gazing shell language and command prompt | https://xon.sh/
+      - elvish # Friendly and expressive shell | https://elv.sh/
+      - nushell # A new type of shell | https://www.nushell.sh/
+      - fish
+      - zsh
+
+      - chezmoi # Manage your dotfiles across multiple diverse machines, securely | https://chezmoi.io/
+
+      - bbrew
+
+      - jq # Lightweight and flexible command-line JSON processor | https://jqlang.github.io/jq/
+      - yq # Process YAML, JSON, XML, CSV and properties documents from the CLI | https://github.com/mikefarah/yq
+      - yj # CLI to convert between YAML, TOML, JSON and HCL | https://github.com/sclevine/yj
+
+      - pipx # Execute binaries from Python packages in isolated environments | https://pipx.pypa.io
       - uv # Extremely fast Python package installer and resolver, written in Rust | https://docs.astral.sh/uv/
+      - ruff # Extremely fast Python linter, written in Rust |https://docs.astral.sh/ruff/
 
       - rust # Safe, concurrent, practical language | https://www.rust-lang.org/
       - cargo-binstall # Binary installation for rust projects | https://github.com/cargo-bins/cargo-binstall
 
       - openjdk # Development kit for the Java programming language | https://openjdk.org/
+      - go # Open source programming language to build simple/reliable/efficient software | https://go.dev/
+      - ruby # Powerful, clean, object-oriented scripting language | https://www.ruby-lang.org/
+      - node # Open-source, cross-platform JavaScript runtime environment | https://nodejs.org/
 
-      - bbrew
-      - chezmoi # Manage your dotfiles across multiple diverse machines, securely | https://chezmoi.io/
+      - mise # Dev tool, environment variable, and task manager | https://mise.jdx.dev
+      - pixi # Package management made easy | https://pixi.sh
 
       - uutils-coreutils # Rust rewrite of the GNU coreutils
 
@@ -64,8 +85,12 @@ packages:
       - superfile # Modern and pretty fancy file manager for the terminal | https://github.com/MHNightCat/superfile
       - nnn # Tiny, lightning fast, feature-packed file manager | https://github.com/jarun/nnn
       - zoxide # Shell extension to navigate your filesystem faster | https://github.com/ajeetdsouza/zoxide
-      - dysk # Linux utility to get information on filesystems, like df but better | https://dystroy.org/dysk/
       - nomino # Batch rename utility | https://github.com/yaa110/nomino
+
+      - btop # Resource monitor. C+ homebrew_formula |"version and continuation of bashtop and bpytop | https://github.com/aristocratos/btop
+      - glances # Alternative to top/htop | https://nicolargo.github.io/glances/
+      - lsof # Utility to list open files | https://github.com/lsof-org/lsof
+      - dysk # Linux utility to get information on filesystems, like df but better | https://dystroy.org/dysk/
 
       - moor # Nice to use pager for humans | https://github.com/walles/moor
       - sd # Intuitive find & replace CLI | https://github.com/chmln/sd
@@ -83,9 +108,10 @@ packages:
       - xxh # Bring your favorite shell wherever you go through SSH | https://github.com/xxh/xxh
       - mosh # Mobile shell (ssh replacement) - https://mosh.org/
 
-      - ox # Terminal text editor | https://github.com/curlpipe/ox
       - fresh-editor # Text editor for your terminal: easy, powerful and fast | https://sinelaw.github.io/fresh/
+      - micro # Modern and intuitive terminal-based text editor | https://github.com/zyedidia/micro
       - shellcheck # Static analysis and lint tool, for (ba)sh scripts | https://www.shellcheck.net/
+      - gum # Tool for glamorous shell scripts | https://github.com/charmbracelet/gum
 
       - grex # Command-line tool for generating regular expressions | https://github.com/pemistahl/grex
       - melody # A language that compiles to regular expressions | https://github.com/yoav-lavi/melody
@@ -106,7 +132,6 @@ packages:
       - age # File encryption tool | https://github.com/FiloSottile/age
       - rage # Simple, modern, secure file encryption | https://github.com/str4d/rage
 
-      - ansible-lint # Checks ansible playbooks for practices and behaviour | https://ansible-lint.readthedocs.io/
       - ty # Extremely fast Python type checker, written in Rust | https://docs.astral.sh/ty/
       - python-lsp-server # Python Language Server for the Language Server Protocol also known as: pylsp | https://github.com/python-lsp/python-lsp-server | KEEP FOR XONSH VSCODE EXTENSION
 
@@ -136,8 +161,8 @@ packages:
       - licensor # Write licenses to stdout | https://github.com/raftario/licensor
 
       - gptfdisk # Text-mode partitioning tools | https://www.rodsbooks.com/gdisk/
-
-      - lazydocker # Lazier way to manage everything docker | https://github.com/jesseduffield/lazydocker
+      - dust # More intuitive version of du in rust | https://github.com/bootandy/dust
+      - ncdu # NCurses Disk Usage | https://dev.yorhel.nl/ncdu
 
       - qrtool # Utility for encoding or decoding QR code | https://github.com/sorairolake/qrtool
 
@@ -151,6 +176,13 @@ packages:
       - stress-ng # Stress test a computer system in various selectable ways | https://wiki.ubuntu.com/Kernel/Reference/stress-ng
       - hyperfine # Command-line benchmarking tool | https://github.com/sharkdp/hyperfine
 
+      - iftop # Display an interface's bandwidth usage | https://pdw.ex-parrot.com/iftop/
+      - iperf3 # Update of iperf: measures TCP, UDP, and SCTP bandwidth | https://github.com/esnet/iperf
+      - cloudflare-speed-cli # Cloudflare-based speed test with optional TUI | https://github.com/kavehtehrani/cloudflare-speed-cli
+      - ipmitool # Utility for IPMI control with kernel driver or LAN interface | https://codeberg.org/IPMITool/ipmitool
+      - nethogs # Net top tool grouping bandwidth per process | https://raboof.github.io/nethogs/
+      - nmap # Port scanning utility for large networks | https://nmap.org/
+
       - diffutils # File comparison utilities | https://www.gnu.org/s/diffutils/
       - difftastic # A syntax-aware diff | https://github.com/Wilfred/difftastic
       - delta # Syntax-highlighting pager for git and diff output | https://github.com/dandavison/delta
@@ -163,7 +195,16 @@ packages:
       - exiv2 # EXIF and IPTC metadata manipulation library and tools | https://exiv2.org/
       - exiftool # Perl lib for reading and writing EXIF metadata | https://exiftool.org
 
-      - pixi # Package management made easy | https://pixi.sh
+      - ansible # Automate deployment, configuration, and upgrading | https://www.ansible.com/
+      - ansible-lint # Checks ansible playbooks for practices and behaviour | https://ansible-lint.readthedocs.io/
+
+      - butane # Translates human-readable Butane Configs into machine-readable Ignition Configs | https://github.com/coreos/butane
+
+      - podman-tui # terminal user interface for Podman
+      - podlet # Generate Podman Quadlet files from a Podman command, compose file, or existing object | https://crates.io/crates/podlet
+      - podman-compose # Run docker-compose.yml using podman
+      - lazydocker # Lazier way to manage everything docker | https://github.com/jesseduffield/lazydocker
+      - skopeo # Performs various operations on container images and image repositories | https://github.com/containers/skopeo
 
   vscode_extensions:
     - adsoncicilioti.yaru-vscode
@@ -245,6 +286,10 @@ packages:
     - io.github.realmazharhussain.GdmSettings
     - io.github.pwr_solaar.solaar
 
+    - org.altlinux.Tuner # Extensible control center | https://flathub.org/en/apps/org.altlinux.Tuner
+    - io.github.fabrialberio.pinapp # Create and edit app shortcuts | https://flathub.org/en/apps/io.github.fabrialberio.pinapp
+    - ca.desrt.dconf-editor
+
     - org.mozilla.firefox
     - net.waterfox.waterfox
     - io.gitlab.librewolf-community
@@ -259,6 +304,8 @@ packages:
     - com.vysp3r.ProtonPlus
     - page.kramo.Cartridges # A simple game launcher for all of your games | https://flathub.org/en/apps/page.kramo.Cartridges
     - com.github.mtkennerly.ludusavi # Cross-platform savegame backups/restores
+    - com.valvesoftware.Steam
+    - com.heroicgameslauncher.hgl
 
     - io.github.alainm23.planify # Project/task manager
     - codes.merritt.bargain # Compare items when shopping | https://flathub.org/apps/codes.merritt.bargain
@@ -297,6 +344,10 @@ packages:
 
     - org.freecad.FreeCAD
 
+    - org.videolan.VLC
+    - io.mpv.Mpv
+    - io.github.diegopvlk.Cine
+
     - org.shotcut.Shotcut # Video editor | https://flathub.org/apps/org.shotcut.Shotcut
     - fr.handbrake.ghb
     - org.bunkus.mkvtoolnix-gui
@@ -306,9 +357,10 @@ packages:
     - org.nickvision.tubeconverter
     - org.gnome.gitlab.YaLTeR.VideoTrimmer # Trim videos quickly | https://flathub.org/apps/org.gnome.gitlab.YaLTeR.VideoTrimmer
 
+    - io.bassi.Amberol
     - de.haeckerfelix.AudioSharing # Share your computer audio | https://flathub.org/en/apps/de.haeckerfelix.AudioSharing
     - com.github.taiko2k.tauonmb # A modern, comfortable and streamlined music player | https://flathub.org/en/apps/com.github.taiko2k.tauonmb
-    - io.github.mmarco94.tambourine # Music player with waveform seekbar | https://flathub.org/apps/io.github.mmarco94.tambourine
+    # - io.github.mmarco94.tambourine # Music player with waveform seekbar | https://flathub.org/apps/io.github.mmarco94.tambourine
     - com.github.neithern.g4music # A light weight music player | https://flathub.org/en/apps/com.github.neithern.g4music
     - org.gnome.Decibels
     - app.drey.EarTag
@@ -316,7 +368,7 @@ packages:
     - com.github.johnfactotum.Foliate # Read e-books | https://flathub.org/en/apps/com.github.johnfactotum.Foliate
     - info.febvre.Komikku
 
-    - com.github.zocker_160.SyncThingy
+    # - com.github.zocker_160.SyncThingy
     - app.drey.Warp
     - org.localsend.localsend_app
     - org.onionshare.OnionShare
@@ -386,9 +438,6 @@ packages:
     - org.mozilla.thunderbird_esr
     - org.gnome.Geary
 
-    - org.altlinux.Tuner # Extensible control center | https://flathub.org/en/apps/org.altlinux.Tuner
-    - io.github.fabrialberio.pinapp # Create and edit app shortcuts | https://flathub.org/en/apps/io.github.fabrialberio.pinapp
-    - ca.desrt.dconf-editor
 
     # - org.gtk.Gtk3theme.adw-gtk3
     # - org.gtk.Gtk3theme.adw-gtk3-dark
@@ -481,4 +530,6 @@ packages:
   # Additional files
   files:
     - /usr/share/ublue-os/homebrew/fonts.Brewfile
-    - /nonexistent/path/to/no/file
+
+  exec:
+    - sudo usermod -s /usr/bin/xonsh <user>
