@@ -1,0 +1,18 @@
+#!/usr/bin/env -S uv run --script
+#
+# /// script
+# dependencies = [
+#   "validators",
+#   "click",
+#   "rich",
+# ]
+# ///
+
+
+def str_valid_ip_or_hostname():
+
+    pass
+
+
+if __name__ == "__main__":
+    str_valid_ip_or_hostname()
