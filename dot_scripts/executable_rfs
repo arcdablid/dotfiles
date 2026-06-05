@@ -255,7 +255,7 @@ def select_from_list(input_message: str, options: list) -> str:
 
 
 def delete_rfs_files(
-    credentials_direcrory: str,
+    credentials_directory: str,
     execstart_script_dir: str,
     server_name: str,
     share_name: str,
@@ -266,7 +266,7 @@ def delete_rfs_files(
     )
     systemd_name = str(mountpoint).replace("/", "-").replace("-", "", 1)
 
-    creds_dir = str(pathlib.Path(f"{credentials_direcrory}").expanduser().resolve())
+    creds_dir = str(pathlib.Path(f"{credentials_directory}").expanduser().resolve())
     creds_file = str(
         pathlib.Path(f"{creds_dir}/{systemd_name}.creds").expanduser().resolve()
     )
@@ -343,7 +343,7 @@ def delete_rfs_files(
 def generate_rfs_files(
     user_uid: int,
     user_gid: int,
-    credentials_direcrory: str,
+    credentials_directory: str,
     execstart_script_dir: str,
     server_name: str,
     server_addresses: list,
@@ -366,7 +366,7 @@ def generate_rfs_files(
     )
     systemd_name = str(mountpoint).replace("/", "-").replace("-", "", 1)
 
-    creds_dir = str(pathlib.Path(f"{credentials_direcrory}").expanduser().resolve())
+    creds_dir = str(pathlib.Path(f"{credentials_directory}").expanduser().resolve())
     creds_file = str(
         pathlib.Path(f"{creds_dir}/{systemd_name}.creds").expanduser().resolve()
     )
@@ -490,7 +490,7 @@ def generate_rfs_files(
             Where={mountpoint}
             Type=cifs
             # iocharset=utf8,vers=3.1.1
-            Options=credentials={creds_file},uid={user_uid},gid={user_gid},file_mode=0700,dir_mode=0700,nofail,rw,exec,_netdev,soft
+            Options=credentials={creds_file},uid={user_uid},gid={user_gid},file_mode=0755,dir_mode=0755,rw,exec,nounix,noserverino,nofail,_netdev,soft
             TimeoutSec=10s
 
             [Install]
@@ -560,7 +560,7 @@ def generate_rfs_files(
     registry = inspect.cleandoc(
         f"""\
             {{
-            "credentials_direcrory": "{credentials_direcrory}",
+            "credentials_direcrory": "{credentials_directory}",
             "execstart_script_dir": "{execstart_script_dir}",
             "server_name": "{server_name}",
             "share_name": "{share_name}",
