@@ -27,7 +27,6 @@ packages:
     taps:
       - ublue-os/tap
       - valkyrie00/bbrew
-      - sinelaw/fresh
       - /usr/share/ublue-os/homebrew
 
     casks:
