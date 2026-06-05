@@ -27,6 +27,14 @@ def str_replace():
     )
 
     parser.add_argument(
+        "-c",
+        "--count",
+        default=-1,
+        type=int,
+        help="Number of occurrences to replace.",
+    )
+
+    parser.add_argument(
         "inputs",
         metavar="I",
         type=str,
@@ -39,7 +47,7 @@ def str_replace():
     for input in args.inputs:
         output: str = input
         for target in args.targets:
-            output: str = output.replace(target, args.replacement)
+            output: str = output.replace(target, args.replacement, args.count)
         print(output)
 
 
