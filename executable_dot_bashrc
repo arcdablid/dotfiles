@@ -857,6 +857,49 @@ fi
 # done
 # unset cmds
 
+
+# ------------------------------------------------------------------------------
+# zellij
+# ------------------------------------------------------------------------------
+if command -v zellij 2>&1 >/dev/null; then
+
+    # eval "$(zellij setup --generate-auto-start bash)"
+
+    if command -v fzf 2>&1 >/dev/null; then
+
+        # List current sessions, attach to a running session, or create a new one.
+        function jls {
+            local ZJ_SESSIONS=$( zellij list-sessions )
+            local NO_SESSIONS=$( echo "${ZJ_SESSIONS}" | wc -l )
+
+            if [[ "${NO_SESSIONS}" -ge 2 ]]; then
+                zellij attach "$( echo "${ZJ_SESSIONS}" | fzf )"
+            else
+                zellij attach -c
+            fi
+        }
+
+        if command -v fd 2>&1 >/dev/null; then
+            # List layout files saved in the default layout directory, opens the selected layout file.
+            function jll {
+                ZJ_LAYOUT_DIR=$( zellij setup --check \
+                    | grep "LAYOUT DIR" - \
+                    | grep -o '".*"' - | tr -d '"' )
+
+                if [[ -d "${ZJ_LAYOUT_DIR}" ]]; then
+                    ZJ_LAYOUT="$( fd --type file . "${ZJ_LAYOUT_DIR}" \
+                    | sed 's|.*/||' \
+                    | fzf \
+                    || exit )"
+                    zellij --layout "${ZJ_LAYOUT}"
+                fi
+            }
+        fi
+
+    fi
+
+fi
+
 # ------------------------------------------------------------------------------
 # bash-preexec.sh
 # ------------------------------------------------------------------------------
@@ -900,6 +943,12 @@ if ! shopt -oq posix; then
 fi
 
 # ------------------------------------------------------------------------------
+# Set directory for new shells on Termux
+# ------------------------------------------------------------------------------
+
+[[ "$( uname -a )" == *"Android"* && -d "${HOME}/storage/downloads" ]] && cd "${HOME}/storage/downloads"
+
+# ------------------------------------------------------------------------------
 
 command -v fzf 2>&1 >/dev/null && eval "$(fzf --bash)"
 command -v starship 2>&1 >/dev/null && eval "$(starship init bash)"
@@ -908,49 +957,3 @@ command -v zoxide 2>&1 >/dev/null && eval "$(zoxide init bash)"
 command -v carapace 2>&1 >/dev/null && source <(carapace _carapace)
 
 # ------------------------------------------------------------------------------
-# zellij
-# ------------------------------------------------------------------------------
-if command -v zellij 2>&1 >/dev/null; then
-
-    eval "$(zellij setup --generate-auto-start bash)"
-
-    if command -v fzf 2>&1 >/dev/null; then
-
-        # List current sessions, attach to a running session, or create a new one.
-        function jls {
-            local ZJ_SESSIONS=$( zellij list-sessions )
-            local NO_SESSIONS=$( echo "${ZJ_SESSIONS}" | wc -l )
-
-            if [[ "${NO_SESSIONS}" -ge 2 ]]; then
-                zellij attach "$( echo "${ZJ_SESSIONS}" | fzf )"
-            else
-                zellij attach -c
-            fi
-        }
-
-        if command -v fd 2>&1 >/dev/null; then
-            # List layout files saved in the default layout directory, opens the selected layout file.
-            function jll {
-                ZJ_LAYOUT_DIR=$( zellij setup --check \
-                    | grep "LAYOUT DIR" - \
-                    | grep -o '".*"' - | tr -d '"' )
-
-                if [[ -d "${ZJ_LAYOUT_DIR}" ]]; then
-                    ZJ_LAYOUT="$( fd --type file . "${ZJ_LAYOUT_DIR}" \
-                    | sed 's|.*/||' \
-                    | fzf \
-                    || exit )"
-                    zellij --layout "${ZJ_LAYOUT}"
-                fi
-            }
-        fi
-
-    fi
-
-fi
-
-# ------------------------------------------------------------------------------
-# Set directory for new shells on Termux
-# ------------------------------------------------------------------------------
-
-[[ "$( uname -a )" =~ 'Android' && -d "${HOME}/storage/downloads" ]] && cd "${HOME}/storage/downloads"
