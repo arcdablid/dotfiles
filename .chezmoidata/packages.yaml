@@ -213,6 +213,7 @@ packages:
     - arrterian.nix-env-selector
     - bierner.github-markdown-preview # Changes VS Code's built-in markdown preview to match GitHub
     - dotenv.dotenv-vscode
+    - elves.elvish
     - esbenp.prettier-vscode
     - golang.go
     - gruntfuggly.todo-tree
