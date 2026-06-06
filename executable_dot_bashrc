@@ -144,11 +144,7 @@ HISTCONTROL=erasedups
 # First, you need to append to the history file immediately with history -a.
 # Next, you must clear the current history in your shell session with history -c.
 # Finally, to load the updated history back into your shell session, use the history -r command.
-function prompt_command {
-    determine_histfile
-    echo "${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
-}
-PROMPT_COMMAND="$( prompt_command )"
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}determine_histfile; history -a; history -c; history -r"
 
 # ------------------------------------------------------------------------------
 # PATH
