@@ -163,14 +163,6 @@ set \${SET_X:+-x} -eou pipefail
 # ------------------------------------------------------------------------------
 
 executor=\"\${0##*/}\"
-executor_path=\"\${BASH_SOURCE}\"
-while [ -L \"\${executor_path}\" ]; do
-    executor_dir=\"\$(cd -P \"\$(dirname \"\${executor_path}\")\" >/dev/null 2>&1 && pwd)\"
-    executor_path=\"\$(readlink \"\${executor_path}\")\"
-    [[ \${executor_path} != /* ]] && executor_path=\"\${executor_dir}/\${executor_path}\"
-done
-executor_path=\"\$(readlink -f \"\${executor_path}\")\"
-executor_dir=\"\$(cd -P \"\$(dirname -- \"\${executor_path}\")\" >/dev/null 2>&1 && pwd)\"
 
 declare -a required_cmds=( \"systemctl\" \"nc\" )
 
@@ -214,8 +206,8 @@ done
 
 if [[ \"\${host_reachable_address}\" == none ]]; then
     echo -e \"[\${executor}] ${share_name} not reachable - disabling share ${share_name} mounted @ ${mountpoint}...\"
-    [[ \"\$(systemctl is-active ${systemd_name}.automount)\" == active ]] && systemctl stop ${systemd_name}.automount
-    [[ \"\$(systemctl is-active ${systemd_name}.mount)\" == active ]] && systemctl stop ${systemd_name}.mount
+    [[ \"\$( systemctl is-active ${systemd_name}.automount )\" == active ]] && systemctl stop ${systemd_name}.automount
+    [[ \"\$( systemctl is-active ${systemd_name}.mount )\" == active ]] && systemctl stop ${systemd_name}.mount
     [[ -f \"${rfs_cache}/${systemd_name}.env\" ]] && rm -fv \"${rfs_cache}/${systemd_name}.env\"
 
 else
@@ -223,18 +215,15 @@ else
         echo -e \"ADDRESS=\${host_reachable_address}\" | tee \"${rfs_cache}/${systemd_name}.env\" > /dev/null
     fi
 
-    if [[ \"\$(systemctl is-active ${systemd_name}.automount)\" == inactive ]]; then
+    if [[ \"\$( systemctl is-active ${systemd_name}.automount )\" == inactive ]]; then
         echo -e \"[\${executor}] Attaching ${share_name} @ ${mountpoint} @ \${host_reachable_address}...\"
         systemctl start ${systemd_name}.automount
     elif [[ \"\${host_reachable_address}\" != \"\${stored_address}\" ]]; then
         echo -e \"[\${executor}] Remote host address change from \${stored_address} to \${host_reachable_address}}\"
-        [[ \"\$(systemctl is-active ${systemd_name}.mount)\" == active ]] && systemctl try-restart ${systemd_name}.mount
-        [[ \"\$(systemctl is-active ${systemd_name}.automount)\" == active ]] && systemctl try-restart ${systemd_name}.automount
+        [[ \"\$( systemctl is-active ${systemd_name}.mount )\" == active ]] && systemctl try-restart ${systemd_name}.mount
+        [[ \"\$( systemctl is-active ${systemd_name}.automount )\" == active ]] && systemctl try-restart ${systemd_name}.automount
     fi
 fi
-
-# randomize sleep in case of multiple shares so they don't all hit at once
-# sleep \"\$( shuf -i 5-15 -n 1 )s\"
 "
 
         local SERVICE="
@@ -267,10 +256,10 @@ WantedBy=timers.target
         local MOUNT="
 [Unit]
 Description=${share_name} on ${server_name} mount
-ConditionPathExists = /var/lib/{systemd_name}.env
+ConditionPathExists = ${rfs_cache}/${systemd_name}.env
 
 [Mount]
-EnvironmentFile=/var/lib/{systemd_name}.env
+EnvironmentFile=${rfs_cache}/${systemd_name}.env
 What=//\${ADDRESS}/${share_name}
 Where=${mountpoint}
 Type=cifs
@@ -347,6 +336,7 @@ share_mount_under=${share_mount_under}
 
         [[ ! -d "${mountpoint}" ]] && mkdir -pv "${mountpoint}"
         [[ ! -d "${creds_dir}" ]] && mkdir -pv "${creds_dir}"
+        [[ ! -d "${rfs_cache}" ]] && sudo mkdir -pv "${rfs_cache}"
 
         echo "${CREDS}" | tee "${creds_file}" > /dev/null
         sudo chown $USER "${creds_file}"
@@ -376,7 +366,7 @@ share_mount_under=${share_mount_under}
         printf "[${executor}] ${BPurple}INFO${Color_Off} - Enabled systemd timer & jump-started service...\n"
 
         # Generate rfs registry file
-        echo "${registry}" | sudo tee "${rfs_registry}/${systemd_name}.rfs" > /dev/null
+        echo "${registry}" | sudo tee "${rfs_cache}/${systemd_name}.rfs" > /dev/null
         printf "${rfs_cache}/${systemd_name}.rfs\n"
 
         printf "[${executor}] ${BGreen}SUCCESS${Color_Off} - Done!"
@@ -428,11 +418,11 @@ function rfs_remove {
                 sudo systemctl stop "${systemd_name}.mount"
                 printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.mount"
 
-                if [[ -f "/var/lib/${systemd_name}.env" ]]; then
-                    sudo rm -vf "/var/lib/${systemd_name}.env"
+                if [[ -f "${rfs_cache}/${systemd_name}.env" ]]; then
+                    sudo rm -vf "${rfs_cache}/${systemd_name}.env"
                 fi
 
-                sudo rm -vf "$( expand_path "${execstart_script_dir}/${systemd_name}.sh" )"
+                sudo rm -vf "${execstart_script_dir}/${systemd_name}.sh"
                 rm -vf "${creds_file}"
                 sudo rm -vf "/etc/systemd/system/${systemd_name}".*
                 sudo rm -vf "/etc/systemd/journald@${systemd_name}.conf"
@@ -440,9 +430,9 @@ function rfs_remove {
                 sudo systemctl daemon-reload
                 printf "[${executor}] ${BPurple}INFO${Color_Off} - Completed systemctl daemon-reload"
 
-                if [[ -f "/var/lib/${systemd_name}.rfs" ]]; then
-                    sudo rm -vf "/var/lib/${systemd_name}.rfs"
-                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Removed registry file /var/lib/${systemd_name}.rfs"
+                if [[ -f "${rfs_cache}/${systemd_name}.rfs" ]]; then
+                    sudo rm -vf "${rfs_cache}/${systemd_name}.rfs"
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Removed registry file ${rfs_cache}/${systemd_name}.rfs"
                 fi
 
                 printf "[${executor}] ${BGreen}SUCCESS${Color_Off} - Done!"
@@ -454,13 +444,13 @@ function rfs_remove {
 # ------------------------------------------------------------------------------
 
 # Directory to hold rfs registry & temp files.
-rfs_cache="$( expand_path "$( gum input --header="Directory to hold rfs registry & temp files" --value="/var/lib/rfs" )" )"
+rfs_cache="$( gum input --header="Directory to hold rfs registry & temp files" --value="/var/lib/rfs" )"
 # Directory to hold credentials files.
-credentials_directory="$( expand_path "$( gum input --header="Directory to hold credentials files" --value="$HOME/.config/rfs" )" )"
+credentials_directory="$( gum input --header="Directory to hold credentials files" --value="$HOME/.config/rfs" )"
 # Directory to put service script. Default path is accessible to both immutable & normal Fedora as well as allowed by SELinux. Change this at your peril.
-execstart_script_dir="$( expand_path "$( gum input --header="Directory to put service script.
+execstart_script_dir="$( gum input --header="Directory to put service script.
 Default path is accessible to both immutable & normal Fedora as well as allowed by SELinux.
-Change this at your peril." --value="/usr/local/bin" )" )"
+Change this at your peril." --value="/usr/local/bin" )"
 
 if [[ $# -gt 1 ]]; then
     printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid number of arguments!"
