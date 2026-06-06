@@ -10,6 +10,7 @@
 
 import click
 import validators
+from rich import print as rp
 
 
 @click.command()
@@ -20,11 +21,11 @@ def str_valid_ip_or_hostname(verbose: bool, inputs: tuple[str, ...]):
     for input in inputs:
         if not validators.hostname(input, may_have_port=False):
             if verbose:
-                click.echo(f"Invalid server address: {input}")
+                rp(f"{input} -> [bold red]INVALID[/bold red]")
             fail = True
         else:
             if verbose:
-                click.echo(f"Valid server address: {input}")
+                rp(f"{input} -> [bold green]VALID[/bold green]")
     if fail:
         raise
         # sys.exit(1)
