@@ -99,32 +99,56 @@ setterm -linewrap on
 
 shopt -s histappend
 
-HISTFILE="$HOME/.bash_history_$( hostname )"
+function determine_histfile {
 
-declare -a bash_history_dirs=(
-    "$HOME/Syncthing/qed/bash_history"
-    "$HOME/syncthing/qed/bash_history"
-    "$HOME/.syncthing/qed/bash_history"
-    "$HOME/Sync/qed/bash_history"
-    "$HOME/sync/qed/bash_history"
-    "$HOME/.sync/qed/bash_history"
-)
+    declare -a primary_bash_history_files=(
+        "$HOME/.bash_history"
+        "$HOME/.bash_history_$( hostname )"
+    )
 
-for bhd in "${bash_history_dirs[@]}"; do
-    if [[ -d "${bhd}" ]]; then
-        HISTFILE="${bhd}/.bash_history_$( hostname )"
-    fi
-done
+    declare -a bash_history_dirs=(
+        "$HOME/Syncthing/qed/bash_history"
+        "$HOME/syncthing/qed/bash_history"
+        "$HOME/.syncthing/qed/bash_history"
+        "$HOME/Sync/qed/bash_history"
+        "$HOME/sync/qed/bash_history"
+        "$HOME/.sync/qed/bash_history"
+    )
+
+    for bhd in "${bash_history_dirs[@]}"; do
+        if [[ -d "${bhd}" ]]; then
+            HISTFILE="${bhd}/.bash_history_$( hostname )"
+            [[ -f "${HISTFILE}" ]] && touch "${HISTFILE}"
+            # Merge local if present with synced
+            for pbhf in "${primary_bash_history_files[@]}"; do
+                if [[ -f "${pbhf}" ]]; then
+                    cat "$HISTFILE" "${pbhf}" | sort -n -u > "$HISTFILE"
+                    rm "${pbhf}"
+                    # history -c; history -r "${primary}"; history -r "$HISTFILE"; history -w "$HISTFILE"
+                fi
+            done
+        else
+            HISTFILE="$HOME/.bash_history_$( hostname )"
+        fi
+    done
+}
+
+determine_histfile
 
 HISTFILESIZE=10000
 HISTSIZE=10000
-export HISTTIMEFORMAT='%F %T ' # Same as '%Y-%m-%d %H:%M:%S '
+HISTCONTROL=erasedups
+# HISTTIMEFORMAT='%F %T ' # Same as '%Y-%m-%d %H:%M:%S '
 
 # Immediately add commands to your history instead of waiting for the end of each session.
 # First, you need to append to the history file immediately with history -a.
 # Next, you must clear the current history in your shell session with history -c.
 # Finally, to load the updated history back into your shell session, use the history -r command.
-PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
+function prompt_command {
+    determine_histfile
+    echo "${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
+}
+PROMPT_COMMAND="$( prompt_command )"
 
 # ------------------------------------------------------------------------------
 # PATH
