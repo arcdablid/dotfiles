@@ -23,11 +23,11 @@ def str_valid_ip_or_hostname(verbose: bool, inputs: tuple[str, ...]):
     for input in inputs:
         if not validators.hostname(input, may_have_port=False):
             if verbose:
-                rp(f"{input} -> [bold red]INVALID[/bold red]")
+                rp(f"[default]{input}[/default] -> [bold red]INVALID[/bold red]")
             fail = True
         else:
             if verbose:
-                rp(f"{input} -> [bold green]VALID[/bold green]")
+                rp(f"[default]{input}[/default] -> [bold green]VALID[/bold green]")
     if fail:
         sys.exit(1)
 
