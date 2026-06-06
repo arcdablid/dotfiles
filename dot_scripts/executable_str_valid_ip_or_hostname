@@ -22,6 +22,9 @@ def str_valid_ip_or_hostname(verbose: bool, inputs: tuple[str, ...]):
             if verbose:
                 click.echo(f"Invalid server address: {input}")
             fail = True
+        else:
+            if verbose:
+                click.echo(f"Valid server address: {input}")
     if fail:
         raise
         # sys.exit(1)
