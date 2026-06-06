@@ -118,7 +118,7 @@ function determine_histfile {
     for bhd in "${bash_history_dirs[@]}"; do
         if [[ -d "${bhd}" ]]; then
             HISTFILE="${bhd}/.bash_history_$( hostname )"
-            [[ -f "${HISTFILE}" ]] && touch "${HISTFILE}"
+            [[ ! -f "${HISTFILE}" ]] && touch "${HISTFILE}"
             # Merge local if present with synced
             for pbhf in "${primary_bash_history_files[@]}"; do
                 if [[ -f "${pbhf}" ]]; then
