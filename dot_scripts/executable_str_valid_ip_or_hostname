@@ -8,6 +8,8 @@
 # ]
 # ///
 
+import sys
+
 import click
 import validators
 from rich import print as rp
@@ -27,8 +29,7 @@ def str_valid_ip_or_hostname(verbose: bool, inputs: tuple[str, ...]):
             if verbose:
                 rp(f"{input} -> [bold green]VALID[/bold green]")
     if fail:
-        raise
-        # sys.exit(1)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
