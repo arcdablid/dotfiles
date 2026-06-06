@@ -15,7 +15,7 @@ import validators
 @click.command()
 @click.option("-v", "--verbose", "verbose", is_flag=True, default=False)
 @click.argument("inputs", nargs=-1)
-def str_valid_ip_or_hostname(inputs: tuple[str, ...]):
+def str_valid_ip_or_hostname(verbose: bool, inputs: tuple[str, ...]):
     fail: bool = False
     for input in inputs:
         if not validators.hostname(input, may_have_port=False):
