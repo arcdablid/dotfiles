@@ -1,0 +1,480 @@
+#!/usr/bin/env bash
+set ${SET_X:+-x} -eou pipefail
+
+#------------------------------------------------------------------------------
+# ANSI escape code variables.
+# ------------------------------------------------------------------------------
+
+# Usage: printf "I ${Red}love${Color_Off} Stack Overflow\n"
+# If you are using the echo command, be sure to use the -e flag to allow backslash escapes.
+# echo -e "I ${Red}love${Color_Off} Stack Overflow"
+
+# Reset
+Color_Off='\033[0m'       # Text Reset
+
+# Regular Colors
+Black='\033[0;30m'        # Black
+Red='\033[0;31m'          # Red
+Green='\033[0;32m'        # Green
+Yellow='\033[0;33m'       # Yellow
+Blue='\033[0;34m'         # Blue
+Purple='\033[0;35m'       # Purple
+Cyan='\033[0;36m'         # Cyan
+White='\033[0;37m'        # White
+
+# Bold
+BBlack='\033[1;30m'       # Black
+BRed='\033[1;31m'         # Red
+BGreen='\033[1;32m'       # Green
+BYellow='\033[1;33m'      # Yellow
+BBlue='\033[1;34m'        # Blue
+BPurple='\033[1;35m'      # Purple
+BCyan='\033[1;36m'        # Cyan
+BWhite='\033[1;37m'       # White
+
+# Underline
+UBlack='\033[4;30m'       # Black
+URed='\033[4;31m'         # Red
+UGreen='\033[4;32m'       # Green
+UYellow='\033[4;33m'      # Yellow
+UBlue='\033[4;34m'        # Blue
+UPurple='\033[4;35m'      # Purple
+UCyan='\033[4;36m'        # Cyan
+UWhite='\033[4;37m'       # White
+
+# Background
+On_Black='\033[40m'       # Black
+On_Red='\033[41m'         # Red
+On_Green='\033[42m'       # Green
+On_Yellow='\033[43m'      # Yellow
+On_Blue='\033[44m'        # Blue
+On_Purple='\033[45m'      # Purple
+On_Cyan='\033[46m'        # Cyan
+On_White='\033[47m'       # White
+
+# High Intensity
+IBlack='\033[0;90m'       # Black
+IRed='\033[0;91m'         # Red
+IGreen='\033[0;92m'       # Green
+IYellow='\033[0;93m'      # Yellow
+IBlue='\033[0;94m'        # Blue
+IPurple='\033[0;95m'      # Purple
+ICyan='\033[0;96m'        # Cyan
+IWhite='\033[0;97m'       # White
+
+# Bold High Intensity
+BIBlack='\033[1;90m'      # Black
+BIRed='\033[1;91m'        # Red
+BIGreen='\033[1;92m'      # Green
+BIYellow='\033[1;93m'     # Yellow
+BIBlue='\033[1;94m'       # Blue
+BIPurple='\033[1;95m'     # Purple
+BICyan='\033[1;96m'       # Cyan
+BIWhite='\033[1;97m'      # White
+
+# High Intensity backgrounds
+On_IBlack='\033[0;100m'   # Black
+On_IRed='\033[0;101m'     # Red
+On_IGreen='\033[0;102m'   # Green
+On_IYellow='\033[0;103m'  # Yellow
+On_IBlue='\033[0;104m'    # Blue
+On_IPurple='\033[0;105m'  # Purple
+On_ICyan='\033[0;106m'    # Cyan
+On_IWhite='\033[0;107m'   # White
+
+# ------------------------------------------------------------------------------
+
+executor="${0##*/}"
+executor_path="${BASH_SOURCE}"
+while [ -L "${executor_path}" ]; do
+    executor_dir="$(cd -P "$(dirname "${executor_path}")" >/dev/null 2>&1 && pwd)"
+    executor_path="$(readlink "${executor_path}")"
+    [[ ${executor_path} != /* ]] && executor_path="${executor_dir}/${executor_path}"
+done
+executor_path="$(readlink -f "${executor_path}")"
+executor_dir="$(cd -P "$(dirname -- "${executor_path}")" >/dev/null 2>&1 && pwd)"
+
+declare -a required_cmds=( "systemctl" "gum" "fd" "expand_path" "str_replace_part" )
+
+fail=false
+for rc in "${required_cmds[@]}"; do
+    if ! command -v "${rc}" &> /dev/null ; then
+        printf "[${executor}] ${BRed}ERROR${Color_Off} - Command '${rc}' unavailable!?"
+        fail=true
+    fi
+done
+[[ "${fail}" == true ]] && exit 1
+
+# ------------------------------------------------------------------------------
+
+function rfs_usage {
+    local usage="
+Usage: ${executor} [flags]
+
+Setup CIFS/SMB remote shares for the current user on the local system.
+Sudo permissions are needed for this.
+
+Flags:
+    -h, --help      Show all this.
+    -r, --remove    Remove one or more shares from the system.
+
+    "
+}
+
+function rfs_add {
+    local server_name="$( gum input --placeholder "Input server name" )"
+
+    while :; do
+        local server_address="$( gum input --placeholder "Input a server address" )"
+        if ! str_valid_ip_or_hostname "${server_address}" ; then
+            printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid IP address or hostname!"
+        else
+            if [[ -z ${server_addresses+x} ]]; then
+                declare -a server_addresses=( "${server_address}" )
+            else
+                server_addresses+=( "${server_address}" )
+            fi
+            echo
+            gum confirm "Add more server addresses?" || break
+        fi
+    done
+
+    while :; do
+        local share_name="$( gum input --placeholder "Input share name" )"
+        local share_mount_under="$( gum input --placeholder "Input share mounting directory" )"
+        local share_username="$( gum input --placeholder "Input username to access the share" )"
+        local share_password="$( gum input --password --placeholder "Input password to access the share" )"
+        local share_domain="$( gum input --placeholder "Input workgroup to access the share" )"
+
+        local server_addresses_oneliner="$( str_join -d " " -- "${server_addresses[@]}" )"
+        local mountpoint="$( expand_path "${share_mount_under}" )/${server_name}/${share_name}"
+        local systemd_name="$( str_replace_part -t '-' -r '' -c 1 -- $( str_replace_part -t '/' -r '-' -- "${mountpoint}" ) )"
+        local creds_dir="$( expand_path "${credentials_directory}" )"
+        local creds_file="$( expand_path "${creds_dir}/${systemd_name}.creds" )"
+
+        # $( whoami ) or $( id -un ) for current user
+        local local_user_uid=$( id -u ) # or $( id -u <username> ) for any other user than current
+        local local_user_gid=$( id -g ) # or $( id -g <username> ) for any other user than current
+
+        local SERVICE_SCRIPT="
+#!/usr/bin/env bash
+set \${SET_X:+-x} -eou pipefail
+
+# ------------------------------------------------------------------------------
+
+executor=\"\${0##*/}\"
+executor_path=\"\${BASH_SOURCE}\"
+while [ -L \"\${executor_path}\" ]; do
+    executor_dir=\"\$(cd -P \"\$(dirname \"\${executor_path}\")\" >/dev/null 2>&1 && pwd)\"
+    executor_path=\"\$(readlink \"\${executor_path}\")\"
+    [[ \${executor_path} != /* ]] && executor_path=\"\${executor_dir}/\${executor_path}\"
+done
+executor_path=\"\$(readlink -f \"\${executor_path}\")\"
+executor_dir=\"\$(cd -P \"\$(dirname -- \"\${executor_path}\")\" >/dev/null 2>&1 && pwd)\"
+
+declare -a required_cmds=( \"systemctl\" \"nc\" )
+
+fail=false
+for rc in \"\${required_cmds[@]}\"; do
+    if ! command -v \"\${rc}\" &> /dev/null ; then
+        printf \"[\${executor}] ERROR - Command '\${rc}' unavailable!?\"
+        fail=true
+    fi
+done
+[[ \"\${fail}\" == true ]] && exit 1
+
+# ------------------------------------------------------------------------------
+
+function get_host_port_reachable {
+    local -r REMOTE_HOST=\$1
+    local -r REMOTE_HOST_PORT=\$2
+
+    if nc -zv \${REMOTE_HOST} \${REMOTE_HOST_PORT} 2>&1 | grep -q 'Connected' ; then
+        echo 'true'
+    else
+        echo 'false'
+    fi
+}
+
+host_reachable_address=none
+stored_address=none
+
+if [[ -f ${rfs_cache}/${systemd_name}.env ]]; then
+    stored_address=\"\$( head -n 1 \"${rfs_cache}/${systemd_name}.env\" | cut -d '=' -f 2 )\"
+    echo -e \"[\${executor}] Found ${rfs_cache}/${systemd_name}.env with remote host address @ \${stored_address}\"
+fi
+
+for addr in ${server_addresses_oneliner}; do
+    if [[ \"\$( get_host_port_reachable \${addr} 445 )\" == true && \"\$( get_host_port_reachable \${addr} 139 )\" == true ]]; then
+        echo -e \"[\${executor}] Host found reachable @ \${addr}\"
+        host_reachable_address=\"\${addr}\"
+        break
+    fi
+done
+
+if [[ \"\${host_reachable_address}\" == none ]]; then
+    echo -e \"[\${executor}] ${share_name} not reachable - disabling share ${share_name} mounted @ ${mountpoint}...\"
+    [[ \"\$(systemctl is-active ${systemd_name}.automount)\" == active ]] && systemctl stop ${systemd_name}.automount
+    [[ \"\$(systemctl is-active ${systemd_name}.mount)\" == active ]] && systemctl stop ${systemd_name}.mount
+    [[ -f \"${rfs_cache}/${systemd_name}.env\" ]] && rm -fv \"${rfs_cache}/${systemd_name}.env\"
+
+else
+    if [[ \"\${host_reachable_address}\" != \"\${stored_address}\" || ! -f \"${rfs_cache}/${systemd_name}.env\" ]]; then
+        echo -e \"ADDRESS=\${host_reachable_address}\" | tee \"${rfs_cache}/${systemd_name}.env\" > /dev/null
+    fi
+
+    if [[ \"\$(systemctl is-active ${systemd_name}.automount)\" == inactive ]]; then
+        echo -e \"[\${executor}] Attaching ${share_name} @ ${mountpoint} @ \${host_reachable_address}...\"
+        systemctl start ${systemd_name}.automount
+    elif [[ \"\${host_reachable_address}\" != \"\${stored_address}\" ]]; then
+        echo -e \"[\${executor}] Remote host address change from \${stored_address} to \${host_reachable_address}}\"
+        [[ \"\$(systemctl is-active ${systemd_name}.mount)\" == active ]] && systemctl try-restart ${systemd_name}.mount
+        [[ \"\$(systemctl is-active ${systemd_name}.automount)\" == active ]] && systemctl try-restart ${systemd_name}.automount
+    fi
+fi
+
+# randomize sleep in case of multiple shares so they don't all hit at once
+# sleep \"\$( shuf -i 5-15 -n 1 )s\"
+"
+
+        local SERVICE="
+[Unit]
+Description=Check ${server_name} is reachable and enable/disable mounts accordingly
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+LogNamespace=${systemd_name}
+StandardOutput=journal+console
+ExecStart=/bin/bash ${execstart_script_dir}/${systemd_name}.sh
+"
+
+        local TIMER="
+[Unit]
+Description=Run ${systemd_name}.service periodically
+After=network-online.target
+Wants=network-online.target
+
+[Timer]
+OnBootSec=$( python3 -c "import random; print(random.randrange(1, 10))" )s
+OnUnitInactiveSec=$( python3 -c "import random; print(random.randrange(10, 20))" )s
+
+[Install]
+WantedBy=timers.target
+"
+
+        local MOUNT="
+[Unit]
+Description=${share_name} on ${server_name} mount
+ConditionPathExists = /var/lib/{systemd_name}.env
+
+[Mount]
+EnvironmentFile=/var/lib/{systemd_name}.env
+What=//\${ADDRESS}/${share_name}
+Where=${mountpoint}
+Type=cifs
+# iocharset=utf8,vers=3.1.1
+Options=credentials=${creds_file},uid=${local_user_uid},gid=${local_user_gid},file_mode=0755,dir_mode=0755,rw,exec,nounix,noserverino,nofail,_netdev,soft
+TimeoutSec=10s
+
+[Install]
+WantedBy=multi-user.target
+"
+
+        local AUTOMOUNT="
+[Unit]
+Description=${share_name} on ${server_name} automount
+ConditionPathExists = ${mountpoint}
+
+[Automount]
+Where=${mountpoint}
+TimeoutIdleSec=30s
+
+[Install]
+WantedBy=multi-user.target
+"
+
+        local LOG_NAMESPACE="
+[Journal]
+#Storage=auto
+#Compress=yes
+#Seal=yes
+#SplitMode=uid
+#SyncIntervalSec=5m
+#RateLimitIntervalSec=30s
+#RateLimitBurst=10000
+SystemMaxUse=50M
+#SystemKeepFree=
+#SystemMaxFileSize=
+SystemMaxFiles=1
+#RuntimeMaxUse=
+#RuntimeKeepFree=
+#RuntimeMaxFileSize=
+#RuntimeMaxFiles=100
+#MaxRetentionSec=
+#MaxFileSec=1month
+#ForwardToSyslog=yes
+#ForwardToKMsg=no
+#ForwardToConsole=no
+#ForwardToWall=yes
+#TTYPath=/dev/console
+#MaxLevelStore=debug
+#MaxLevelSyslog=debug
+#MaxLevelKMsg=notice
+#MaxLevelConsole=info
+#MaxLevelWall=emerg
+#LineMax=48K
+#ReadKMsg=yes
+#Audit=no
+"
+
+        local CREDS="
+username=${share_username}
+password=${share_password}
+domain=${share_domain}
+"
+
+        local REGISTRY="
+credentials_directory=${credentials_directory}
+execstart_script_dir=${execstart_script_dir}
+server_name=${server_name}
+share_name=${share_name}
+share_mount_under=${share_mount_under}
+"
+
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Generating files...\n"
+
+        [[ ! -d "${mountpoint}" ]] && mkdir -pv "${mountpoint}"
+        [[ ! -d "${creds_dir}" ]] && mkdir -pv "${creds_dir}"
+
+        echo "${CREDS}" | tee "${creds_file}" > /dev/null
+        sudo chown $USER "${creds_file}"
+        sudo chmod 600 "${creds_file}"
+        printf "${creds_file}\n"
+
+        echo "${SERVICE_SCRIPT}" | sudo tee "${execstart_script_dir}/${systemd_name}.sh" > /dev/null
+        sudo chmod 700 "${execstart_script_dir}/${systemd_name}.sh"
+        printf "${execstart_script_dir}/${systemd_name}.sh\n"
+
+        echo "${SERVICE}" | sudo tee "/etc/systemd/system/${systemd_name}.service" > /dev/null
+        printf "/etc/systemd/system/${systemd_name}.service\n"
+
+        echo "${TIMER}" | sudo tee "/etc/systemd/system/${systemd_name}.timer" > /dev/null
+        printf "/etc/systemd/system/${systemd_name}.timer\n"
+
+        echo "${MOUNT}" | sudo tee "/etc/systemd/system/${systemd_name}.mount" > /dev/null
+        printf "/etc/systemd/system/${systemd_name}.mount\n"
+
+        echo "${AUTOMOUNT}" | sudo tee "/etc/systemd/system/${systemd_name}.automount" > /dev/null
+        printf "/etc/systemd/system/${systemd_name}.automount\n"
+
+        echo "${LOG_NAMESPACE}" | sudo tee "/etc/systemd/journald@${systemd_name}.conf" > /dev/null
+        printf "/etc/systemd/journald@${systemd_name}.conf\n"
+
+        sudo systemctl daemon-reload && sudo systemctl enable --now "${systemd_name}.timer" && sudo systemctl restart "${systemd_name}.service"
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Enabled systemd timer & jump-started service...\n"
+
+        # Generate rfs registry file
+        echo "${registry}" | sudo tee "${rfs_registry}/${systemd_name}.rfs" > /dev/null
+        printf "${rfs_cache}/${systemd_name}.rfs\n"
+
+        printf "[${executor}] ${BGreen}SUCCESS${Color_Off} - Done!"
+
+        echo
+        gum confirm "Add more shares?" || break
+    done
+}
+
+function rfs_remove {
+    if [[ ! -d "${rfs_cache}" ]]; then
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Nothing to remove!"
+    else
+        mapfile -t selected_rfs < <( fd --glob '*.rfs' "${rfs_cache}" --exec-batch gum choose --no-limit --header "Select all rfs you wish to remove" )
+
+        if [[ -z ${selected_rfs+x} || ${#selected_rfs[@]} -eq 0]]; then
+            printf "[${executor}] ${BPurple}INFO${Color_Off} - Nothing to remove!"
+        else
+            for s_r in "${selected_rfs[@]}"; do
+
+                mapfile -t extracted_info < <( cat "${s_r}" )
+                for e_i in "${extracted_info[@]}"; do
+                    case "${e_i}" in
+                        "credentials_directory="*   ) local credentials_directory="$( cut -d '=' -f 2 )"    ;;
+                        "execstart_script_dir="*    ) local execstart_script_dir="$( cut -d '=' -f 2 )"     ;;
+                        "server_name="*             ) local server_name="$( cut -d '=' -f 2 )"              ;;
+                        "share_name="*              ) local share_name="$( cut -d '=' -f 2 )"               ;;
+                        "share_mount_under="*       ) local share_mount_under="$( cut -d '=' -f 2 )"        ;;
+                    esac
+                done
+
+                local mountpoint="$( expand_path "${share_mount_under}" )/${server_name}/${share_name}"
+                local systemd_name="$( str_replace_part -t '-' -r '' -c 1 -- $( str_replace_part -t '/' -r '-' -- "${mountpoint}" ) )"
+
+                local creds_dir="$( expand_path "${credentials_directory}" )"
+                local creds_file="$( expand_path "${creds_dir}/${systemd_name}.creds" )"
+
+                printf "[${executor}] ${BPurple}INFO${Color_Off} - Disabling & removing files..."
+
+                sudo systemctl disable --now "${systemd_name}.timer"
+                printf "[${executor}] ${BPurple}INFO${Color_Off} - Disabled ${systemd_name}.timer"
+
+                sudo systemctl stop "${systemd_name}.service"
+                printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.service"
+
+                sudo systemctl stop "${systemd_name}.automount"
+                printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.automount"
+
+                sudo systemctl stop "${systemd_name}.mount"
+                printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.mount"
+
+                if [[ -f "/var/lib/${systemd_name}.env" ]]; then
+                    sudo rm -vf "/var/lib/${systemd_name}.env"
+                fi
+
+                sudo rm -vf "$( expand_path "${execstart_script_dir}/${systemd_name}.sh" )"
+                rm -vf "${creds_file}"
+                sudo rm -vf "/etc/systemd/system/${systemd_name}".*
+                sudo rm -vf "/etc/systemd/journald@${systemd_name}.conf"
+
+                sudo systemctl daemon-reload
+                printf "[${executor}] ${BPurple}INFO${Color_Off} - Completed systemctl daemon-reload"
+
+                if [[ -f "/var/lib/${systemd_name}.rfs" ]]; then
+                    sudo rm -vf "/var/lib/${systemd_name}.rfs"
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Removed registry file /var/lib/${systemd_name}.rfs"
+                fi
+
+                printf "[${executor}] ${BGreen}SUCCESS${Color_Off} - Done!"
+            done
+        fi
+    fi
+}
+
+# ------------------------------------------------------------------------------
+
+# Directory to hold rfs registry & temp files.
+rfs_cache="$( expand_path "$( gum input --header="Directory to hold rfs registry & temp files" --value="/var/lib/rfs" )" )"
+# Directory to hold credentials files.
+credentials_directory="$( expand_path "$( gum input --header="Directory to hold credentials files" --value="$HOME/.config/rfs" )" )"
+# Directory to put service script. Default path is accessible to both immutable & normal Fedora as well as allowed by SELinux. Change this at your peril.
+execstart_script_dir="$( expand_path "$( gum input --header="Directory to put service script.
+Default path is accessible to both immutable & normal Fedora as well as allowed by SELinux.
+Change this at your peril." --value="/usr/local/bin" )" )"
+
+if [[ $# -gt 1 ]]; then
+    printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid number of arguments!"
+    print-usage
+    exit 1
+fi
+
+if [[ $# -eq 1 ]]; then
+    case "${1}" in
+        -h | --help     )   print-usage
+                            ;;
+        -r | --remove   )   rfs_remove
+                            ;;
+    esac
+else
+    rfs_add
+fi
