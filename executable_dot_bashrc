@@ -118,7 +118,7 @@ function determine_histfile {
             [[ ! -f "${HISTFILE}" ]] && touch "${HISTFILE}"
 
             # Merge local if present with synced
-            if [[ -f "$HOME/.bash_history" ]] && cat "$HISTFILE" "$HOME/.bash_history" | sort -n -u | tee "$HISTFILE" > /dev/null && rm "$HOME/.bash_history"
+            [[ -f "$HOME/.bash_history" ]] && cat "$HISTFILE" "$HOME/.bash_history" | sort -n -u | tee "$HISTFILE" > /dev/null && rm "$HOME/.bash_history"
             # history -c; history -r "${primary}"; history -r "$HISTFILE"; history -w "$HISTFILE"
 
             break
