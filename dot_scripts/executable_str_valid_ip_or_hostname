@@ -13,7 +13,7 @@ import validators
 
 
 @click.command()
-@click.option("-v", "--verbose", is_flag=True)
+@click.option("-v", "--verbose", "verbose", is_flag=True)
 @click.argument("inputs", nargs=-1)
 def str_valid_ip_or_hostname(inputs: tuple[str, ...]):
     fail: bool = False
