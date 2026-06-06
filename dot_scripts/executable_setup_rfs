@@ -392,7 +392,7 @@ function rfs_remove {
     else
         mapfile -t selected_rfs < <( fd --glob '*.rfs' "${rfs_cache}" --exec-batch gum choose --no-limit --header "Select all rfs you wish to remove" )
 
-        if [[ -z ${selected_rfs+x} || ${#selected_rfs[@]} -eq 0]]; then
+        if [[ -z ${selected_rfs+x} || ${#selected_rfs[@]} -eq 0 ]]; then
             printf "[${executor}] ${BPurple}INFO${Color_Off} - Nothing to remove!"
         else
             for s_r in "${selected_rfs[@]}"; do
