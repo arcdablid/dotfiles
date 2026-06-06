@@ -8,10 +8,22 @@
 # ]
 # ///
 
+import validators
 
-def str_valid_ip_or_hostname():
 
-    pass
+@click.command()
+@click.option("-v", "--verbose", is_flag=True)
+@click.argument("inputs", nargs=-1)
+def str_valid_ip_or_hostname(inputs: tuple[str, ...]):
+    fail: bool = False
+    for input in inputs:
+        if not validators.hostname(input, may_have_port=False):
+            if verbose:
+                click.echo(f"Invalid server address: {input}")
+            fail = True
+    if fail:
+        raise
+        # sys.exit(1)
 
 
 if __name__ == "__main__":
