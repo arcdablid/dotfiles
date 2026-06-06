@@ -101,10 +101,7 @@ shopt -s histappend
 
 function determine_histfile {
 
-    declare -a primary_bash_history_files=(
-        "$HOME/.bash_history"
-        "$HOME/.bash_history_$( hostname )"
-    )
+    HISTFILE="$HOME/.bash_history"
 
     declare -a bash_history_dirs=(
         "$HOME/Syncthing/qed/bash_history"
@@ -119,18 +116,15 @@ function determine_histfile {
         if [[ -d "${bhd}" ]]; then
             HISTFILE="${bhd}/.bash_history_$( hostname )"
             [[ ! -f "${HISTFILE}" ]] && touch "${HISTFILE}"
+
             # Merge local if present with synced
-            for pbhf in "${primary_bash_history_files[@]}"; do
-                if [[ -f "${pbhf}" ]]; then
-                    cat "$HISTFILE" "${pbhf}" | sort -n -u > "$HISTFILE"
-                    rm "${pbhf}"
-                    # history -c; history -r "${primary}"; history -r "$HISTFILE"; history -w "$HISTFILE"
-                fi
-            done
-        else
-            HISTFILE="$HOME/.bash_history_$( hostname )"
+            if [[ -f "$HOME/.bash_history" ]] && cat "$HISTFILE" "$HOME/.bash_history" | sort -n -u | tee "$HISTFILE" > /dev/null && rm "$HOME/.bash_history"
+            # history -c; history -r "${primary}"; history -r "$HISTFILE"; history -w "$HISTFILE"
+
+            break
         fi
     done
+
 }
 
 determine_histfile
