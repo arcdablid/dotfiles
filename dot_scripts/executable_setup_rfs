@@ -366,7 +366,7 @@ share_mount_under=${share_mount_under}
         printf "[${executor}] ${BPurple}INFO${Color_Off} - Enabled systemd timer & jump-started service...\n"
 
         # Generate rfs registry file
-        echo "${registry}" | sudo tee "${rfs_cache}/${systemd_name}.rfs" > /dev/null
+        echo "${REGISTRY}" | sudo tee "${rfs_cache}/${systemd_name}.rfs" > /dev/null
         printf "${rfs_cache}/${systemd_name}.rfs\n"
 
         printf "[${executor}] ${BGreen}SUCCESS${Color_Off} - Done!"
