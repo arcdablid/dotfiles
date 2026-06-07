@@ -181,7 +181,7 @@ function get_host_port_reachable {
     local -r REMOTE_HOST=\$1
     local -r REMOTE_HOST_PORT=\$2
 
-    if nc -zv \${REMOTE_HOST} \${REMOTE_HOST_PORT} 2>&1 | grep -q 'Connected' ; then
+    if nc -zv -w 5 -- \${REMOTE_HOST} \${REMOTE_HOST_PORT} 2>&1 | grep -q 'succeeded' ; then
         echo 'true'
     else
         echo 'false'
