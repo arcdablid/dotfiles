@@ -122,10 +122,10 @@ Flags:
 }
 
 function rfs_add {
-    local server_name="$( gum input --placeholder "Input server name" )"
+    local server_name="$( gum input --header "Input server name" --placeholder "name" )"
 
     while :; do
-        local server_address="$( gum input --placeholder "Input a server address" )"
+        local server_address="$( gum input --header "Input a server address" --placeholder "IPv4 | IPv6 | FQDN" )"
         if ! str_valid_ip_or_hostname "${server_address}" ; then
             printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid IP address or hostname!"
         else
@@ -140,11 +140,11 @@ function rfs_add {
     done
 
     while :; do
-        local share_name="$( gum input --placeholder "Input share name" )"
-        local share_mount_under="$( gum input --placeholder "Input share mounting directory" )"
-        local share_username="$( gum input --placeholder "Input username to access the share" )"
-        local share_password="$( gum input --password --placeholder "Input password to access the share" )"
-        local share_domain="$( gum input --placeholder "Input workgroup to access the share" )"
+        local share_name="$( gum input --header="Input share name" --placeholder "name" )"
+        local share_mount_under="$( gum input --header "Input share mounting directory" --value "$HOME/rfs" )"
+        local share_username="$( gum input --header "Input username to access the share" --placeholder "username" )"
+        local share_password="$( gum input --password --header "Input password to access the share" --placeholder "password" )"
+        local share_domain="$( gum input --header "Input workgroup to access the share" --placeholder "name" )"
 
         local server_addresses_oneliner="$( str_join -d " " -- "${server_addresses[@]}" )"
         local mountpoint="$( expand_path "${share_mount_under}" )/${server_name}/${share_name}"
@@ -444,13 +444,13 @@ function rfs_remove {
 # ------------------------------------------------------------------------------
 
 # Directory to hold rfs registry & temp files.
-rfs_cache="$( gum input --header="Directory to hold rfs registry & temp files" --value="/var/lib/rfs" )"
+rfs_cache="$( expand_path "$( gum input --header="Directory to hold rfs registry & temp files" --value="/var/lib/rfs" )" )"
 # Directory to hold credentials files.
-credentials_directory="$( gum input --header="Directory to hold credentials files" --value="$HOME/.config/rfs" )"
+credentials_directory="$( expand_path "$( gum input --header="Directory to hold credentials files" --value="$HOME/.config/rfs" )" )"
 # Directory to put service script. Default path is accessible to both immutable & normal Fedora as well as allowed by SELinux. Change this at your peril.
-execstart_script_dir="$( gum input --header="Directory to put service script.
+execstart_script_dir="$( expand_path "$( gum input --header="Directory to put service script.
 Default path is accessible to both immutable & normal Fedora as well as allowed by SELinux.
-Change this at your peril." --value="/usr/local/bin" )"
+Change this at your peril." --value="/usr/local/bin" )" )"
 
 if [[ $# -gt 1 ]]; then
     printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid number of arguments!"
