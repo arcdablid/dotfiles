@@ -106,52 +106,52 @@ else
     printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via brew bundle...\n"
 
     brew bundle upgrade --cleanup --force --jobs auto --file=/dev/stdin <<EOF
-    {{ range .packages.homebrew.taps -}}
-    $(  if [[ -f {{ . }} ]]; then
-            cat {{ . }} | grep '^tap' | sort -u
-        elif [[ -d {{ . }} ]]; then
-            find {{ . }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u
-        else
-            echo 'tap {{ . | quote }}'
-        fi )
-    {{ end -}}
+{{ range .packages.homebrew.taps -}}
+$(  if [[ -f {{ . }} ]]; then
+        cat {{ . }} | grep '^tap' | sort -u
+    elif [[ -d {{ . }} ]]; then
+        find {{ . }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u
+    else
+        echo 'tap {{ . | quote }}'
+    fi )
+{{ end -}}
 
-    {{ range .packages.homebrew.formulae -}}
-    brew {{ . | quote }}
-    {{ end -}}
+{{ range .packages.homebrew.formulae -}}
+brew {{ . | quote }}
+{{ end -}}
 
-    {{ range .packages.homebrew.casks -}}
-    cask {{ . | quote }}
-    {{ end -}}
+{{ range .packages.homebrew.casks -}}
+cask {{ . | quote }}
+{{ end -}}
 
-    {{ range .packages.flatpaks -}}
-    flatpak {{ . | quote }}
-    {{ end -}}
+{{ range .packages.flatpaks -}}
+flatpak {{ . | quote }}
+{{ end -}}
 
-    {{ range .packages.go -}}
-    go {{ . | quote }}
-    {{ end -}}
+{{ range .packages.go -}}
+go {{ . | quote }}
+{{ end -}}
 
-    {{ range .packages.cargo -}}
-    cargo {{ . | quote }}
-    {{ end -}}
+{{ range .packages.cargo -}}
+cargo {{ . | quote }}
+{{ end -}}
 
-    {{ range .packages.uv -}}
-    uv {{ . | quote }}
-    {{ end -}}
+{{ range .packages.uv -}}
+uv {{ . | quote }}
+{{ end -}}
 
-    {{ range .packages.vscode_extensions -}}
-    vscode {{ . | quote }}
-    {{ end -}}
+{{ range .packages.vscode_extensions -}}
+vscode {{ . | quote }}
+{{ end -}}
 
-    {{ range .packages.files -}}
-    $(  if [[ -f {{ . }} ]]; then
-            cat {{ . }}
-        elif [[ -d {{ . }} ]]; then
-            find {{ . }} -name '*.Brewfile' -exec cat {} \; | sort -u
-        fi )
-    {{ end -}}
-    EOF
+{{ range .packages.files -}}
+$(  if [[ -f {{ . }} ]]; then
+        cat {{ . }}
+    elif [[ -d {{ . }} ]]; then
+        find {{ . }} -name '*.Brewfile' -exec cat {} \; | sort -u
+    fi )
+{{ end -}}
+EOF
 fi
 
 # ------------------------------------------------------------------------------
