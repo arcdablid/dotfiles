@@ -1,11 +1,5 @@
 [credential]
     helper = cache --timeout=86400
 
-{{ if eq .setupGitInfo "yes" }}
-[user]
-    name = {{ .git_name }}
-    email = {{ .git_email }}
-{{ end }}
-
 [diff]
     external = difft
