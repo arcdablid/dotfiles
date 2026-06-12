@@ -7,3 +7,12 @@ refreshPeriod = "168h"
 type = "file"
 url = "https://raw.githubusercontent.com/po5/thumbfast/refs/heads/master/thumbfast.lua"
 refreshPeriod = "168h"
+["/.var/app/io.mpv.Mpv/config/mpv"]
+type = "archive"
+url = "https://github.com/tomasklaen/uosc/releases/latest/download/uosc.zip"
+# stripComponents = 1
+refreshPeriod = "168h"
+["/.var/app/io.mpv.Mpv/config/mpv/scripts/thumbfast.lua"]
+type = "file"
+url = "https://raw.githubusercontent.com/po5/thumbfast/refs/heads/master/thumbfast.lua"
+refreshPeriod = "168h"
