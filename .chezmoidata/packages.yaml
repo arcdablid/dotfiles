@@ -26,7 +26,7 @@ packages:
   homebrew:
     taps:
       - ublue-os/tap
-      - valkyrie00/bbrew
+      # - valkyrie00/bbrew
       - /usr/share/ublue-os/homebrew
 
     casks:
@@ -43,7 +43,7 @@ packages:
 
       - chezmoi # Manage your dotfiles across multiple diverse machines, securely | https://chezmoi.io/
 
-      - bbrew
+      # - bbrew
 
       - jq # Lightweight and flexible command-line JSON processor | https://jqlang.github.io/jq/
       - yq # Process YAML, JSON, XML, CSV and properties documents from the CLI | https://github.com/mikefarah/yq
