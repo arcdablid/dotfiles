@@ -1,5 +1,6 @@
+{{ $setupGitInfo := promptBoolOnce . "setupGitInfo" "Setup Git Email/Name" }}
+
 [data]
-    {{ $setupGitInfo := promptBoolOnce . "setupGitInfo" "Setup Git Email/Name" }}
     setupGitInfo = {{ $setupGitInfo }}
     {{ if eq .setupGitInfo "yes" }}
     {{- $git_email := promptStringOnce . "git_email" "Git email address" -}}
