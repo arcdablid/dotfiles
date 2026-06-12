@@ -94,108 +94,73 @@ done
 executor_path="$(readlink -f "${executor_path}")"
 executor_dir="$(cd -P "$(dirname -- "${executor_path}")" >/dev/null 2>&1 && pwd)"
 
-declare -a required_cmds=( "brew" )
-
-fail=false
-for rc in "${required_cmds[@]}"; do
-    if ! command -v "${rc}" &> /dev/null ; then
-        printf "[${executor}] ${BRed}ERROR${Color_Off} - '${rc}' not available!"
-        fail=true
-    fi
-done
-[[ "${fail}" == true ]] && exit 1
-
 # ------------------------------------------------------------------------------
 
-printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Update Homebrew...\n"
-brew update --force
-brew upgrade
+if ! command -v brew &> /dev/null; then
+    printf "[${executor}] ${BRed}ERROR${Color_Off} - 'brew' not available!"
+else
+    printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Update Homebrew...\n"
+    brew update --force
+    brew upgrade
 
-printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via brew bundle...\n"
+    printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via brew bundle...\n"
 
-brew bundle upgrade --cleanup --force --jobs auto --file=/dev/stdin <<EOF
-{{ range .packages.homebrew.taps -}}
-$(  if [[ -f {{ . }} ]]; then
-        cat {{ . }} | grep '^tap' | sort -u
-    elif [[ -d {{ . }} ]]; then
-        find {{ . }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u
-    else
-        echo 'tap {{ . | quote }}'
-    fi )
-{{ end -}}
+    brew bundle upgrade --cleanup --force --jobs auto --file=/dev/stdin <<EOF
+    {{ range .packages.homebrew.taps -}}
+    $(  if [[ -f {{ . }} ]]; then
+            cat {{ . }} | grep '^tap' | sort -u
+        elif [[ -d {{ . }} ]]; then
+            find {{ . }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u
+        else
+            echo 'tap {{ . | quote }}'
+        fi )
+    {{ end -}}
 
-{{ range .packages.homebrew.formulae -}}
-brew {{ . | quote }}
-{{ end -}}
+    {{ range .packages.homebrew.formulae -}}
+    brew {{ . | quote }}
+    {{ end -}}
 
-{{ range .packages.homebrew.casks -}}
-cask {{ . | quote }}
-{{ end -}}
+    {{ range .packages.homebrew.casks -}}
+    cask {{ . | quote }}
+    {{ end -}}
 
-{{ range .packages.flatpaks -}}
-flatpak {{ . | quote }}
-{{ end -}}
+    {{ range .packages.flatpaks -}}
+    flatpak {{ . | quote }}
+    {{ end -}}
 
-{{ range .packages.go -}}
-go {{ . | quote }}
-{{ end -}}
+    {{ range .packages.go -}}
+    go {{ . | quote }}
+    {{ end -}}
 
-{{ range .packages.cargo -}}
-cargo {{ . | quote }}
-{{ end -}}
+    {{ range .packages.cargo -}}
+    cargo {{ . | quote }}
+    {{ end -}}
 
-{{ range .packages.uv -}}
-uv {{ . | quote }}
-{{ end -}}
+    {{ range .packages.uv -}}
+    uv {{ . | quote }}
+    {{ end -}}
 
-{{ range .packages.vscode_extensions -}}
-vscode {{ . | quote }}
-{{ end -}}
+    {{ range .packages.vscode_extensions -}}
+    vscode {{ . | quote }}
+    {{ end -}}
 
-{{ range .packages.files -}}
-$(  if [[ -f {{ . }} ]]; then
-        cat {{ . }}
-    elif [[ -d {{ . }} ]]; then
-        find {{ . }} -name '*.Brewfile' -exec cat {} \; | sort -u
-    fi )
-{{ end -}}
-EOF
+    {{ range .packages.files -}}
+    $(  if [[ -f {{ . }} ]]; then
+            cat {{ . }}
+        elif [[ -d {{ . }} ]]; then
+            find {{ . }} -name '*.Brewfile' -exec cat {} \; | sort -u
+        fi )
+    {{ end -}}
+    EOF
+fi
 
 # ------------------------------------------------------------------------------
 
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating cache path presence...\n"
-cache=~/.var/lib/chezmoi/run_onchange_apply_packages.d
+cache="$HOME/.var/lib/chezmoi/run_onchange_apply_packages.d"
 [[ ! -d "${cache}" ]] && \mkdir -pv "${cache}"
 
 #TODO: per item add to registry
-
-# ------------------------------------------------------------------------------
-
-printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating pip pkgs...\n"
-if command -v pip &> /dev/null; then
-    cat <<EOF > "${cache}"/requirements_current_pip.txt
-{{ range .packages.pip -}}
-{{ . }}
-{{ end -}}
-EOF
-    if [[ -f "${cache}"/requirements_previous_pip.txt ]]; then
-
-        # unique lines found in second input compared to first input
-        mapfile -t pip_to_install < <( \grep -Fxvf "${cache}"/requirements_previous_pip.txt "${cache}"/requirements_current_pip.txt )
-        mapfile -t pip_to_uninstall < <( \grep -Fxvf "${cache}"/requirements_current_pip.txt "${cache}"/requirements_previous_pip.txt )
-
-        [[ ${#pip_to_uninstall[@]} -gt 0 ]] && pip uninstall ${pip_to_uninstall[@]}
-        [[ ${#pip_to_install[@]} -gt 0 ]] && pip install -U ${pip_to_install[@]}
-
-    else
-        pip install -U -r "${cache}"/requirements_current_pip.txt
-    fi
-
-    [[ -f "${cache}"/requirements_previous_pip.txt ]] && rm "${cache}"/requirements_previous_pip.txt
-    mv "${cache}"/requirements_current_pip.txt "${cache}"/requirements_previous_pip.txt
-else
-    printf "[${executor}] ${BRed}ERROR${Color_Off} - Python pip not available!\n"
-fi
 
 # ------------------------------------------------------------------------------
 
