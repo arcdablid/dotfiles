@@ -296,6 +296,7 @@ packages:
     - app.zen_browser.zen
     - one.ablaze.floorp
     - io.github.ungoogled_software.ungoogled_chromium
+    - io.github.ungoogled_software.ungoogled_chromium.Codecs
     - org.torproject.torbrowser-launcher
 
     # Games
