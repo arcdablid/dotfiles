@@ -5,7 +5,6 @@
 # Source global definitions
 [[ -f "/etc/bashrc" ]] && source /etc/bashrc
 
-
 # ------------------------------------------------------------------------------
 # ANSI escape code variables.
 # ------------------------------------------------------------------------------
@@ -220,7 +219,7 @@ fi
 
 if command -v moor 2>&1 >/dev/null; then
     export PAGER="moor"
-    export MOOR='--statusbar=bold --no-linenumbers'
+    export MOOR='--statusbar=bold --no-linenumbers --mousemode auto'
 elif command -v gum 2>&1 >/dev/null; then
     export PAGER="gum pager"
 elif command -v less 2>&1 >/dev/null; then
@@ -275,20 +274,17 @@ alias lspath='print_path_as_list'
 # To list & search e.g. all available commands and aliases:
 #   compgen -ac PATTERN
 
-function r { (
-    set ${SET_X:+-x} -eou pipefail
+function r {
     compgen -A function -abck | fzf
-); }
+}
 
-function ra { (
-    set ${SET_X:+-x} -eou pipefail
+function ra {
     compgen -a | fzf
-); }
+}
 
-function rf { (
-    set ${SET_X:+-x} -eou pipefail
+function rf {
     compgen -A function | fzf
-); }
+}
 
 alias sudo='sudo ' # keep aliases, https://unix.stackexchange.com/a/349290
 
@@ -314,18 +310,16 @@ function sudoaf {
 alias inhibit='systemd-inhibit --no-ask-password --what=idle --who="$USER" --why="Obvious reasons..."'
 
 # run in the background & inhibit
-function rib { (
-    set ${SET_X:+-x} -eou pipefail
+function rib {
     systemd-inhibit --no-ask-password --what=idle --who="$USER" --why="Obvious reasons..." $@ & disown
     if [[ ! -v INHIBIT_PID_LIST ]]; then
         declare -a INHIBIT_PID_LIST=()
     fi
     export INHIBIT_PID_LIST+=( "$!" )
-); }
+}
 
 # inhibit_no_more
-function ribz { (
-    set ${SET_X:+-x} -eou pipefail
+function ribz {
     if [[ ! -v INHIBIT_PID_LIST ]]; then
         printf '%s\n' "No background PIDs found."
     else
@@ -345,7 +339,7 @@ function ribz { (
 
         done
     fi
-); }
+}
 
 # ------------------------------------------------------------------------------
 
@@ -540,14 +534,13 @@ if command -v mkd 2>&1 >/dev/null; then
 fi
 
 if command -v expand_path 2>&1 >/dev/null; then
-    function lns { (
-        set ${SET_X:+-x} -eou pipefail
+    function lns {
         # -s, --symbolic        make symbolic links instead of hard links
         # -i, --interactive     prompt whether to remove destinations
         # -n, --no-dereference  treat LINK_NAME as a normal file if it is a symbolic link to a directory
         # -v, --verbose         print name of each linked file
         [[ $# == 2 ]] && ln -sinv "$( expand_path "${1}" )" "$( expand_path "${2}" )"
-    ); }
+    }
 fi
 
 alias cp="cp -vai"
@@ -566,8 +559,7 @@ alias diff="difft" # difftastic, syntax-aware diffing
 
 # Superfile terminal file manager 'cd_on_quit' | https://superfile.dev/
 if command -v spf 2>&1 >/dev/null; then
-    function f { (
-        set ${SET_X:+-x} -eou pipefail
+    function f {
         export SPF_LAST_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/superfile/lastdir"
 
         command spf "$@"
@@ -576,7 +568,7 @@ if command -v spf 2>&1 >/dev/null; then
             . "$SPF_LAST_DIR"
             rm -f -- "$SPF_LAST_DIR" > /dev/null
         }
-    ); }
+    }
 fi
 
 # nnn with autocd on exit
@@ -616,10 +608,9 @@ fi
 
 alias grep='grep --color=auto'
 alias g='grep --color=auto -r'
-function hlt { (
-    set ${SET_X:+-x} -eou pipefail
-    grep --color=always -E "${1}|$"
-); }
+function hlt {
+    \grep --color=always -E "${1}|$"
+}
 
 if command -v ug 2>&1 >/dev/null; then
     alias uge='ug -E'
@@ -663,11 +654,10 @@ alias flush-dns="dns-flush"
 alias dns-refresh="dns-flush"
 alias refresh-dns="dns-flush"
 
-function lsip { (
-    set ${SET_X:+-x} -eou pipefail
+function lsip {
     printf "[${BPurple}WAN${Color_Off}]\n%s\n" "$( curl -s https://icanhazip.com || curl -s https://ifconfig.me || curl -s https://ipecho.net/plain || curl -s ipinfo.io/ip || wget -qO- https://icanhazip.com || wget -qO- https://ifconfig.me )"
     printf "[${BPurple}LAN${Color_Off}]\n%s\n%s\n" "$( ip -c -h -brief address show )" "$( ip -c -h -brief link show )"
-); }
+}
 
 alias lsnic="lsip"
 alias lsnet="lsip"
@@ -688,13 +678,12 @@ if command -v chezmoi 2>&1 >/dev/null; then
     alias czm="chezmoi"
     alias czmi="chezmoi init"
     alias czma="chezmoi apply"
-    function chezmoi-rerun-scripts { (
-        set ${SET_X:+-x} -eou pipefail
+    function chezmoi-rerun-scripts {
         chezmoi state delete-bucket --bucket=entryState
         chezmoi state delete-bucket --bucket=scriptState
         # rm -f "${HOME}/.config/chezmoi/chezmoistate.boltdb"
         chezmoi init --apply
-    ); }
+    }
 fi
 
 if command -v btop 2>&1 >/dev/null; then
@@ -776,26 +765,23 @@ alias py="python"
 alias serve="python3 -m http.server 33333"
 
 if command -v miniserve 2>&1 >/dev/null; then
-    function miniserve { (
-        set ${SET_X:+-x} -eou pipefail
+    function miniserve {
         \miniserve -p 33333 --pretty-urls --no-symlinks --enable-tar-gz --enable-zip --dirs-first --show-wget-footer "${1:-$( pwd )}"
-    ); }
+    }
 elif command -v podman 2>&1 >/dev/null; then
-    function miniserve { (
-        set ${SET_X:+-x} -eou pipefail
+    function miniserve {
         podman run \
             --rm -it \
-            -v "${1:-$( pwd )}":/tmp \
+            -v "${1:-$( pwd )}":/tmp:Z \
             -p 33333:8080 \
             docker.io/svenstaro/miniserve \
             --pretty-urls --no-symlinks \
             --enable-tar-gz --enable-zip \
             --dirs-first --show-wget-footer \
             /tmp
-    ); }
+    }
 elif command -v docker 2>&1 >/dev/null; then
-    function miniserve { (
-        set ${SET_X:+-x} -eou pipefail
+    function miniserve {
         docker run \
             --rm -it \
             -v "${1:-$( pwd )}":/tmp \
@@ -805,7 +791,7 @@ elif command -v docker 2>&1 >/dev/null; then
             --enable-tar-gz --enable-zip \
             --dirs-first --show-wget-footer \
             /tmp
-    ); }
+    }
 fi
 
 function copyparty {
