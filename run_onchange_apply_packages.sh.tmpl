@@ -1,5 +1,6 @@
 {{ if eq .chezmoi.os "linux" -}}
 #!/usr/bin/env bash
+set ${SET_X:+-x} -eou pipefail
 
 #------------------------------------------------------------------------------
 # ANSI escape code variables.
@@ -161,76 +162,60 @@ printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating cache path presenc
 cache="$HOME/.var/lib/chezmoi/run_onchange_apply_packages.d"
 [[ ! -d "${cache}" ]] && \mkdir -pv "${cache}"
 
-#TODO: per item add to registry
+rm -fv "${cache}"/requirements*
 
 # ------------------------------------------------------------------------------
 
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating GNOME extentions...\n"
-if command -v gext &> /dev/null; then
-    cat <<EOF > "${cache}"/requirements_current_gnome_extentions.txt
-{{ range .packages.gnome_extentions -}}
+
+cat <<EOF > "${cache}"/registry_wanted_gnome_extensions.txt
+{{ range .packages.gnome_extensions -}}
 {{ . }}
 {{ end -}}
 EOF
-    if [[ -f "${cache}"/requirements_previous_gnome_extentions.txt ]]; then
 
-        # unique lines found in second input compared to first input
-        mapfile -t gnome_extentions_to_install < <( \grep -Fxvf "${cache}"/requirements_previous_gnome_extentions.txt "${cache}"/requirements_current_gnome_extentions.txt )
-        mapfile -t gnome_extentions_to_uninstall < <( \grep -Fxvf "${cache}"/requirements_current_gnome_extentions.txt "${cache}"/requirements_previous_gnome_extentions.txt )
+if [[ -f "${cache}"/registry_present_gnome_extensions.txt ]]; then
 
-        [[ ${#gnome_extentions_to_uninstall[@]} -gt 0 ]] && gext uninstall ${gnome_extentions_to_uninstall[@]}
-        [[ ${#gnome_extentions_to_install[@]} -gt 0 ]] && gext update --install --yes ${gnome_extentions_to_install[@]}
+    # unique lines found in second input compared to first input
+    mapfile -t gnome_extensions_to_install < <( \grep -Fxvf "${cache}"/registry_present_gnome_extensions.txt "${cache}"/registry_wanted_gnome_extensions.txt )
+    mapfile -t gnome_extensions_to_uninstall < <( \grep -Fxvf "${cache}"/registry_wanted_gnome_extensions.txt "${cache}"/registry_present_gnome_extensions.txt )
 
-    else
-        gext update --install --yes $( cat "${cache}"/requirements_current_gnome_extentions.txt | awk '{print}' ORS=' ' )
+    if [[ ${#gnome_extensions_to_uninstall[@]} -gt 0 ]]; then
+        for getu in "${gnome_extensions_to_uninstall[@]}"; do
+            gdbus call --session \
+            --dest org.gnome.Shell.Extensions \
+            --object-path /org/gnome/Shell/Extensions \
+            --method org.gnome.Shell.Extensions.UninstallExtension \
+            "${getu}"
+            # Update installed
+            sed -i "/${getu}/d" "${cache}"/registry_present_gnome_extensions.txt
+            # Remove empty lines
+            sed -i '/^$/d' "${cache}"/registry_present_gnome_extensions.txt
+        done
+
     fi
-
-    [[ -f "${cache}"/requirements_previous_gnome_extentions.txt ]] && rm "${cache}"/requirements_previous_gnome_extentions.txt
-    mv "${cache}"/requirements_current_gnome_extentions.txt "${cache}"/requirements_previous_gnome_extentions.txt
-
-else
-    printf "[${executor}] ${BRed}ERROR${Color_Off} - gext not available!\n"
-fi
-
-# ------------------------------------------------------------------------------
-
-printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating ramalama quadlets...\n"
-if command -v ramalama &> /dev/null; then
-    \cat <<EOF > "${cache}"/requirements_current_ramalama.txt
-{{ range .packages.ramalama -}}
-{{ .url }} @ {{ .port }}
-{{ end -}}
-EOF
-    if [[ -f "${cache}"/requirements_previous_ramalama.txt ]]; then
-
-        # unique lines found in second input compared to first input
-        mapfile -t ramalama_to_install < <( \grep -Fxvf "${cache}"/requirements_previous_ramalama.txt "${cache}"/requirements_current_ramalama.txt )
-        mapfile -t ramalama_to_uninstall < <( \grep -Fxvf "${cache}"/requirements_current_ramalama.txt "${cache}"/requirements_previous_ramalama.txt )
-
-        if [[ ${#ramalama_to_uninstall[@]} -gt 0 ]]; then
-            for rtu in "${ramalama_to_uninstall[@]}"; do
-                setup_quadlet_ramalama_model -r -u "$( str_cut -d ' @ ' -p 1 -- "${rtu}" )" -p "$( str_cut -d ' @ ' -p 2 -- "${rtu}" )"
-            done
-        fi
-        if [[ ${#ramalama_to_install[@]} -gt 0 ]]; then
-            for rti in "${ramalama_to_install[@]}"; do
-                setup_quadlet_ramalama_model -u "$( str_cut -d ' @ ' -p 1 -- "${rti}" )" -p "$( str_cut -d ' @ ' -p 2 -- "${rti}" )"
-            done
-        fi
-
-    else
-        mapfile -t ramalama_to_install < <( cat "${cache}"/requirements_current_ramalama.txt )
-        for rti in "${ramalama_to_install[@]}"; do
-            setup_quadlet_ramalama_model -u "$( str_cut -d ' @ ' -p 1 -- "${rti}" )" -p "$( str_cut -d ' @ ' -p 2 -- "${rti}" )"
+    if [[ ${#gnome_extensions_to_install[@]} -gt 0 ]]; then
+        for geti in "${gnome_extensions_to_install[@]}"; do
+            gdbus call --session \
+            --dest org.gnome.Shell.Extensions \
+            --object-path /org/gnome/Shell/Extensions \
+            --method org.gnome.Shell.Extensions.InstallRemoteExtension \
+            "${geti}"
+            # Update installed
+            echo "${geti}" | tee -a "${cache}"/registry_present_gnome_extensions.txt > /dev/null
         done
     fi
-
-    [[ -f "${cache}"/requirements_previous_ramalama.txt ]] && \rm "${cache}"/requirements_previous_ramalama.txt
-    \mv "${cache}"/requirements_current_ramalama.txt "${cache}"/requirements_previous_ramalama.txt
-
 else
-    printf "[${executor}] ${BRed}ERROR${Color_Off} - ramalama not available!\n"
+    # Read file lines without inline comments and pipe them one by one to cmd
+    xargs --arg-file <( awk -F ' # ' '{print $1}' "${cache}"/registry_wanted_gnome_extensions.txt ) -I % bash -c ' \
+    gdbus call --session \
+    --dest org.gnome.Shell.Extensions \
+    --object-path /org/gnome/Shell/Extensions \
+    --method org.gnome.Shell.Extensions.InstallRemoteExtension "%" \
+    && echo "%" | tee -a "${cache}"/registry_present_gnome_extensions.txt > /dev/null
 fi
+
+[[ -f "${cache}"/registry_wanted_gnome_extensions.txt ]] && rm "${cache}"/registry_wanted_gnome_extensions.txt
 
 # ------------------------------------------------------------------------------
 
