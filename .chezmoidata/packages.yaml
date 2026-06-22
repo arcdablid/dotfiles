@@ -512,7 +512,7 @@ packages:
     # - org.gtk.Gtk3theme.Yaru-bark
     # - org.gtk.Gtk3theme.Yaru-bark-dark
 
-  gnome_extentions:
+  gnome_extensions:
     - 307   # Dash to Dock | https://micheleg.github.io/dash-to-dock/
     - 1160  # Dash to Panel | https://github.com/home-sweet-gnome/dash-to-panel
     - 1460  # Vitals | https://github.com/corecoding/Vitals
