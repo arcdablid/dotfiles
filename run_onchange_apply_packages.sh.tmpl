@@ -166,7 +166,7 @@ rm -fv "${cache}"/requirements*
 
 # ------------------------------------------------------------------------------
 
-printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating GNOME extentions...\n"
+printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating GNOME extensions...\n"
 
 cat <<EOF > "${cache}"/registry_wanted_gnome_extensions.txt
 {{ range .packages.gnome_extensions -}}
