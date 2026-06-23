@@ -27,7 +27,7 @@ packages:
     taps:
       - ublue-os/tap
       # - valkyrie00/bbrew
-      - /usr/share/ublue-os/homebrew
+      # - /usr/share/ublue-os/homebrew
 
     casks:
       # - font-jetbrains-mono-nerd-font # Required for VSCode@BazziteDX
