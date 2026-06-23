@@ -1,6 +1,5 @@
 {{ if eq .chezmoi.os "linux" -}}
 #!/usr/bin/env bash
-set ${SET_X:+-x} -eou pipefail
 
 #------------------------------------------------------------------------------
 # ANSI escape code variables.
@@ -97,6 +96,14 @@ executor_dir="$(cd -P "$(dirname -- "${executor_path}")" >/dev/null 2>&1 && pwd)
 
 # ------------------------------------------------------------------------------
 
+function print_char_line {
+    local filler=${1}
+    printf "%`tput cols`s" | sed "s/ /${filler}/g"
+    printf '\n'
+}
+
+# ------------------------------------------------------------------------------
+
 if ! command -v brew &> /dev/null; then
     printf "[${executor}] ${BRed}ERROR${Color_Off} - 'brew' not available!"
 else
@@ -174,51 +181,91 @@ cat <<EOF > "${cache}"/registry_wanted_gnome_extensions.txt
 {{ end -}}
 EOF
 
+declare -a failed_uninstall=()
+declare -a failed_install=()
+
 if [[ -f "${cache}"/registry_present_gnome_extensions.txt ]]; then
 
     # unique lines found in second input compared to first input
     mapfile -t gnome_extensions_to_install < <( \grep -Fxvf "${cache}"/registry_present_gnome_extensions.txt "${cache}"/registry_wanted_gnome_extensions.txt )
     mapfile -t gnome_extensions_to_uninstall < <( \grep -Fxvf "${cache}"/registry_wanted_gnome_extensions.txt "${cache}"/registry_present_gnome_extensions.txt )
 
-    if [[ ${#gnome_extensions_to_uninstall[@]} -gt 0 ]]; then
+    if [[ ! -z ${gnome_extensions_to_uninstall+x} && ${#gnome_extensions_to_uninstall[@]} -gt 0 ]]; then
         for getu in "${gnome_extensions_to_uninstall[@]}"; do
-            gdbus call --session \
+            # Uninstall
+            # Remove from registry
+            # Remove empty lines
+            if gdbus call --session \
             --dest org.gnome.Shell.Extensions \
             --object-path /org/gnome/Shell/Extensions \
             --method org.gnome.Shell.Extensions.UninstallExtension \
-            "${getu}"
-            # Update installed
-            sed -i "/${getu}/d" "${cache}"/registry_present_gnome_extensions.txt
-            # Remove empty lines
-            sed -i '/^$/d' "${cache}"/registry_present_gnome_extensions.txt
+            "${getu}"; then
+                sed -i "/${getu}/d" "${cache}"/registry_present_gnome_extensions.txt
+                sed -i '/^$/d' "${cache}"/registry_present_gnome_extensions.txt
+            else
+                failed_uninstall+=( "${getu}" )
+            fi
         done
-
     fi
-    if [[ ${#gnome_extensions_to_install[@]} -gt 0 ]]; then
+
+    if [[ ! -z ${gnome_extensions_to_install+x} && ${#gnome_extensions_to_install[@]} -gt 0 ]]; then
         for geti in "${gnome_extensions_to_install[@]}"; do
-            gdbus call --session \
+            # Install
+            # Add to registry
+            if gdbus call --session \
             --dest org.gnome.Shell.Extensions \
             --object-path /org/gnome/Shell/Extensions \
             --method org.gnome.Shell.Extensions.InstallRemoteExtension \
-            "${geti}"
-            # Update installed
-            echo "${geti}" | tee -a "${cache}"/registry_present_gnome_extensions.txt > /dev/null
+            "${geti}"; then
+                echo "${geti}" | tee -a "${cache}"/registry_present_gnome_extensions.txt > /dev/null
+            else
+                failed_install+=( "${geti}" )
+            fi
         done
     fi
+
 else
+
     # Read file lines without inline comments and pipe them one by one to cmd
-    xargs --arg-file <( awk -F ' # ' '{print $1}' "${cache}"/registry_wanted_gnome_extensions.txt ) -I % bash -c ' \
-    gdbus call --session \
-    --dest org.gnome.Shell.Extensions \
-    --object-path /org/gnome/Shell/Extensions \
-    --method org.gnome.Shell.Extensions.InstallRemoteExtension "%" \
-    && echo "%" | tee -a "${cache}"/registry_present_gnome_extensions.txt > /dev/null
+    mapfile -t gnome_extensions_to_install < <( cat "${cache}"/registry_wanted_gnome_extensions.txt )
+
+    if [[ ! -z ${gnome_extensions_to_install+x} && ${#gnome_extensions_to_install[@]} -gt 0 ]]; then
+        for geti in "${gnome_extensions_to_install[@]}"; do
+            # Install
+            # Add to registry
+            if gdbus call --session \
+            --dest org.gnome.Shell.Extensions \
+            --object-path /org/gnome/Shell/Extensions \
+            --method org.gnome.Shell.Extensions.InstallRemoteExtension \
+            "${geti}"; then
+                echo "${geti}" | tee -a "${cache}"/registry_present_gnome_extensions.txt > /dev/null
+            else
+                failed_install+=( "${geti}" )
+            fi
+        done
+    fi
+
 fi
 
 [[ -f "${cache}"/registry_wanted_gnome_extensions.txt ]] && rm "${cache}"/registry_wanted_gnome_extensions.txt
 
+if [[ ! -z ${failed_uninstall+x} && ${#failed_uninstall[@]} -gt 0 ]]; then
+    echo
+    print_char_line '='
+    printf "${BRed}Failed to uninstall:${Color_Off} %d\n" ${#failed_uninstall[@]}
+    printf '%s\n' "${failed_uninstall[@]}"
+fi
+
+if [[ ! -z ${failed_install+x} && ${#failed_install[@]} -gt 0 ]]; then
+    echo
+    print_char_line '='
+    printf "${BRed}Failed to install:${Color_Off} %d\n" ${#failed_install[@]}
+    printf '%s\n' "${failed_install[@]}"
+fi
+
 # ------------------------------------------------------------------------------
 
+echo
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - All done!\n"
 
 {{ end -}}
