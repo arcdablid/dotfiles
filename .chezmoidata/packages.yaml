@@ -513,14 +513,19 @@ packages:
     # - org.gtk.Gtk3theme.Yaru-bark-dark
 
   gnome_extensions:
-    - 307   # Dash to Dock | https://micheleg.github.io/dash-to-dock/
-    - 1160  # Dash to Panel | https://github.com/home-sweet-gnome/dash-to-panel
-    - 1460  # Vitals | https://github.com/corecoding/Vitals
-    - 5470  # Weather O'Clock | https://github.com/CleoMenezesJr/weather-oclock
-    - 7065  # Tiling Shell | https://github.com/domferr/tilingshell
-    - 8745  # App Grid Tuner | https://codeberg.org/m-lab/app-grid-tuner
-    - 6099  # PaperWM | https://github.com/paperwm/PaperWM
-    - 973   # Switcher | https://github.com/daniellandau/switcher
+    - dash-to-dock@micxgx.gmail.com # 307 | Dash to Dock | https://micheleg.github.io/dash-to-dock/
+    - dash-to-panel@jderose9.github.com # 1160 | Dash to Panel | https://github.com/home-sweet-gnome/dash-to-panel
+    - Vitals@CoreCoding.com # 1460 | Vitals | https://github.com/corecoding/Vitals
+    - weatheroclock@CleoMenezesJr.github.io # 5470 | Weather O'Clock | https://github.com/CleoMenezesJr/weather-oclock
+    - tilingshell@ferrarodomenico.com # 7065 | Tiling Shell | https://github.com/domferr/tilingshell
+    - app-grid-tuner@m-lab # 8745 | App Grid Tuner | https://codeberg.org/m-lab/app-grid-tuner
+    # - paperwm@paperwm.github.com # 6099 | PaperWM | https://github.com/paperwm/PaperWM
+    - switcher@landau.fi # 973 | Switcher | https://github.com/daniellandau/switcher
+    - user-theme@gnome-shell-extensions.gcampax.github.com
+    - appindicatorsupport@rgcjonas.gmail.com
+    - gsconnect@andyholmes.github.io
+    - blur-my-shell@aunetx
+    - caffeine@patapon.info
 
   ramalama:
   #   - url: hf.co/unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL
