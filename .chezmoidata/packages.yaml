@@ -11,18 +11,6 @@ packages:
   uv:
     - gnome-extensions-cli # Manage Gnome Shell extensions from the terminal | https://github.com/essembeh/gnome-extensions-cli
 
-    # - requests
-    # - urllib3
-    # - isort # Sort Python imports automatically | https://pycqa.github.io/isort/
-    # - ruamel.yaml # YAML 1.2 loader/dumper package for Python | https://yaml.dev/doc/ruamel.yaml/
-    # - tqdm # Make your loops show a smart progress meter | https://tqdm.github.io/
-    # - pyperclip # Cross-platform clipboard module | https://github.com/asweigart/pyperclip
-    # - validators # Data validation in Python for humans | https://github.com/python-validators/validators/
-    # - tabulate # Pretty-print tabular data in Python, a library and a command-line utility
-    # - flask
-    # - flask-wtf # Simple integration of Flask and WTForms
-    # - wtforms # Forms validation and rendering library for python
-
   homebrew:
     taps:
       - ublue-os/tap
@@ -439,99 +427,77 @@ packages:
     - org.mozilla.thunderbird_esr
     - org.gnome.Geary
 
-
     # - org.gtk.Gtk3theme.adw-gtk3
     # - org.gtk.Gtk3theme.adw-gtk3-dark
 
     # Yaru
-    # - org.gtk.Gtk3theme.Yaru
-    # - org.gtk.Gtk3theme.Yaru-Yellow
-    # - org.gtk.Gtk3theme.Yaru-Yellow-light
-    # - org.gtk.Gtk3theme.Yaru-Yellow-dark
-    # - org.gtk.Gtk3theme.Yaru-Teal
-    # - org.gtk.Gtk3theme.Yaru-Teal-light
-    # - org.gtk.Gtk3theme.Yaru-Teal-dark
-    # - org.gtk.Gtk3theme.Yaru-Red
-    # - org.gtk.Gtk3theme.Yaru-Red-light
-    # - org.gtk.Gtk3theme.Yaru-Red-dark
-    # - org.gtk.Gtk3theme.Yaru-Purple
-    # - org.gtk.Gtk3theme.Yaru-Purple-light
-    # - org.gtk.Gtk3theme.Yaru-Purple-dark
-    # - org.gtk.Gtk3theme.Yaru-Pink
-    # - org.gtk.Gtk3theme.Yaru-Pink-light
-    # - org.gtk.Gtk3theme.Yaru-Pink-dark
-    # - org.gtk.Gtk3theme.Yaru-Orange
-    # - org.gtk.Gtk3theme.Yaru-Orange-light
-    # - org.gtk.Gtk3theme.Yaru-Orange-dark
-    # - org.gtk.Gtk3theme.Yaru-MATE
-    # - org.gtk.Gtk3theme.Yaru-MATE-light
-    # - org.gtk.Gtk3theme.Yaru-MATE-dark
-    # - org.gtk.Gtk3theme.Yaru-Lavender
-    # - org.gtk.Gtk3theme.Yaru-Lavender-light
-    # - org.gtk.Gtk3theme.Yaru-Lavender-dark
-    # - org.gtk.Gtk3theme.Yaru-Grey
-    # - org.gtk.Gtk3theme.Yaru-Grey-light
-    # - org.gtk.Gtk3theme.Yaru-Grey-dark
-    # - org.gtk.Gtk3theme.Yaru-Green
-    # - org.gtk.Gtk3theme.Yaru-Green-light
-    # - org.gtk.Gtk3theme.Yaru-Green-dark
-    # - org.gtk.Gtk3theme.Yaru-Deepblue
-    # - org.gtk.Gtk3theme.Yaru-Deepblue-light
-    # - org.gtk.Gtk3theme.Yaru-Deepblue-dark
-    # - org.gtk.Gtk3theme.Yaru-Cinnamon
-    # - org.gtk.Gtk3theme.Yaru-Cinnamon-light
-    # - org.gtk.Gtk3theme.Yaru-Cinnamon-dark
-    # - org.gtk.Gtk3theme.Yaru-Brown
-    # - org.gtk.Gtk3theme.Yaru-Brown-light
-    # - org.gtk.Gtk3theme.Yaru-Brown-dark
-    # - org.gtk.Gtk3theme.Yaru-Blue
-    # - org.gtk.Gtk3theme.Yaru-Blue-light
-    # - org.gtk.Gtk3theme.Yaru-Blue-dark
-    # - org.gtk.Gtk3theme.Yaru-Aubergine
-    # - org.gtk.Gtk3theme.Yaru-Aubergine-light
-    # - org.gtk.Gtk3theme.Yaru-Aubergine-dark
-    # - org.gtk.Gtk3theme.Yaru-Aqua
-    # - org.gtk.Gtk3theme.Yaru-Aqua-light
-    # - org.gtk.Gtk3theme.Yaru-Aqua-dark
-    # - org.gtk.Gtk3theme.Yaru-Amber
-    # - org.gtk.Gtk3theme.Yaru-Amber-light
-    # - org.gtk.Gtk3theme.Yaru-Amber-dark
-    # - org.gtk.Gtk3theme.Yaru-sage
-    # - org.gtk.Gtk3theme.Yaru-sage-dark
-    # - org.gtk.Gtk3theme.Yaru-remix
-    # - org.gtk.Gtk3theme.Yaru-remix-light
-    # - org.gtk.Gtk3theme.Yaru-remix-dark
-    # - org.gtk.Gtk3theme.Yaru-prussiangreen
-    # - org.gtk.Gtk3theme.Yaru-prussiangreen-dark
-    # - org.gtk.Gtk3theme.Yaru-olive
-    # - org.gtk.Gtk3theme.Yaru-olive-dark
-    # - org.gtk.Gtk3theme.Yaru-magenta
-    # - org.gtk.Gtk3theme.Yaru-magenta-dark
-    # - org.gtk.Gtk3theme.Yaru-light
-    # - org.gtk.Gtk3theme.Yaru-dark
-    # - org.gtk.Gtk3theme.Yaru-bark
-    # - org.gtk.Gtk3theme.Yaru-bark-dark
-
-  gnome_extensions:
-    - dash-to-dock@micxgx.gmail.com # 307 | Dash to Dock | https://micheleg.github.io/dash-to-dock/
-    - dash-to-panel@jderose9.github.com # 1160 | Dash to Panel | https://github.com/home-sweet-gnome/dash-to-panel
-    - Vitals@CoreCoding.com # 1460 | Vitals | https://github.com/corecoding/Vitals
-    - weatheroclock@CleoMenezesJr.github.io # 5470 | Weather O'Clock | https://github.com/CleoMenezesJr/weather-oclock
-    - tilingshell@ferrarodomenico.com # 7065 | Tiling Shell | https://github.com/domferr/tilingshell
-    - app-grid-tuner@m-lab # 8745 | App Grid Tuner | https://codeberg.org/m-lab/app-grid-tuner
-    # - paperwm@paperwm.github.com # 6099 | PaperWM | https://github.com/paperwm/PaperWM
-    - switcher@landau.fi # 973 | Switcher | https://github.com/daniellandau/switcher
-    - user-theme@gnome-shell-extensions.gcampax.github.com
-    - appindicatorsupport@rgcjonas.gmail.com
-    - gsconnect@andyholmes.github.io
-    - blur-my-shell@aunetx
-    - caffeine@patapon.info
-
-  ramalama:
-  #   - url: hf.co/unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL
-  #     port: 8301
-  #   - url: hf.co/huihui-ai/Huihui-granite-4.1-3b-abliterated:BF16
-  #     port: 8302
+    - org.gtk.Gtk3theme.Yaru
+    - org.gtk.Gtk3theme.Yaru-Yellow
+    - org.gtk.Gtk3theme.Yaru-Yellow-light
+    - org.gtk.Gtk3theme.Yaru-Yellow-dark
+    - org.gtk.Gtk3theme.Yaru-Teal
+    - org.gtk.Gtk3theme.Yaru-Teal-light
+    - org.gtk.Gtk3theme.Yaru-Teal-dark
+    - org.gtk.Gtk3theme.Yaru-Red
+    - org.gtk.Gtk3theme.Yaru-Red-light
+    - org.gtk.Gtk3theme.Yaru-Red-dark
+    - org.gtk.Gtk3theme.Yaru-Purple
+    - org.gtk.Gtk3theme.Yaru-Purple-light
+    - org.gtk.Gtk3theme.Yaru-Purple-dark
+    - org.gtk.Gtk3theme.Yaru-Pink
+    - org.gtk.Gtk3theme.Yaru-Pink-light
+    - org.gtk.Gtk3theme.Yaru-Pink-dark
+    - org.gtk.Gtk3theme.Yaru-Orange
+    - org.gtk.Gtk3theme.Yaru-Orange-light
+    - org.gtk.Gtk3theme.Yaru-Orange-dark
+    - org.gtk.Gtk3theme.Yaru-MATE
+    - org.gtk.Gtk3theme.Yaru-MATE-light
+    - org.gtk.Gtk3theme.Yaru-MATE-dark
+    - org.gtk.Gtk3theme.Yaru-Lavender
+    - org.gtk.Gtk3theme.Yaru-Lavender-light
+    - org.gtk.Gtk3theme.Yaru-Lavender-dark
+    - org.gtk.Gtk3theme.Yaru-Grey
+    - org.gtk.Gtk3theme.Yaru-Grey-light
+    - org.gtk.Gtk3theme.Yaru-Grey-dark
+    - org.gtk.Gtk3theme.Yaru-Green
+    - org.gtk.Gtk3theme.Yaru-Green-light
+    - org.gtk.Gtk3theme.Yaru-Green-dark
+    - org.gtk.Gtk3theme.Yaru-Deepblue
+    - org.gtk.Gtk3theme.Yaru-Deepblue-light
+    - org.gtk.Gtk3theme.Yaru-Deepblue-dark
+    - org.gtk.Gtk3theme.Yaru-Cinnamon
+    - org.gtk.Gtk3theme.Yaru-Cinnamon-light
+    - org.gtk.Gtk3theme.Yaru-Cinnamon-dark
+    - org.gtk.Gtk3theme.Yaru-Brown
+    - org.gtk.Gtk3theme.Yaru-Brown-light
+    - org.gtk.Gtk3theme.Yaru-Brown-dark
+    - org.gtk.Gtk3theme.Yaru-Blue
+    - org.gtk.Gtk3theme.Yaru-Blue-light
+    - org.gtk.Gtk3theme.Yaru-Blue-dark
+    - org.gtk.Gtk3theme.Yaru-Aubergine
+    - org.gtk.Gtk3theme.Yaru-Aubergine-light
+    - org.gtk.Gtk3theme.Yaru-Aubergine-dark
+    - org.gtk.Gtk3theme.Yaru-Aqua
+    - org.gtk.Gtk3theme.Yaru-Aqua-light
+    - org.gtk.Gtk3theme.Yaru-Aqua-dark
+    - org.gtk.Gtk3theme.Yaru-Amber
+    - org.gtk.Gtk3theme.Yaru-Amber-light
+    - org.gtk.Gtk3theme.Yaru-Amber-dark
+    - org.gtk.Gtk3theme.Yaru-sage
+    - org.gtk.Gtk3theme.Yaru-sage-dark
+    - org.gtk.Gtk3theme.Yaru-remix
+    - org.gtk.Gtk3theme.Yaru-remix-light
+    - org.gtk.Gtk3theme.Yaru-remix-dark
+    - org.gtk.Gtk3theme.Yaru-prussiangreen
+    - org.gtk.Gtk3theme.Yaru-prussiangreen-dark
+    - org.gtk.Gtk3theme.Yaru-olive
+    - org.gtk.Gtk3theme.Yaru-olive-dark
+    - org.gtk.Gtk3theme.Yaru-magenta
+    - org.gtk.Gtk3theme.Yaru-magenta-dark
+    - org.gtk.Gtk3theme.Yaru-light
+    - org.gtk.Gtk3theme.Yaru-dark
+    - org.gtk.Gtk3theme.Yaru-bark
+    - org.gtk.Gtk3theme.Yaru-bark-dark
 
   # Additional files
   files:
