@@ -166,7 +166,7 @@ fi
 
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating cache path presence...\n"
 cache="$HOME/.var/lib/chezmoi/run_onchange_apply_packages.d"
-[[ -d "${cache}" ]] && rm -fv "${cache}"
+[[ -d "${cache}" ]] && rm -rfv "${cache}"
 
 
 # ------------------------------------------------------------------------------
