@@ -190,9 +190,9 @@ rm -fv "${cache}"/registry*
 #
 #
 #         cat <<EOF > "${cache}"/registry_wanted_gnome_extensions.txt
-# {{ range .packages.gnome_extensions -}}
-# {{ . }}
-# {{ end -}}
+// {{ range .packages.gnome_extensions -}}
+// {{ . }}
+// {{ end -}}
 # EOF
 #
 #         GNOME_VER=$(gnome-shell --version | sed 's/[^0-9]*\([0-9]*\).*/\1/')
