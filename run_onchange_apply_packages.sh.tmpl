@@ -109,7 +109,6 @@ if ! command -v brew &> /dev/null; then
 else
     printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Update Homebrew...\n"
     brew update --force
-    brew upgrade
 
     printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via brew bundle...\n"
 
