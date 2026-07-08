@@ -309,6 +309,7 @@ packages:
     - io.github.peazip.PeaZip
     - de.leopoldluley.Clapgrep
     - dev.geopjr.Collision # Check hashes for your files | https://flathub.org/en/apps/dev.geopjr.Collision
+    - me.fouquet.Stencil # Batch file renamer | https://flathub.org/apps/me.fouquet.Stencil
 
     - org.gnome.Builder
 
@@ -400,6 +401,7 @@ packages:
     - com.jeffser.Alpaca
     - com.jeffser.Alpaca.Plugins.Ollama
     - com.jeffser.Alpaca.Plugins.AMD
+    - io.github.qwersyk.Newelle # AI Chatbot | https://flathub.org/apps/io.github.qwersyk.Newelle
 
     - org.gnome.Calculator
     - org.gnome.Calendar
