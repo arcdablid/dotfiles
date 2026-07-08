@@ -108,7 +108,7 @@ done
 # ------------------------------------------------------------------------------
 
 app_name="comfyui"
-base_image="docker.io/rocm/comfyui:comfyui-0.18.2.amd0_rocm7.2.0_ubuntu24.04"
+base_image="docker.io/rocm/pytorch:latest"
 
 read -e -p "Enter config location:" -i "$HOME/.config/quadlets/${app_name}" data_location
 
@@ -118,82 +118,132 @@ mkdir -pv "$HOME/.config/containers/systemd"
 mkdir -pv "$( expand_path "${data_location}" )"{/models,/output,/settings,/workflows,/tls,/custom_nodes}
 # mkdir -pv "${data_location}"{/models{/diffusion_models,/unet,/vae,/text_encoders,/clip,/checkpoints,/lora},/output,/settings,/workflows,/tls,/custom_nodes}
 
-[[ ! -f "${data_location}/tls/key.pem" || ! -f "${data_location}/tls/cert.pem" ]] && openssl req -x509 -newkey rsa:4096 -keyout "${data_location}/tls/key.pem" -out "${data_location}/tls/cert.pem" -sha256 -days 3650 -nodes -subj "/C=CU/ST=${app_name}/L=${app_name}/O=${app_name}/OU=${app_name}/CN=${app_name}"
+if [[ ! -f "${data_location}/tls/key.pem" || ! -f "${data_location}/tls/cert.pem" ]]; then
+    openssl req -x509 -newkey rsa:4096 \
+        -keyout "${data_location}/tls/key.pem" \
+        -out "${data_location}/tls/cert.pem" \
+        -sha256 -days 3650 -nodes \
+        -subj "/C=CU/ST=${app_name}/L=${app_name}/O=${app_name}/OU=${app_name}/CN=${app_name}"
+fi
 
 echo
 printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating quadlet...\n"
 
 ENTRYPOINT='
-# --- Prepare custom nodes ---
-CN_DIR=/app/ComfyUI/custom_nodes
-INIT_MARKER="$CN_DIR/.custom_nodes_initialized"
+#!/bin/bash
+set -e
 
-declare -A REPOS=(
-    # ["ComfyUI-Manager"]="https://github.com/ltdrdata/ComfyUI-Manager.git"
-    # ["ComfyUI_essentials"]="https://github.com/cubiq/ComfyUI_essentials.git"
-    ["ComfyUI-Crystools"]="https://github.com/crystian/ComfyUI-Crystools.git"
-    ["rgthree-comfy"]="https://github.com/rgthree/rgthree-comfy.git"
-    ["ComfyUI-KJNodes"]="https://github.com/kijai/ComfyUI-KJNodes.git"
-    ["ComfyUI_UltimateSDUpscale"]="https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git"
+COMFYUI_DIR="/workspace/ComfyUI"
+NODES_DIR="$COMFYUI_DIR/custom_nodes"
 
-    # WorkFlow for Flux.dev by Danrisi (txt2img, img2img, upscale and some QoL stuff)
-    # https://civitai.com/models/1662914/workflow-for-fluxdev-by-danrisi-txt2img-img2img-upscale-and-some-qol-stuff
-    ["ComfyUI-Custom-Scripts"]="https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git"
-    ["ComfyUI-GGUF"]="https://github.com/city96/ComfyUI-GGUF.git"
-    ["CG Use Everywhere"]="https://github.com/chrisgoringe/cg-use-everywhere.git"
-    ["ControlAltAI_Nodes"]="https://github.com/gseth/ControlAltAI-Nodes.git"
-    ["Image Size Tool"]="https://github.com/TheLustriVA/ComfyUI-Image-Size-Tools.git"
-    ["ComfyUI Impact Pack"]="https://github.com/ltdrdata/ComfyUI-Impact-Pack.git"
-    ["ComfyUI-GGUF-FantasyTalking"]="https://github.com/kael558/ComfyUI-GGUF-FantasyTalking.git"
-)
-
-if [ ! -f "$INIT_MARKER" ]; then
-    echo "↳ First run: initializing custom_nodes…"
-    mkdir -p "$CN_DIR"
-    for name in "${!REPOS[@]}"; do
-        url="${REPOS[$name]}"
-        target="$CN_DIR/$name"
-        if [ -d "$target" ]; then
-        echo "  ↳ $name already exists, skipping clone"
-        else
-        echo "  ↳ Cloning $name"
-        git clone --depth 1 "$url" "$target"
-        fi
-    done
-
-    echo "↳ Installing/upgrading dependencies…"
-    for dir in "$CN_DIR"/*/; do
-        req="$dir/requirements.txt"
-        if [ -f "$req" ]; then
-        echo "  ↳ pip install --upgrade -r $req"
-        python -m pip install --no-cache-dir --upgrade -r "$req"
-        fi
-    done
-
-    # Create marker file
-    touch "$INIT_MARKER"
+# ── ComfyUI: clone or update ────────────────────────────────────────────────
+if [ -d "$COMFYUI_DIR/.git" ]; then
+    echo "► Updating ComfyUI..."
+    cd "$COMFYUI_DIR" && git pull --ff-only || echo "  (already up to date)"
 else
-    echo "↳ Custom nodes already initialized, skipping clone and dependency installation."
+    echo "► Cloning ComfyUI..."
+    git clone https://github.com/comfyanonymous/ComfyUI.git /tmp/ComfyUI
+    cp -r /tmp/ComfyUI/. "$COMFYUI_DIR/"
+    rm -rf /tmp/ComfyUI
 fi
 
-echo "↳ Launching ComfyUI"
-exec "$@"
+# ── Install / update ComfyUI requirements ───────────────────────────────────
+echo "► Installing ComfyUI requirements..."
+cd "$COMFYUI_DIR"
+pip install -r requirements.txt --quiet
+
+# ── Custom Node Manager (ComfyUI-Manager) ───────────────────────────────────
+MANAGER_DIR="$NODES_DIR/ComfyUI-Manager"
+if [ -d "$MANAGER_DIR/.git" ]; then
+    echo "► Updating ComfyUI-Manager..."
+    cd "$MANAGER_DIR" && git pull --ff-only || true
+else
+    echo "► Installing ComfyUI-Manager..."
+    git clone https://github.com/ltdrdata/ComfyUI-Manager.git "$MANAGER_DIR"
+fi
+
+if [ -f "$MANAGER_DIR/requirements.txt" ]; then
+    pip install -r "$MANAGER_DIR/requirements.txt" --quiet
+fi
+
+# ── Extra custom nodes (add more here as needed) ────────────────────────────
+install_node() {
+    local name="$1"
+    local repo="$2"
+    local dir="$NODES_DIR/$name"
+
+    if [ -d "$dir/.git" ]; then
+        echo "► Updating $name..."
+        cd "$dir" && git pull --ff-only || true
+    else
+        echo "► Installing $name..."
+        git clone "$repo" "$dir"
+    fi
+
+    if [ -f "$dir/requirements.txt" ]; then
+        pip install -r "$dir/requirements.txt" --quiet
+    fi
+}
+
+# Uncomment to add nodes:
+install_node "ComfyUI-Impact-Pack" "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git"
+# install_node "ComfyUI-VideoHelperSuite" "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git"
+# install_node "ComfyUI_IPAdapter_plus" "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git"
+
+# install_node "ComfyUI-Manager" "https://github.com/ltdrdata/ComfyUI-Manager.git"
+# install_node "ComfyUI_essentials" "https://github.com/cubiq/ComfyUI_essentials.git"
+install_node "ComfyUI-Crystools" "https://github.com/crystian/ComfyUI-Crystools.git"
+install_node "rgthree-comfy" "https://github.com/rgthree/rgthree-comfy.git"
+install_node "ComfyUI-KJNodes" "https://github.com/kijai/ComfyUI-KJNodes.git"
+install_node "ComfyUI_UltimateSDUpscale" "https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git"
+
+# WorkFlow for Flux.dev by Danrisi (txt2img, img2img, upscale and some QoL stuff)
+# https://civitai.com/models/1662914/workflow-for-fluxdev-by-danrisi-txt2img-img2img-upscale-and-some-qol-stuff
+install_node "ComfyUI-Custom-Scripts" "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git"
+install_node "ComfyUI-GGUF" "https://github.com/city96/ComfyUI-GGUF.git"
+install_node "CG Use Everywhere" "https://github.com/chrisgoringe/cg-use-everywhere.git"
+install_node "ControlAltAI_Nodes" "https://github.com/gseth/ControlAltAI-Nodes.git"
+install_node "Image Size Tool" "https://github.com/TheLustriVA/ComfyUI-Image-Size-Tools.git"
+install_node "ComfyUI-GGUF-FantasyTalking" "https://github.com/kael558/ComfyUI-GGUF-FantasyTalking.git"
+
+# ── Launch ───────────────────────────────────────────────────────────────────
+
+# Print ready message once ComfyUI responds
+(
+    while ! curl -s http://0.0.0.0:8188 > /dev/null 2>&1; do
+        sleep 2
+    done
+    echo ""
+    echo "╔══════════════════════════════════════════╗"
+    echo "║   ComfyUI is ready:                      ║"
+    echo "║   http://127.0.0.1:8188                  ║"
+    echo "╚══════════════════════════════════════════╝"
+    echo ""
+) &
+
+cd "$COMFYUI_DIR"
+exec python main.py --tls-keyfile "$COMFYUI_DIR"/tls/key.pem --tls-certfile "$COMFYUI_DIR"/tls/cert.pem --listen 0.0.0.0 ${CLI_ARGS}
 '
 echo "${ENTRYPOINT}" | tee "${data_location}/${app_name}.entrypoint" > /dev/null
 
 CONTAINERFILE="
 FROM ${base_image}
 
+# System dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspace
+
 # Copy and enable the startup script
-# COPY ${data_location}/${app_name}.entrypoint /entrypoint.sh
-# RUN chmod +x /entrypoint.sh
+COPY ${data_location}/${app_name}.entrypoint /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Expose the port that ComfyUI will use (change if needed)
 EXPOSE 8188
 
-# Run entrypoint first, then start ComfyUI
-# ENTRYPOINT ["/entrypoint.sh"]
-CMD ["python","/workload/ComfyUI/main.py","--tls-keyfile","/workload/ComfyUI/tls/key.pem","--tls-certfile","/workload/ComfyUI/tls/cert.pem","--port","8188","--listen","0.0.0.0"]
+ENTRYPOINT ["/entrypoint.sh"]
 "
 echo "${CONTAINERFILE}" | tee "$HOME/.config/containers/systemd/${app_name}.Containerfile" > /dev/null
 
@@ -209,40 +259,53 @@ CONTAINER="
 [Unit]
 Description=${app_name} quadlet
 After=network-online.target
+# Limit to 5 restart attempts within a 60 second window
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
 [Container]
 ContainerName=${app_name}
 Image=${app_name}.build
-PublishPort=8188:8188
-SeccompProfile=unconfined
-AddCapability=SYS_PTRACE
-AddDevice=/dev/kfd
-AddDevice=/dev/dri
-GroupAdd=video
 # AutoUpdate=registry
 
 # persist your tls certs:
-Volume=${data_location}/tls:/workload/ComfyUI/tls:Z
+Volume=${data_location}/tls:/workspace/ComfyUI/tls:Z
 # persist your models:
-Volume=${data_location}/models:/workload/ComfyUI/models:Z
+Volume=${data_location}/models:/workspace/ComfyUI/models:Z
 # persist your custom nodes:
-Volume=${data_location}/custom_nodes:/workload/ComfyUI/custom_nodes:Z
+Volume=${data_location}/custom_nodes:/workspace/ComfyUI/custom_nodes:Z
 # persist your output images:
-Volume=${data_location}/output:/workload/ComfyUI/output:Z
+Volume=${data_location}/output:/workspace/ComfyUI/output:Z
 # persist all your settings & extra nodes:
-Volume=${data_location}/settings:/workload/ComfyUI/user/default:Z
-# persist just your saved flows (overrides the workflows/ in default):
-Volume=${data_location}/workflows:/workload/ComfyUI/user/default/workflows:Z
+Volume=${data_location}/settings:/workspace/ComfyUI/user:Z
 
 # Networking: Pasta is used by default in Podman 5+
 # If you need to access host services (like Ollama on the host):
 AddHost=host.containers.internal:host-gateway
 
+HostName=dns
+PublishPort=8188:8188
+
+SeccompProfile=unconfined
+AddCapability=SYS_PTRACE
+AddDevice=/dev/kfd
+AddDevice=/dev/dri
+GroupAdd=video
+
+Environment=CLI_ARGS=       # e.g. --lowvram --disable-pinned-memory
+
+# Maintenance & Logging
+# Log to JSON files
+LogDriver=k8s-file
+PodmanArgs=--log-opt=max-size=10m --log-opt=max-file=3
+
 [Service]
-Restart=always
+Restart=unless-stopped
 RestartSec=5
 # Give image pulls/builds enough time during startup
 TimeoutStartSec=900
+# Give the container time to shut down gracefully
+TimeoutStopSec=30
 
 [Install]
 WantedBy=multi-user.target default.target
