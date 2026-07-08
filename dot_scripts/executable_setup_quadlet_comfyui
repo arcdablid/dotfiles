@@ -107,7 +107,7 @@ done
 
 # ------------------------------------------------------------------------------
 
-app_name="comfyui"
+app_name="quadlet-comfyui"
 base_image="docker.io/rocm/pytorch:latest"
 
 read -e -p "Enter config location:" -i "$HOME/.config/quadlets/${app_name}" data_location
@@ -115,7 +115,7 @@ read -e -p "Enter config location:" -i "$HOME/.config/quadlets/${app_name}" data
 echo
 printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
 mkdir -pv "$HOME/.config/containers/systemd"
-mkdir -pv "$( expand_path "${data_location}" )"{/models,/output,/settings,/workflows,/tls,/custom_nodes}
+mkdir -pv "$( expand_path "${data_location}" )"{/models,/output,/settings,/tls,/custom_nodes}
 # mkdir -pv "${data_location}"{/models{/diffusion_models,/unet,/vae,/text_encoders,/clip,/checkpoints,/lora},/output,/settings,/workflows,/tls,/custom_nodes}
 
 if [[ ! -f "${data_location}/tls/key.pem" || ! -f "${data_location}/tls/cert.pem" ]]; then
@@ -257,7 +257,7 @@ echo "${BUILD}" | tee "$HOME/.config/containers/systemd/${app_name}.build" > /de
 
 CONTAINER="
 [Unit]
-Description=${app_name} quadlet
+Description=${app_name}
 After=network-online.target
 # Limit to 5 restart attempts within a 60 second window
 StartLimitIntervalSec=60
