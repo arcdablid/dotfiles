@@ -124,7 +124,7 @@ done
 
 shift $((OPTIND - 1))
 
-app_name="ollama"
+app_name="lemonade"
 
 if [[ "${REMOVE}" == "true" ]]; then
 
@@ -138,13 +138,13 @@ if [[ "${REMOVE}" == "true" ]]; then
 
 else
 
-    read -e -p "Enter config location:" -i "$HOME/.config/quadlets/data/${app_name}" ollama_data_location
-    ollama_data_location="$( expand_path "${ollama_data_location}" )"
+    read -e -p "Enter config location:" -i "$HOME/.config/quadlets/data/${app_name}" config_location
+    config_location="$( expand_path "${config_location}" )"
 
     echo
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
-    mkdir -pv "$HOME/.config/containers/systemd"
-    mkdir -pv "${ollama_data_location}"
+    # mkdir -pv "$HOME/.config/containers/systemd"
+    mkdir -pv "${config_location}"
 
     echo
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating quadlet...\n"
@@ -159,9 +159,11 @@ StartLimitBurst=5
 
 [Container]
 ContainerName=${app_name}
-Image=docker.io/ollama/ollama:rocm
-PublishPort=11434:11434
-Volume=${ollama_data_location}:/root/.ollama:Z
+Image=ghcr.io/lemonade-sdk/lemonade-server:latest
+PublishPort=13305:13305
+Volume=${config_location}/cache:/root/.cache/huggingface:Z
+Volume=${config_location}/llama:/opt/lemonade/llama:Z
+Volume=${config_location}/recipe:/root/.cache/lemonade:Z
 AddDevice=-/dev/kfd
 AddDevice=-/dev/dri
 AutoUpdate=registry
@@ -180,6 +182,16 @@ TimeoutStartSec=900
 WantedBy=multi-user.target default.target
 "
     echo "${CONTAINER}" | tee "$HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}.container" > /dev/null
+
+    ROCM_CONFIG='
+{
+    "llamacpp": {
+        "backend": "rocm"
+    }
+}
+'
+    [[ ! -d "${config_location}/recipe" ]] && mkdir -pv "${config_location}/recipe"
+    echo "${ROCM_CONFIG}" | tee "${config_location}/recipe/config.json" > /dev/null
 
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Installing quadlet...\n"
     podman quadlet install --replace --application=${app_name} "$HOME/.config/quadlets/init/${app_name}/"

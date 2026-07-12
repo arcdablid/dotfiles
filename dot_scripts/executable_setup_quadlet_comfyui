@@ -107,29 +107,57 @@ done
 
 # ------------------------------------------------------------------------------
 
+REMOVE="false"
+
+usage() {
+    echo "Usage: ${executor} [-h] [-v]" >&2
+}
+
+while getopts ":rh" opt; do
+    case $opt in
+        r) REMOVE="true" ;;
+        h) usage; exit 0 ;;
+        \?) usage; exit 1 ;;
+        :) usage; exit 1 ;;
+    esac
+done
+
+shift $((OPTIND - 1))
+
 app_name="quadlet-comfyui"
-base_image="docker.io/rocm/pytorch:latest"
 
-read -e -p "Enter config location:" -i "$HOME/.config/quadlets/${app_name}" data_location
+if [[ "${REMOVE}" == "true" ]]; then
 
-echo
-printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
-mkdir -pv "$HOME/.config/containers/systemd"
-mkdir -pv "$( expand_path "${data_location}" )"{/models,/output,/settings,/tls,/custom_nodes}
-# mkdir -pv "${data_location}"{/models{/diffusion_models,/unet,/vae,/text_encoders,/clip,/checkpoints,/lora},/output,/settings,/workflows,/tls,/custom_nodes}
+    # --force, -f
+    # Remove running Quadlets (in case of uninstantiated template quadlets, stop its instances).
+    # --ignore, -i
+    # Do not error for Quadlets that do not exist.
+    # --recursive
+    # Required when removing applications (default false).
+    podman quadlet rm --force --ignore --recursive -- "${app_name}"
 
-if [[ ! -f "${data_location}/tls/key.pem" || ! -f "${data_location}/tls/cert.pem" ]]; then
-    openssl req -x509 -newkey rsa:4096 \
-        -keyout "${data_location}/tls/key.pem" \
-        -out "${data_location}/tls/cert.pem" \
-        -sha256 -days 3650 -nodes \
-        -subj "/C=CU/ST=${app_name}/L=${app_name}/O=${app_name}/OU=${app_name}/CN=${app_name}"
-fi
+else
 
-echo
-printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating quadlet...\n"
+    read -e -p "Enter config location:" -i "$HOME/.config/quadlets/data/${app_name}" data_location
 
-ENTRYPOINT='
+    echo
+    printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
+    mkdir -pv "$HOME/.config/containers/systemd"
+    mkdir -pv "$( expand_path "${data_location}" )"{/models,/output,/settings,/tls,/custom_nodes}
+    # mkdir -pv "${data_location}"{/models{/diffusion_models,/unet,/vae,/text_encoders,/clip,/checkpoints,/lora},/output,/settings,/workflows,/tls,/custom_nodes}
+
+    if [[ ! -f "${data_location}/tls/key.pem" || ! -f "${data_location}/tls/cert.pem" ]]; then
+        openssl req -x509 -newkey rsa:4096 \
+            -keyout "${data_location}/tls/key.pem" \
+            -out "${data_location}/tls/cert.pem" \
+            -sha256 -days 3650 -nodes \
+            -subj "/C=CU/ST=${app_name}/L=${app_name}/O=${app_name}/OU=${app_name}/CN=${app_name}"
+    fi
+
+    echo
+    printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating quadlet...\n"
+
+    ENTRYPOINT='
 #!/bin/bash
 set -e
 
@@ -186,24 +214,24 @@ install_node() {
 }
 
 # Uncomment to add nodes:
+install_node "ComfyUI_essentials" "https://github.com/cubiq/ComfyUI_essentials.git"
+install_node "rgthree-comfy" "https://github.com/rgthree/rgthree-comfy.git"
+install_node "ComfyUI-GGUF" "https://github.com/city96/ComfyUI-GGUF.git"
+install_node "ComfyUI-AMDGPUMonitor" "https://github.com/kyuz0/ComfyUI-AMDGPUMonitor.git"
 install_node "ComfyUI-Impact-Pack" "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git"
+install_node "ComfyUI-Crystools" "https://github.com/crystian/ComfyUI-Crystools.git"
+install_node "ComfyUI-KJNodes" "https://github.com/kijai/ComfyUI-KJNodes.git"
+install_node "ComfyUI_UltimateSDUpscale" "https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git"
+install_node "ComfyUI-Custom-Scripts" "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git"
+install_node "Image Size Tool" "https://github.com/TheLustriVA/ComfyUI-Image-Size-Tools.git"
+install_node "CG Use Everywhere" "https://github.com/chrisgoringe/cg-use-everywhere.git"
+install_node "ControlAltAI_Nodes" "https://github.com/gseth/ControlAltAI-Nodes.git"
+
 # install_node "ComfyUI-VideoHelperSuite" "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git"
 # install_node "ComfyUI_IPAdapter_plus" "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git"
 
-# install_node "ComfyUI-Manager" "https://github.com/ltdrdata/ComfyUI-Manager.git"
-# install_node "ComfyUI_essentials" "https://github.com/cubiq/ComfyUI_essentials.git"
-install_node "ComfyUI-Crystools" "https://github.com/crystian/ComfyUI-Crystools.git"
-install_node "rgthree-comfy" "https://github.com/rgthree/rgthree-comfy.git"
-install_node "ComfyUI-KJNodes" "https://github.com/kijai/ComfyUI-KJNodes.git"
-install_node "ComfyUI_UltimateSDUpscale" "https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git"
-
 # WorkFlow for Flux.dev by Danrisi (txt2img, img2img, upscale and some QoL stuff)
 # https://civitai.com/models/1662914/workflow-for-fluxdev-by-danrisi-txt2img-img2img-upscale-and-some-qol-stuff
-install_node "ComfyUI-Custom-Scripts" "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git"
-install_node "ComfyUI-GGUF" "https://github.com/city96/ComfyUI-GGUF.git"
-install_node "CG Use Everywhere" "https://github.com/chrisgoringe/cg-use-everywhere.git"
-install_node "ControlAltAI_Nodes" "https://github.com/gseth/ControlAltAI-Nodes.git"
-install_node "Image Size Tool" "https://github.com/TheLustriVA/ComfyUI-Image-Size-Tools.git"
 install_node "ComfyUI-GGUF-FantasyTalking" "https://github.com/kael558/ComfyUI-GGUF-FantasyTalking.git"
 
 # ── Launch ───────────────────────────────────────────────────────────────────
@@ -224,10 +252,10 @@ install_node "ComfyUI-GGUF-FantasyTalking" "https://github.com/kael558/ComfyUI-G
 cd "$COMFYUI_DIR"
 exec python main.py --tls-keyfile "$COMFYUI_DIR"/tls/key.pem --tls-certfile "$COMFYUI_DIR"/tls/cert.pem --listen 0.0.0.0 ${CLI_ARGS}
 '
-echo "${ENTRYPOINT}" | tee "${data_location}/${app_name}.entrypoint" > /dev/null
+    echo "${ENTRYPOINT}" | tee "${data_location}/${app_name}.entrypoint" > /dev/null
 
-CONTAINERFILE="
-FROM ${base_image}
+    CONTAINERFILE="
+FROM docker.io/rocm/pytorch:latest
 
 # System dependencies
 RUN apt-get update && apt-get install -y \
@@ -245,19 +273,20 @@ EXPOSE 8188
 
 ENTRYPOINT ["/entrypoint.sh"]
 "
-echo "${CONTAINERFILE}" | tee "$HOME/.config/containers/systemd/${app_name}.Containerfile" > /dev/null
+    echo "${CONTAINERFILE}" | tee "$HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}.Containerfile" > /dev/null
 
-BUILD="
+    BUILD="
 [Build]
 ImageTag=localhost/${app_name}:latest
 File=${app_name}.Containerfile
 SetWorkingDirectory=unit
 "
-echo "${BUILD}" | tee "$HOME/.config/containers/systemd/${app_name}.build" > /dev/null
+    echo "${BUILD}" | tee "$HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}.build" > /dev/null
 
-CONTAINER="
+    CONTAINER="
 [Unit]
 Description=${app_name}
+Wants=network-online.target
 After=network-online.target
 # Limit to 5 restart attempts within a 60 second window
 StartLimitIntervalSec=60
@@ -310,19 +339,24 @@ TimeoutStopSec=30
 [Install]
 WantedBy=multi-user.target default.target
 "
-echo "${CONTAINER}" | tee "$HOME/.config/containers/systemd/${app_name}.container" > /dev/null
+    echo "${CONTAINER}" | tee "$HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}.container" > /dev/null
 
-printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
-systemctl --user daemon-reload
+    printf "[${executor}] ${BPurple}INFO${Color_Off} - Installing quadlet...\n"
+    podman quadlet install --replace --application=${app_name} "$HOME/.config/quadlets/init/${app_name}/"
 
-printf "[${executor}] ${BPurple}INFO${Color_Off} - Start/enable quadlet...\n"
-systemctl --user restart "${app_name}"
+    # printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
+    # systemctl --user daemon-reload
 
-# Start user services even when not logged in
-loginctl enable-linger $USER
+    # printf "[${executor}] ${BPurple}INFO${Color_Off} - Start/enable quadlet...\n"
+    # systemctl --user restart "${app_name}"
 
-printf "[${executor}] ${BPurple}INFO${Color_Off} - Enable automatic podman updates...\n"
-# 'AutoUpdate=registry' in the systemd definition allows the container to be auto-updated,
-# manually by calling 'podman auto-update'
-# or automatically by enabling the relative systemd service:
-systemctl enable --user --now podman-auto-update.timer
+    # Start user services even when not logged in
+    loginctl enable-linger $USER
+
+    printf "[${executor}] ${BPurple}INFO${Color_Off} - Enable automatic podman updates...\n"
+    # 'AutoUpdate=registry' in the systemd definition allows the container to be auto-updated,
+    # manually by calling 'podman auto-update'
+    # or automatically by enabling the relative systemd service:
+    systemctl enable --user --now podman-auto-update.timer
+
+fi
