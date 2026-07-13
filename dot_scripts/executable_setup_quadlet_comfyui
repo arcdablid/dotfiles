@@ -142,7 +142,7 @@ else
 
     echo
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
-    mkdir -pv "$HOME/.config/containers/systemd"
+    mkdir -pv "$HOME/.config/quadlets/init/${app_name}"
     mkdir -pv "$( expand_path "${data_location}" )"{/models,/output,/settings,/tls,/custom_nodes}
     # mkdir -pv "${data_location}"{/models{/diffusion_models,/unet,/vae,/text_encoders,/clip,/checkpoints,/lora},/output,/settings,/workflows,/tls,/custom_nodes}
 

@@ -150,7 +150,6 @@ else
 
     echo
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
-    # mkdir -pv "$HOME/.config/containers/systemd"
     mkdir -pv "$HOME/.config/quadlets/init/${app_name}"
     mkdir -pv "${config_location}"
     mkdir -pv "${shares_location}"
