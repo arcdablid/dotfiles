@@ -342,7 +342,7 @@ WantedBy=multi-user.target default.target
     echo "${CONTAINER}" | tee "$HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}.container" > /dev/null
 
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Installing quadlet...\n"
-    sudo podman quadlet install --replace --application=${app_name} "$HOME/.config/quadlets/init/${app_name}/"
+    sudo podman quadlet install --replace --application "${app_name}" "$HOME/.config/quadlets/init/${app_name}/"
 
     # printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
     # systemctl --user daemon-reload
