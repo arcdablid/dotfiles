@@ -134,7 +134,7 @@ if [[ "${REMOVE}" == "true" ]]; then
     # Do not error for Quadlets that do not exist.
     # --recursive
     # Required when removing applications (default false).
-    podman quadlet rm --force --ignore --recursive -- "${app_name}"
+    "$( which podman )" quadlet rm --force --ignore --recursive -- "${app_name}"
 
 else
 
@@ -342,7 +342,7 @@ WantedBy=multi-user.target default.target
     echo "${CONTAINER}" | tee "$HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}.container" > /dev/null
 
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Installing quadlet...\n"
-    sudo podman quadlet install --application "${app_name}" --replace -- "$HOME/.config/quadlets/init/${app_name}/"
+    sudo "$( which podman )" quadlet install --application "${app_name}" --replace -- "$HOME/.config/quadlets/init/${app_name}/"
 
     # printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
     # systemctl --user daemon-reload
