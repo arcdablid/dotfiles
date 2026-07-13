@@ -124,7 +124,7 @@ done
 
 shift $((OPTIND - 1))
 
-app_name="quadlet-miniserve"
+app_name="miniserve"
 
 if [[ "${REMOVE}" == "true" ]]; then
 

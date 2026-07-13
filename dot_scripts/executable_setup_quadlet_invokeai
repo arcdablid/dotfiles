@@ -124,7 +124,7 @@ done
 
 shift $((OPTIND - 1))
 
-app_name="quadlet-invokeai"
+app_name="invokeai"
 
 if [[ "${REMOVE}" == "true" ]]; then
 
@@ -150,7 +150,7 @@ else
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating quadlet...\n"
     CONTAINER="
 [Unit]
-Description=${app_name}
+Description=${app_name} quadlet
 Wants=network-online.target
 After=network-online.target
 # Limit to 5 restart attempts within a 60 second window
