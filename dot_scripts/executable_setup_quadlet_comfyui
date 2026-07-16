@@ -293,8 +293,8 @@ ENTRYPOINT ["/entrypoint.sh"]
 
     BUILD="
 [Build]
-ImageTag=localhost/${app_name}:latest
-File=${app_name}.Containerfile
+ImageTag=localhost/quadlet-${app_name}:latest
+File=quadlet-${app_name}.Containerfile
 SetWorkingDirectory=unit
 "
     echo "${BUILD}" | tee "$HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}.build" > /dev/null
@@ -309,8 +309,8 @@ StartLimitIntervalSec=60
 StartLimitBurst=5
 
 [Container]
-ContainerName=${app_name}
-Image=${app_name}.build
+ContainerName=quadlet-${app_name}
+Image=quadlet-${app_name}.build
 # AutoUpdate=registry
 
 # persist your tls certs:
@@ -328,7 +328,7 @@ Volume=${data_location}/settings:/workspace/ComfyUI/user:Z
 # If you need to access host services (like Ollama on the host):
 AddHost=host.containers.internal:host-gateway
 
-HostName=dns
+HostName=quadlet-${app_name}
 PublishPort=8188:8188
 
 SeccompProfile=unconfined
@@ -345,7 +345,7 @@ LogDriver=k8s-file
 PodmanArgs=--log-opt=max-size=10m --log-opt=max-file=3
 
 [Service]
-Restart=unless-stopped
+Restart=always
 RestartSec=5
 # Give image pulls/builds enough time during startup
 TimeoutStartSec=900
