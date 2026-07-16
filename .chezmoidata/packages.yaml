@@ -189,7 +189,6 @@ packages:
 
       - podman-tui # terminal user interface for Podman
       - podlet # Generate Podman Quadlet files from a Podman command, compose file, or existing object | https://crates.io/crates/podlet
-      - podman-compose # Run docker-compose.yml using podman
       - lazydocker # Lazier way to manage everything docker | https://github.com/jesseduffield/lazydocker
       - skopeo # Performs various operations on container images and image repositories | https://github.com/containers/skopeo
 
