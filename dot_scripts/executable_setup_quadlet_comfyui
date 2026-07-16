@@ -336,7 +336,6 @@ SeccompProfile=unconfined
 AddDevice=/dev/kfd
 AddDevice=/dev/dri
 GroupAdd=video
-GroupAdd=render
 
 Environment=CLI_ARGS=       # e.g. --lowvram --disable-pinned-memory
 
