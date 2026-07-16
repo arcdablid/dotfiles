@@ -332,10 +332,11 @@ HostName=quadlet-${app_name}
 PublishPort=8188:8188
 
 SeccompProfile=unconfined
-AddCapability=SYS_PTRACE
+# AddCapability=SYS_PTRACE
 AddDevice=/dev/kfd
 AddDevice=/dev/dri
 GroupAdd=video
+GroupAdd=render
 
 Environment=CLI_ARGS=       # e.g. --lowvram --disable-pinned-memory
 
