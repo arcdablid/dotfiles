@@ -128,13 +128,28 @@ app_name="lemonade"
 
 if [[ "${REMOVE}" == "true" ]]; then
 
-    # --force, -f
-    # Remove running Quadlets (in case of uninstantiated template quadlets, stop its instances).
-    # --ignore, -i
-    # Do not error for Quadlets that do not exist.
-    # --recursive
-    # Required when removing applications (default false).
-    podman quadlet rm --force --ignore --recursive -- "${app_name}"
+    if [[ "$( podman version --format '{{.Client.Version}}' | cut -d '.' -f 1 )" -gt "5" ]]; then
+        # --force, -f
+        # Remove running Quadlets (in case of uninstantiated template quadlets, stop its instances).
+        # --ignore, -i
+        # Do not error for Quadlets that do not exist.
+        # --recursive
+        # Required when removing applications (default false).
+        podman quadlet rm --force --ignore --recursive -- "${app_name}"
+    else
+
+        [[ "$( systemctl --user is-active "quadlet-${app_name}" )" == "active" ]] && systemctl --user stop "quadlet-${app_name}"
+
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Remove quadlet container files...\n"
+        rm -fv "$HOME/.config/containers/systemd/quadlet-${app_name}".*
+
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
+        systemctl --user daemon-reload
+
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Remove quadlet init files...\n"
+        rm -rfv "$HOME/.config/quadlets/init/${app_name}"
+
+    fi
 
 else
 
@@ -143,6 +158,7 @@ else
 
     echo
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
+    mkdir -pv "$HOME/.config/containers/systemd"
     mkdir -pv "$HOME/.config/quadlets/init/${app_name}"
     mkdir -pv "${config_location}"
 
@@ -194,13 +210,17 @@ WantedBy=multi-user.target default.target
     echo "${ROCM_CONFIG}" | tee "${config_location}/recipe/config.json" > /dev/null
 
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Installing quadlet...\n"
-    podman quadlet install --replace --application=${app_name} "$HOME/.config/quadlets/init/${app_name}/"
+    if [[ "$( podman version --format '{{.Client.Version}}' | cut -d '.' -f 1 )" -gt "5" ]]; then
+        podman quadlet install --replace --application "${app_name}" -- "$HOME/.config/quadlets/init/${app_name}/"
+    else
+        cp "$HOME/.config/quadlets/init/${app_name}/"* "$HOME/.config/containers/systemd/"
 
-    # printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
-    # systemctl --user daemon-reload
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
+        systemctl --user daemon-reload
 
-    # printf "[${executor}] ${BPurple}INFO${Color_Off} - Start/enable quadlet...\n"
-    # systemctl --user restart "${app_name}"
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Start/enable quadlet...\n"
+        systemctl --user restart "quadlet-${app_name}"
+    fi
 
     # Start user services even when not logged in
     loginctl enable-linger $USER

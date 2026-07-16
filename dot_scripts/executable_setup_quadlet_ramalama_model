@@ -153,41 +153,53 @@ name="$( str_replace_part -t ':' '/' -r '_' -- "ramalama_${url}" )"
 
 if [[ "${remove}" == "true" ]]; then
 
-    # --force, -f
-    # Remove running Quadlets (in case of uninstantiated template quadlets, stop its instances).
-    # --ignore, -i
-    # Do not error for Quadlets that do not exist.
-    # --recursive
-    # Required when removing applications (default false).
-    podman quadlet rm --force --ignore --recursive -- "${name}"
+    if [[ "$( podman version --format '{{.Client.Version}}' | cut -d '.' -f 1 )" -gt "5" ]]; then
+        # --force, -f
+        # Remove running Quadlets (in case of uninstantiated template quadlets, stop its instances).
+        # --ignore, -i
+        # Do not error for Quadlets that do not exist.
+        # --recursive
+        # Required when removing applications (default false).
+        podman quadlet rm --force --ignore --recursive -- "${name}"
+    else
 
-    # printf "[${executor}] ${BPurple}INFO${Color_Off} - Stop ramalama quadlet: %s\n" "${name}"
-    # [[ "$( systemctl is-active "${name}" )" == "active" ]] && systemctl stop --user "${name}"
+        [[ "$( systemctl --user is-active "quadlet-${name}" )" == "active" ]] && systemctl --user stop "quadlet-${app_name}"
 
-    # printf "[${executor}] ${BPurple}INFO${Color_Off} - Remove quadlet container file...\n"
-    # [[ -f "$HOME/.config/containers/systemd/${name}.container" ]] && rm -rfv "$HOME/.config/containers/systemd/${name}.container"
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Remove quadlet container files...\n"
+        rm -fv "$HOME/.config/containers/systemd/quadlet-${name}".*
 
-    # printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
-    # systemctl --user daemon-reload
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
+        systemctl --user daemon-reload
 
-    printf "[${executor}] ${BPurple}INFO${Color_Off} - Remove ramalama model file...\n"
-    ramalama rm --ignore -- "${url}" # ignore errors when specified Model does not exist
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Remove quadlet init files...\n"
+        rm -rfv "$HOME/.config/quadlets/init/${name}"
+
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Remove ramalama model file...\n"
+        ramalama rm --ignore -- "${url}" # ignore errors when specified Model does not exist
+
+    fi
 
 else
 
+    mkdir -pv "$HOME/.config/containers/systemd"
     mkdir -pv "$HOME/.config/quadlets/init/${name}"
 
     echo
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Generating quadlet via ramalama for model: %s @ %s\n" "${url}" "${port}"
-    ramalama serve --name "${name}" --port "${port}" --generate=quadlet:"$HOME/.config/quadlets/init/${name}" "${url}"
+    ramalama serve --name "quadlet-${name}" --port "${port}" --generate=quadlet:"$HOME/.config/quadlets/init/${name}" "${url}"
 
-    podman quadlet install --replace --application=${name} "$HOME/.config/quadlets/init/${name}/"
 
-    # printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
-    # systemctl --user daemon-reload
+    if [[ "$( podman version --format '{{.Client.Version}}' | cut -d '.' -f 1 )" -gt "5" ]]; then
+        podman quadlet install --replace --application "${name}" -- "$HOME/.config/quadlets/init/${name}/"
+    else
+        cp "$HOME/.config/quadlets/init/${name}/"* "$HOME/.config/containers/systemd/"
 
-    # printf "[${executor}] ${BPurple}INFO${Color_Off} - Start/enable ramalama quadlet: %s\n" "${name}"
-    # systemctl restart --user "${name}"
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
+        systemctl --user daemon-reload
+
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Start/enable quadlet...\n"
+        systemctl --user restart "quadlet-${name}"
+    fi
 
     loginctl enable-linger $USER
 
