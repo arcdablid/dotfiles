@@ -268,7 +268,7 @@ install_node "ComfyUI-GGUF-FantasyTalking" "https://github.com/kael558/ComfyUI-G
 cd "$COMFYUI_DIR"
 exec python main.py --tls-keyfile "$COMFYUI_DIR"/tls/key.pem --tls-certfile "$COMFYUI_DIR"/tls/cert.pem --listen 0.0.0.0 ${CLI_ARGS}
 '
-    echo "${ENTRYPOINT}" | tee "${data_location}/${app_name}.entrypoint" > /dev/null
+    echo "${ENTRYPOINT}" | tee "$HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}.entrypoint" > /dev/null
 
     CONTAINERFILE="
 FROM docker.io/rocm/pytorch:latest
@@ -281,7 +281,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /workspace
 
 # Copy and enable the startup script
-COPY ${data_location}/${app_name}.entrypoint /entrypoint.sh
+COPY quadlet-${app_name}.entrypoint /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Expose the port that ComfyUI will use (change if needed)
