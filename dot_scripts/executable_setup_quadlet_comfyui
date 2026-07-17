@@ -193,7 +193,8 @@ AddHost=host.containers.internal:host-gateway
 HostName=quadlet-${app_name}
 PublishPort=8188:8188
 
-PodmanArgs=--interactive --ipc host --tty
+# PodmanArgs=--interactive --ipc host --tty
+PodmanArgs=--ipc host
 SeccompProfile=unconfined
 AddCapability=SYS_PTRACE
 SecurityLabelDisable=true
@@ -203,7 +204,7 @@ GroupAdd=video
 
 Environment=HSA_OVERRIDE_GFX_VERSION=
 # Force ComfyUI to offload model weights from VRAM to RAM more frequently. Slows performance but reduce memory leaks
-# Environment=CLI_ARGS=--disable-smart-memory
+Environment=CLI_ARGS=--disable-smart-memory
 # Disable internal memory fragment caching to mitigate memory faults.
 Environment=HSA_DISABLE_FRAGMENT_ALLOCATOR=1
 # Enable tunable operations. Slower first run, faster subsequent runs.
