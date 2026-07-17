@@ -159,170 +159,32 @@ else
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
     mkdir -pv "$HOME/.config/containers/systemd"
     mkdir -pv "$HOME/.config/quadlets/init/${app_name}"
-    mkdir -pv "$( expand_path "${data_location}" )"{/models,/output,/settings,/tls,/custom_nodes}
-    # mkdir -pv "${data_location}"{/models{/diffusion_models,/unet,/vae,/text_encoders,/clip,/checkpoints,/lora},/output,/settings,/workflows,/tls,/custom_nodes}
-
-    if [[ ! -f "${data_location}/tls/key.pem" || ! -f "${data_location}/tls/cert.pem" ]]; then
-        openssl req -x509 -newkey rsa:4096 \
-            -keyout "${data_location}/tls/key.pem" \
-            -out "${data_location}/tls/cert.pem" \
-            -sha256 -days 3650 -nodes \
-            -subj "/C=CU/ST=${app_name}/L=${app_name}/O=${app_name}/OU=${app_name}/CN=${app_name}"
-    fi
+    mkdir -pv "$( expand_path "${data_location}" )"{/models,/hf-hub,/torch-hub,/input,/output,/workflows}
 
     echo
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating quadlet...\n"
-
-    ENTRYPOINT='
-#!/bin/bash
-set -e
-
-COMFYUI_DIR="/workspace/ComfyUI"
-NODES_DIR="$COMFYUI_DIR/custom_nodes"
-
-# ── ComfyUI: clone or update ────────────────────────────────────────────────
-if [ -d "$COMFYUI_DIR/.git" ]; then
-    echo "► Updating ComfyUI..."
-    cd "$COMFYUI_DIR" && git pull --ff-only || echo "  (already up to date)"
-else
-    echo "► Cloning ComfyUI..."
-    git clone https://github.com/comfyanonymous/ComfyUI.git /tmp/ComfyUI
-    cp -r /tmp/ComfyUI/. "$COMFYUI_DIR/"
-    rm -rf /tmp/ComfyUI
-fi
-
-# ── Install / update ComfyUI requirements ───────────────────────────────────
-echo "► Installing ComfyUI requirements..."
-cd "$COMFYUI_DIR"
-pip install -r requirements.txt --quiet
-
-# ── Custom Node Manager (ComfyUI-Manager) ───────────────────────────────────
-MANAGER_DIR="$NODES_DIR/ComfyUI-Manager"
-if [ -d "$MANAGER_DIR/.git" ]; then
-    echo "► Updating ComfyUI-Manager..."
-    cd "$MANAGER_DIR" && git pull --ff-only || true
-else
-    echo "► Installing ComfyUI-Manager..."
-    git clone https://github.com/ltdrdata/ComfyUI-Manager.git "$MANAGER_DIR"
-fi
-
-if [ -f "$MANAGER_DIR/requirements.txt" ]; then
-    pip install -r "$MANAGER_DIR/requirements.txt" --quiet
-fi
-
-# ── Extra custom nodes (add more here as needed) ────────────────────────────
-install_node() {
-    local name="$1"
-    local repo="$2"
-    local dir="$NODES_DIR/$name"
-
-    if [ -d "$dir/.git" ]; then
-        echo "► Updating $name..."
-        cd "$dir" && git pull --ff-only || true
-    else
-        echo "► Installing $name..."
-        git clone "$repo" "$dir"
-    fi
-
-    if [ -f "$dir/requirements.txt" ]; then
-        pip install -r "$dir/requirements.txt" --quiet
-    fi
-}
-
-# Uncomment to add nodes:
-install_node "ComfyUI_essentials" "https://github.com/cubiq/ComfyUI_essentials.git"
-install_node "rgthree-comfy" "https://github.com/rgthree/rgthree-comfy.git"
-install_node "ComfyUI-GGUF" "https://github.com/city96/ComfyUI-GGUF.git"
-install_node "ComfyUI-AMDGPUMonitor" "https://github.com/kyuz0/ComfyUI-AMDGPUMonitor.git"
-install_node "ComfyUI-Impact-Pack" "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git"
-install_node "ComfyUI-Crystools" "https://github.com/crystian/ComfyUI-Crystools.git"
-install_node "ComfyUI-KJNodes" "https://github.com/kijai/ComfyUI-KJNodes.git"
-install_node "ComfyUI_UltimateSDUpscale" "https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git"
-install_node "ComfyUI-Custom-Scripts" "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git"
-install_node "Image Size Tool" "https://github.com/TheLustriVA/ComfyUI-Image-Size-Tools.git"
-install_node "CG Use Everywhere" "https://github.com/chrisgoringe/cg-use-everywhere.git"
-install_node "ControlAltAI_Nodes" "https://github.com/gseth/ControlAltAI-Nodes.git"
-
-# install_node "ComfyUI-VideoHelperSuite" "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git"
-# install_node "ComfyUI_IPAdapter_plus" "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git"
-
-# WorkFlow for Flux.dev by Danrisi (txt2img, img2img, upscale and some QoL stuff)
-# https://civitai.com/models/1662914/workflow-for-fluxdev-by-danrisi-txt2img-img2img-upscale-and-some-qol-stuff
-install_node "ComfyUI-GGUF-FantasyTalking" "https://github.com/kael558/ComfyUI-GGUF-FantasyTalking.git"
-
-# ── Launch ───────────────────────────────────────────────────────────────────
-
-# Print ready message once ComfyUI responds
-(
-    while ! curl -s http://0.0.0.0:8188 > /dev/null 2>&1; do
-        sleep 2
-    done
-    echo ""
-    echo "╔══════════════════════════════════════════╗"
-    echo "║   ComfyUI is ready:                      ║"
-    echo "║   http://127.0.0.1:8188                  ║"
-    echo "╚══════════════════════════════════════════╝"
-    echo ""
-) &
-
-cd "$COMFYUI_DIR"
-exec python main.py --tls-keyfile "$COMFYUI_DIR"/tls/key.pem --tls-certfile "$COMFYUI_DIR"/tls/cert.pem --listen 0.0.0.0 ${CLI_ARGS}
-'
-    echo "${ENTRYPOINT}" | tee "$HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}.entrypoint" > /dev/null
-
-    CONTAINERFILE="
-FROM docker.io/rocm/pytorch:latest
-
-# System dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /workspace
-
-# Copy and enable the startup script
-COPY quadlet-${app_name}.entrypoint /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-# Expose the port that ComfyUI will use (change if needed)
-EXPOSE 8188
-
-ENTRYPOINT ["/entrypoint.sh"]
-"
-    echo "${CONTAINERFILE}" | tee "$HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}.Containerfile" > /dev/null
-
-    BUILD="
-[Build]
-ImageTag=localhost/quadlet-${app_name}:latest
-File=quadlet-${app_name}.Containerfile
-SetWorkingDirectory=unit
-"
-    echo "${BUILD}" | tee "$HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}.build" > /dev/null
 
     CONTAINER="
 [Unit]
 Description=${app_name} quadlet
 Wants=network-online.target
 After=network-online.target
-# Limit to 5 restart attempts within a 60 second window
-StartLimitIntervalSec=60
-StartLimitBurst=5
+# Limit to 2 restart attempts within a 10 second window
+StartLimitIntervalSec=10
+StartLimitBurst=2
 
 [Container]
 ContainerName=quadlet-${app_name}
-Image=quadlet-${app_name}.build
-# AutoUpdate=registry
+Image=docker.io/yanwk/comfyui-boot:rocm
+AutoUpdate=registry
 
-# persist your tls certs:
-Volume=${data_location}/tls:/workspace/ComfyUI/tls:Z
-# persist your models:
-Volume=${data_location}/models:/workspace/ComfyUI/models:Z
-# persist your custom nodes:
-Volume=${data_location}/custom_nodes:/workspace/ComfyUI/custom_nodes:Z
-# persist your output images:
-Volume=${data_location}/output:/workspace/ComfyUI/output:Z
-# persist all your settings & extra nodes:
-Volume=${data_location}/settings:/workspace/ComfyUI/user:Z
+Volume=${data_location}:/root:Z
+Volume=${data_location}/models:/root/ComfyUI/models:Z
+Volume=${data_location}/hf-hub:/root/.cache/huggingface/hub:Z
+Volume=${data_location}/torch-hub:/root/.cache/torch/hub:Z
+Volume=${data_location}/input:/root/ComfyUI/input:Z
+Volume=${data_location}/output:/root/ComfyUI/output:Z
+Volume=${data_location}/workflows:/root/ComfyUI/user/default/workflows:Z
 
 # Networking: Pasta is used by default in Podman 5+
 # If you need to access host services (like Ollama on the host):
@@ -331,13 +193,23 @@ AddHost=host.containers.internal:host-gateway
 HostName=quadlet-${app_name}
 PublishPort=8188:8188
 
+PodmanArgs=--interactive --ipc host --tty
 SeccompProfile=unconfined
-# AddCapability=SYS_PTRACE
+AddCapability=SYS_PTRACE
+SecurityLabelDisable=true
 AddDevice=/dev/kfd
 AddDevice=/dev/dri
 GroupAdd=video
 
-Environment=CLI_ARGS=       # e.g. --lowvram --disable-pinned-memory
+Environment=HSA_OVERRIDE_GFX_VERSION=
+# Force ComfyUI to offload model weights from VRAM to RAM more frequently. Slows performance but reduce memory leaks
+# Environment=CLI_ARGS=--disable-smart-memory
+# Disable internal memory fragment caching to mitigate memory faults.
+Environment=HSA_DISABLE_FRAGMENT_ALLOCATOR=1
+# Enable tunable operations. Slower first run, faster subsequent runs.
+Environment=PYTORCH_TUNABLEOP_ENABLED=1
+# Radeon RX 7900 XT (RDNA 3 (gfx1100))
+Environment=HSA_OVERRIDE_GFX_VERSION=11.0.0
 
 # Maintenance & Logging
 # Log to JSON files
