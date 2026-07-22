@@ -98,7 +98,7 @@ setterm -linewrap on
 
 shopt -s histappend
 
-function determine_histfile {
+function histfile_determine {
 
     HISTFILE="$HOME/.bash_history"
 
@@ -117,7 +117,7 @@ function determine_histfile {
             [[ ! -f "${HISTFILE}" ]] && touch "${HISTFILE}"
 
             # Merge local if present with synced
-            [[ -f "$HOME/.bash_history" ]] && cat "$HISTFILE" "$HOME/.bash_history" | sort -n -u | tee "$HISTFILE" > /dev/null && rm "$HOME/.bash_history"
+            [[ -f "$HOME/.bash_history" ]] && cat "$HISTFILE" "$HOME/.bash_history" | uniq | tee "$HISTFILE" > /dev/null && rm "$HOME/.bash_history"
             # history -c; history -r "${primary}"; history -r "$HISTFILE"; history -w "$HISTFILE"
 
             break
@@ -126,7 +126,12 @@ function determine_histfile {
 
 }
 
-determine_histfile
+function histfile_clean {
+    cat "$HISTFILE" | uniq | tee "$HISTFILE" > /dev/null
+}
+
+histfile_determine
+histfile_clean
 
 HISTFILESIZE=10000
 HISTSIZE=10000
@@ -134,10 +139,12 @@ HISTCONTROL=erasedups
 # HISTTIMEFORMAT='%F %T ' # Same as '%Y-%m-%d %H:%M:%S '
 
 # Immediately add commands to your history instead of waiting for the end of each session.
-# First, you need to append to the history file immediately with history -a.
-# Next, you must clear the current history in your shell session with history -c.
-# Finally, to load the updated history back into your shell session, use the history -r command.
-PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}determine_histfile; history -a; history -c; history -r"
+# 1, Determine histfile location
+# 2, you need to append to the history file immediately with history -a.
+# 3, clean histfile of duplicates
+# 4, you must clear the current history in your shell session with history -c.
+# 5, to load the updated history back into your shell session, use the history -r command.
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}histfile_determine; history -a; histfile_clean; history -c; history -r"
 
 # ------------------------------------------------------------------------------
 # PATH
