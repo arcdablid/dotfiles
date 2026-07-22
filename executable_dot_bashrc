@@ -114,24 +114,19 @@ function histfile_determine {
     for bhd in "${bash_history_dirs[@]}"; do
         if [[ -d "${bhd}" ]]; then
             HISTFILE="${bhd}/.bash_history_$( hostname )"
-            [[ ! -f "${HISTFILE}" ]] && touch "${HISTFILE}"
 
             # Merge local if present with synced
-            [[ -f "$HOME/.bash_history" ]] && cat "$HISTFILE" "$HOME/.bash_history" | uniq | tee "$HISTFILE" > /dev/null && rm "$HOME/.bash_history"
+            [[ -f "$HOME/.bash_history" ]] && cat "$HISTFILE" "$HOME/.bash_history" | tee "$HISTFILE" > /dev/null && rm "$HOME/.bash_history"
             # history -c; history -r "${primary}"; history -r "$HISTFILE"; history -w "$HISTFILE"
 
             break
         fi
     done
 
-}
-
-function histfile_clean {
-    cat "$HISTFILE" | uniq | tee "$HISTFILE" > /dev/null
+    [[ ! -f "${HISTFILE}" ]] && touch "${HISTFILE}" || cat "$HISTFILE" | uniq | tee "$HISTFILE" > /dev/null
 }
 
 histfile_determine
-histfile_clean
 
 HISTFILESIZE=10000
 HISTSIZE=10000
@@ -144,7 +139,7 @@ HISTCONTROL=erasedups
 # 3, clean histfile of duplicates
 # 4, you must clear the current history in your shell session with history -c.
 # 5, to load the updated history back into your shell session, use the history -r command.
-PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}histfile_determine; history -a; histfile_clean; history -c; history -r"
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}histfile_determine; history -a; history -c; history -r"
 
 # ------------------------------------------------------------------------------
 # PATH
