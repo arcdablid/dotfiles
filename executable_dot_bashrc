@@ -121,7 +121,7 @@ done
 
 unset bash_history_dirs
 
-cat "$HISTFILE" | uniq | tee "$HISTFILE" > /dev/null
+[[ -f "${HISTFILE}" ]] && cat "$HISTFILE" | uniq | tee "$HISTFILE" > /dev/null
 
 shopt -s histappend
 HISTFILESIZE=10000
@@ -133,7 +133,7 @@ HISTCONTROL=erasedups
 # - you need to append to the history file immediately with history -a.
 # - you must clear the current history in your shell session with history -c.
 # - to load the updated history back into your shell session, use the history -r command.
-PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}; history -a; history -c; history -r"
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'} history -a; history -c; history -r"
 
 # ------------------------------------------------------------------------------
 # PATH
