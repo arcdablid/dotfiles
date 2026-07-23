@@ -114,5 +114,16 @@
     "*": false
   },
   "chat.disableAIFeatures": true,
-  "errorLens.excludeBySource": ["cSpell"]
+  "errorLens.excludeBySource": ["cSpell"],
+  "yaml.disableSchemaDetection": [
+    "**/.github/workflows/*.yml",
+    "**/.github/workflows/*.yaml",
+    "**/.gitea/workflows/*.yml",
+    "**/.gitea/workflows/*.yaml",
+    "**/.forgejo/workflows/*.yml",
+    "**/.forgejo/workflows/*.yaml"
+  ],
+  "dev.containers.dockerComposePath": "podman-compose",
+  "dev.containers.dockerPath": "podman",
+  "dev.containers.dockerSocketPath": "/run/user/{{- .chezmoi.uid -}}/podman/podman.sock"
 }
