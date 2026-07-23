@@ -115,6 +115,8 @@ function histfile_determine {
         if [[ -d "${bhd}" ]]; then
             HISTFILE="${bhd}/.bash_history_$( hostname )"
 
+            [[ ! -f "${HISTFILE}" ]] && touch "${HISTFILE}"
+
             # Merge local if present with synced
             [[ -f "$HOME/.bash_history" ]] && cat "$HISTFILE" "$HOME/.bash_history" | tee "$HISTFILE" > /dev/null && rm "$HOME/.bash_history"
             # history -c; history -r "${primary}"; history -r "$HISTFILE"; history -w "$HISTFILE"
@@ -123,7 +125,7 @@ function histfile_determine {
         fi
     done
 
-    [[ ! -f "${HISTFILE}" ]] && touch "${HISTFILE}" || cat "$HISTFILE" | uniq | tee "$HISTFILE" > /dev/null
+    cat "$HISTFILE" | uniq | tee "$HISTFILE" > /dev/null
 }
 
 histfile_determine
