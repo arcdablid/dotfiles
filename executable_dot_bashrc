@@ -96,52 +96,44 @@ setterm -linewrap on
 # Bash history
 # ------------------------------------------------------------------------------
 
+HISTFILE="$HOME/.bash_history"
+
+declare -a bash_history_dirs=(
+    "$HOME/Syncthing/qed/bash_history"
+    "$HOME/syncthing/qed/bash_history"
+    "$HOME/.syncthing/qed/bash_history"
+    "$HOME/Sync/qed/bash_history"
+    "$HOME/sync/qed/bash_history"
+    "$HOME/.sync/qed/bash_history"
+)
+
+for bhd in "${bash_history_dirs[@]}"; do
+    if [[ -d "${bhd}" ]]; then
+        HISTFILE="${bhd}/bash_history_$( hostname )"
+        # [[ ! -f "${HISTFILE}" ]] && touch "${HISTFILE}"
+
+        # Merge local if present with synced
+        [[ -f "$HOME/.bash_history" ]] && cat "$HOME/.bash_history" | tee -a "$HISTFILE" > /dev/null && \rm "$HOME/.bash_history"
+
+        break
+    fi
+done
+
+unset bash_history_dirs
+
+cat "$HISTFILE" | uniq | tee "$HISTFILE" > /dev/null
+
 shopt -s histappend
-
-function histfile_determine {
-
-    HISTFILE="$HOME/.bash_history"
-
-    declare -a bash_history_dirs=(
-        "$HOME/Syncthing/qed/bash_history"
-        "$HOME/syncthing/qed/bash_history"
-        "$HOME/.syncthing/qed/bash_history"
-        "$HOME/Sync/qed/bash_history"
-        "$HOME/sync/qed/bash_history"
-        "$HOME/.sync/qed/bash_history"
-    )
-
-    for bhd in "${bash_history_dirs[@]}"; do
-        if [[ -d "${bhd}" ]]; then
-            HISTFILE="${bhd}/.bash_history_$( hostname )"
-
-            [[ ! -f "${HISTFILE}" ]] && touch "${HISTFILE}"
-
-            # Merge local if present with synced
-            [[ -f "$HOME/.bash_history" ]] && cat "$HISTFILE" "$HOME/.bash_history" | tee "$HISTFILE" > /dev/null && rm "$HOME/.bash_history"
-            # history -c; history -r "${primary}"; history -r "$HISTFILE"; history -w "$HISTFILE"
-
-            break
-        fi
-    done
-
-    cat "$HISTFILE" | uniq | tee "$HISTFILE" > /dev/null
-}
-
-histfile_determine
-
 HISTFILESIZE=10000
 HISTSIZE=10000
 HISTCONTROL=erasedups
 # HISTTIMEFORMAT='%F %T ' # Same as '%Y-%m-%d %H:%M:%S '
 
 # Immediately add commands to your history instead of waiting for the end of each session.
-# 1, Determine histfile location
-# 2, you need to append to the history file immediately with history -a.
-# 3, clean histfile of duplicates
-# 4, you must clear the current history in your shell session with history -c.
-# 5, to load the updated history back into your shell session, use the history -r command.
-PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}histfile_determine; history -a; history -c; history -r"
+# - you need to append to the history file immediately with history -a.
+# - you must clear the current history in your shell session with history -c.
+# - to load the updated history back into your shell session, use the history -r command.
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}; history -a; history -c; history -r"
 
 # ------------------------------------------------------------------------------
 # PATH
