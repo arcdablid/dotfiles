@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -xeou pipefail
+
+# Native
+nmcli connection add type bridge con-name br.n ifname br.n bridge.stp no
+nmcli connection add type ethernet con-name enp42s0.n ifname enp42s0 connection.autoconnect yes
+nmcli connection modify enp42s0.n master br.n slave-type bridge
+nmcli connection up br.n
+
+# VLan11 - Netherlands
+nmcli connection add type bridge con-name br.11 ifname br.11 ipv4.method disabled ipv6.method disabled bridge.stp no
+
+nmcli connection add type vlan con-name enp42s0.11 ifname enp42s0.11 dev enp42s0 id 11
+nmcli connection modify enp42s0.11 ipv4.method disabled ipv6.method disabled
+nmcli connection modify enp42s0.11 master br.11 slave-type bridge
+
+nmcli connection up br.11
+nmcli connection up enp42s0.11
+
+# VLan12 - Switzerland
+nmcli connection add type bridge con-name br.12 ifname br.12 ipv4.method disabled ipv6.method disabled bridge.stp no
+
+nmcli connection add type vlan con-name enp42s0.12 ifname enp42s0.12 dev enp42s0 id 12
+nmcli connection modify enp42s0.12 ipv4.method disabled ipv6.method disabled
+nmcli connection modify enp42s0.12 master br.12 slave-type bridge
+
+nmcli connection up br.12
+nmcli connection up enp42s0.12
