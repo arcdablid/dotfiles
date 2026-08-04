@@ -192,52 +192,56 @@ function rfs_remove {
             clean_available_rfs+=( "${share_name} @ ${server_name} @ ${server_address}" )
         done
 
-        mapfile -t selected_rfs < <( printf '%s\n' "${server_addresses[@]}" | fzf --multi )
+        mapfile -t selected_rfs < <( printf '%s\n' "${clean_available_rfs[@]}" | fzf --multi )
 
         if [[ -z ${selected_rfs+x} || ${#selected_rfs[@]} -eq 0 ]]; then
             printf "[${executor}] ${BPurple}INFO${Color_Off} - Nothing to remove!"
         else
             for s_r in "${selected_rfs[@]}"; do
 
-                local share_name="$( cut -d '@' -f 1 -- "${s_r}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' )"
-                local server_name="$( cut -d '@' -f 2 -- "${s_r}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' )"
-                local server_address="$( cut -d '@' -f 3 -- "${s_r}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' )"
-
-                printf "[${executor}] ${BPurple}INFO${Color_Off} - Cleaning fstab...\n"
-                sed -i "/$( grep -e 'cifs' -e "uid=${local_user_uid},gid=${local_user_gid}" -e "${server_address}" -e "${share_name}" -e "${server_name}" -- /etc/fstab )/d" /etc/fstab # Remove specific line
-                sed -i '/^$/d' /etc/fstab # Remove all empty lines
-
-                sudo systemctl daemon-reload
-
-                printf "[${executor}] ${BPurple}INFO${Color_Off} - Removing creds...\n"
-                sudo rm -rfv "/etc/rfs/${server_name}_${share_name}.creds"
-
-                printf "[${executor}] ${BPurple}INFO${Color_Off} - Cleaning filesystem...\n"
-                if [ -z "$( ls -A "/etc/rfs" )" ]; then
-                    printf "[${executor}] ${BPurple}INFO${Color_Off} - /etc/rfs is empty --> removing...\n"
-                    sudo rm -rfv "/etc/rfs"
-                fi
-
-                # ls -A projects – list all the contents in the projects directory except for the . and .. entries.
-                # -z – this test parameter returns true if the output string is empty and false if not
-                if [ -z "$( ls -A "/mnt/rfs/${server_name}/${share_name}" )" ]; then
-                    printf "[${executor}] ${BPurple}INFO${Color_Off} - /mnt/rfs/${server_name}/${share_name} is empty --> removing...\n"
-                    rm -fv "$HOME/rfs/${server_name}/${share_name}"
-                    sudo rm -rfv "/mnt/rfs/${server_name}/${share_name}"
-
-                    if [ -z "$( ls -A "/mnt/rfs/${server_name}" )" ]; then
-                        printf "[${executor}] ${BPurple}INFO${Color_Off} - /mnt/rfs/${server_name} is empty --> removing...\n"
-                        sudo rm -rfv "/mnt/rfs/${server_name}"
-
-                        if [ -z "$( ls -A "/mnt/rfs" )" ]; then
-                            printf "[${executor}] ${BPurple}INFO${Color_Off} - /mnt/rfs is empty --> removing...\n"
-                            sudo rm -rfv "/mnt/rfs"
-                        fi
-                    fi
+                if [[ "${s_r}" == "" ]]; then
+                    printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid selection '${s_r}'"
                 else
-                    printf "[${executor}] ${BRed}ERROR${Color_Off} - /mnt/rfs/${server_name}/${share_name} should be empty but is not --> ignoring...\n"
-                fi
 
+                    local share_name="$( cut -d '@' -f 1 -- "${s_r}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' )"
+                    local server_name="$( cut -d '@' -f 2 -- "${s_r}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' )"
+                    local server_address="$( cut -d '@' -f 3 -- "${s_r}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' )"
+
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Cleaning fstab...\n"
+                    sed -i "/$( grep -e 'cifs' -e "uid=${local_user_uid},gid=${local_user_gid}" -e "${server_address}" -e "${share_name}" -e "${server_name}" -- /etc/fstab )/d" /etc/fstab # Remove specific line
+                    sed -i '/^$/d' /etc/fstab # Remove all empty lines
+
+                    sudo systemctl daemon-reload
+
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Removing creds...\n"
+                    sudo rm -rfv "/etc/rfs/${server_name}_${share_name}.creds"
+
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Cleaning filesystem...\n"
+                    if [ -z "$( ls -A "/etc/rfs" )" ]; then
+                        printf "[${executor}] ${BPurple}INFO${Color_Off} - /etc/rfs is empty --> removing...\n"
+                        sudo rm -rfv "/etc/rfs"
+                    fi
+
+                    # ls -A projects – list all the contents in the projects directory except for the . and .. entries.
+                    # -z – this test parameter returns true if the output string is empty and false if not
+                    if [ -z "$( ls -A "/mnt/rfs/${server_name}/${share_name}" )" ]; then
+                        printf "[${executor}] ${BPurple}INFO${Color_Off} - /mnt/rfs/${server_name}/${share_name} is empty --> removing...\n"
+                        rm -fv "$HOME/rfs/${server_name}/${share_name}"
+                        sudo rm -rfv "/mnt/rfs/${server_name}/${share_name}"
+
+                        if [ -z "$( ls -A "/mnt/rfs/${server_name}" )" ]; then
+                            printf "[${executor}] ${BPurple}INFO${Color_Off} - /mnt/rfs/${server_name} is empty --> removing...\n"
+                            sudo rm -rfv "/mnt/rfs/${server_name}"
+
+                            if [ -z "$( ls -A "/mnt/rfs" )" ]; then
+                                printf "[${executor}] ${BPurple}INFO${Color_Off} - /mnt/rfs is empty --> removing...\n"
+                                sudo rm -rfv "/mnt/rfs"
+                            fi
+                        fi
+                    else
+                        printf "[${executor}] ${BRed}ERROR${Color_Off} - /mnt/rfs/${server_name}/${share_name} should be empty but is not --> ignoring...\n"
+                    fi
+                fi
             done
         fi
 

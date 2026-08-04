@@ -419,62 +419,66 @@ function rfs_remove {
     if [[ ! -d "${rfs_cache}" ]]; then
         printf "[${executor}] ${BPurple}INFO${Color_Off} - Nothing to remove!"
     else
-        mapfile -t selected_rfs < <( fd --glob '*.rfs' "${rfs_cache}" --exec-batch gum choose --no-limit --header "Select all rfs you wish to remove" )
+        mapfile -t selected_rfs < <( fd --glob '*.rfs' "${rfs_cache}" --exec-batch gum choose --select-if-one --no-limit --header "Select all rfs you wish to remove" )
 
         if [[ -z ${selected_rfs+x} || ${#selected_rfs[@]} -eq 0 ]]; then
             printf "[${executor}] ${BPurple}INFO${Color_Off} - Nothing to remove!"
         else
             for s_r in "${selected_rfs[@]}"; do
 
-                mapfile -t extracted_info < <( cat "${s_r}" )
-                for e_i in "${extracted_info[@]}"; do
-                    case "${e_i}" in
-                        "credentials_directory="*   ) local credentials_directory="$( cut -d '=' -f 2 -- "${e_i}" )"    ;;
-                        "execstart_script_dir="*    ) local execstart_script_dir="$( cut -d '=' -f 2 -- "${e_i}" )"     ;;
-                        "server_name="*             ) local server_name="$( cut -d '=' -f 2 -- "${e_i}" )"              ;;
-                        "share_name="*              ) local share_name="$( cut -d '=' -f 2 -- "${e_i}" )"               ;;
-                        "share_mount_under="*       ) local share_mount_under="$( cut -d '=' -f 2 -- "${e_i}" )"        ;;
-                    esac
-                done
+                if [[ "${s_r}" == "" ]]; then
+                    printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid selection '${s_r}'"
+                else
+                    mapfile -t extracted_info < <( cat "${s_r}" )
+                    for e_i in "${extracted_info[@]}"; do
+                        case "${e_i}" in
+                            "credentials_directory="*   ) local credentials_directory="$( cut -d '=' -f 2 -- "${e_i}" )"    ;;
+                            "execstart_script_dir="*    ) local execstart_script_dir="$( cut -d '=' -f 2 -- "${e_i}" )"     ;;
+                            "server_name="*             ) local server_name="$( cut -d '=' -f 2 -- "${e_i}" )"              ;;
+                            "share_name="*              ) local share_name="$( cut -d '=' -f 2 -- "${e_i}" )"               ;;
+                            "share_mount_under="*       ) local share_mount_under="$( cut -d '=' -f 2 -- "${e_i}" )"        ;;
+                        esac
+                    done
 
-                local mountpoint="$( expand_path "${share_mount_under}" )/${server_name}/${share_name}"
-                local systemd_name="$( str_replace_part -t '-' -r '' -c 1 -- $( str_replace_part -t '/' -r '-' -- "${mountpoint}" ) )"
+                    local mountpoint="$( expand_path "${share_mount_under}" )/${server_name}/${share_name}"
+                    local systemd_name="$( str_replace_part -t '-' -r '' -c 1 -- $( str_replace_part -t '/' -r '-' -- "${mountpoint}" ) )"
 
-                local creds_dir="$( expand_path "${credentials_directory}" )"
-                local creds_file="$( expand_path "${creds_dir}/${systemd_name}.creds" )"
+                    local creds_dir="$( expand_path "${credentials_directory}" )"
+                    local creds_file="$( expand_path "${creds_dir}/${systemd_name}.creds" )"
 
-                printf "[${executor}] ${BPurple}INFO${Color_Off} - Disabling & removing files..."
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Disabling & removing files..."
 
-                sudo systemctl disable --now "${systemd_name}.timer"
-                printf "[${executor}] ${BPurple}INFO${Color_Off} - Disabled ${systemd_name}.timer"
+                    sudo systemctl disable --now "${systemd_name}.timer"
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Disabled ${systemd_name}.timer"
 
-                sudo systemctl stop "${systemd_name}.service"
-                printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.service"
+                    sudo systemctl stop "${systemd_name}.service"
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.service"
 
-                sudo systemctl stop "${systemd_name}.automount"
-                printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.automount"
+                    sudo systemctl stop "${systemd_name}.automount"
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.automount"
 
-                sudo systemctl stop "${systemd_name}.mount"
-                printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.mount"
+                    sudo systemctl stop "${systemd_name}.mount"
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.mount"
 
-                if [[ -f "${rfs_cache}/${systemd_name}.env" ]]; then
-                    sudo rm -vf "${rfs_cache}/${systemd_name}.env"
+                    if [[ -f "${rfs_cache}/${systemd_name}.env" ]]; then
+                        sudo rm -vf "${rfs_cache}/${systemd_name}.env"
+                    fi
+
+                    sudo rm -vf "${execstart_script_dir}/${systemd_name}.sh"
+                    rm -vf "${creds_file}"
+                    sudo rm -vf "/etc/systemd/system/${systemd_name}".*
+                    sudo rm -vf "/etc/systemd/journald@${systemd_name}.conf"
+
+                    sudo systemctl daemon-reload
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Completed systemctl daemon-reload"
+
+                    if [[ -f "${rfs_cache}/${systemd_name}.rfs" ]]; then
+                        sudo rm -vf "${rfs_cache}/${systemd_name}.rfs"
+                        printf "[${executor}] ${BPurple}INFO${Color_Off} - Removed registry file ${rfs_cache}/${systemd_name}.rfs"
+                    fi
+
+                    printf "[${executor}] ${BGreen}SUCCESS${Color_Off} - Done!"
                 fi
-
-                sudo rm -vf "${execstart_script_dir}/${systemd_name}.sh"
-                rm -vf "${creds_file}"
-                sudo rm -vf "/etc/systemd/system/${systemd_name}".*
-                sudo rm -vf "/etc/systemd/journald@${systemd_name}.conf"
-
-                sudo systemctl daemon-reload
-                printf "[${executor}] ${BPurple}INFO${Color_Off} - Completed systemctl daemon-reload"
-
-                if [[ -f "${rfs_cache}/${systemd_name}.rfs" ]]; then
-                    sudo rm -vf "${rfs_cache}/${systemd_name}.rfs"
-                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Removed registry file ${rfs_cache}/${systemd_name}.rfs"
-                fi
-
-                printf "[${executor}] ${BGreen}SUCCESS${Color_Off} - Done!"
             done
         fi
     fi
