@@ -124,10 +124,10 @@ EOF
 function rfs_add {
     # local server_name="$( gum input --header "Input server name" --placeholder "name" )"
     local server_name=""
-    read -e -r -p "Enter server name" -i "my_nas_name" server_name && echo
+    read -e -r -p "${BWhite}Enter server name:${Color_Off} " -i "my_nas_name" server_name && echo
 
     local server_address=""
-    read -e -r -p "Enter a server address" -i "IPv4 | IPv6 | FQDN" server_address && echo
+    read -e -r -p "${BWhite}Enter a server address:${Color_Off} " -i "IPv4|IPv6|FQDN" server_address && echo
     # local server_address="$( gum input --header "Input a server address" --placeholder "IPv4 | IPv6 | FQDN" )"
     if ! str_valid_ip_or_hostname "${server_address}" ; then
         printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid IP address or hostname!\n"
@@ -135,14 +135,13 @@ function rfs_add {
     fi
 
     local share_name=""
-    read -e -r -p "Enter share name" -i "share_name" share_name && echo
-
+    read -e -r -p "${BWhite}Enter share name:${Color_Off} " -i "my_share_name" share_name && echo
     local share_username=""
-    read -e -r -p "Enter share username" -i "username" share_username && echo
+    read -e -r -p "${BWhite}Enter share username:${Color_Off} " -i "username" share_username && echo
     local share_password=""
-    read -e -r -s -p "Enter share password" -i "password" share_password && echo
+    read -e -r -s -p "${BWhite}Enter share password:${Color_Off} " -i "password" share_password && echo
     local share_domain=""
-    read -e -r -p "Enter share domain" -i "domain" share_domain && echo
+    read -e -r -p "${BWhite}Enter share domain:${Color_Off} " -i "domain" share_domain && echo
 
     # $( whoami ) or $( id -un ) for current user
     local local_user_uid=$( id -u ) # or $( id -u <username> ) for any other user than current
