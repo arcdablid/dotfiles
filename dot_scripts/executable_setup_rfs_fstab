@@ -153,7 +153,7 @@ function rfs_add {
     mkdir -pv "$HOME/rfs/${server_name}/${share_name}"
     ln -sinv "/mnt/rfs/${server_name}/${share_name}" "$HOME/rfs/${server_name}/${share_name}"
 
-    sudo install -d -m 700 "${creds_store}"
+    sudo install -d -m 700 /etc/rfs
     sudo sh -c "cat > /etc/rfs/${server_name}_${share_name}.creds" << EOF
 username=${share_username}
 password=${share_password}
