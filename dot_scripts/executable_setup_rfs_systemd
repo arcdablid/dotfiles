@@ -432,11 +432,11 @@ function rfs_remove {
                     mapfile -t extracted_info < <( cat "${s_r}" )
                     for e_i in "${extracted_info[@]}"; do
                         case "${e_i}" in
-                            "credentials_directory="*   ) local credentials_directory="$( cut -d '=' -f 2 -- "${e_i}" )"    ;;
-                            "execstart_script_dir="*    ) local execstart_script_dir="$( cut -d '=' -f 2 -- "${e_i}" )"     ;;
-                            "server_name="*             ) local server_name="$( cut -d '=' -f 2 -- "${e_i}" )"              ;;
-                            "share_name="*              ) local share_name="$( cut -d '=' -f 2 -- "${e_i}" )"               ;;
-                            "share_mount_under="*       ) local share_mount_under="$( cut -d '=' -f 2 -- "${e_i}" )"        ;;
+                            "credentials_directory="*   ) local credentials_directory="$( printf '%s\n' "${e_i}" | cut -d '=' -f 2 )"    ;;
+                            "execstart_script_dir="*    ) local execstart_script_dir="$( printf '%s\n' "${e_i}" | cut -d '=' -f 2 )"     ;;
+                            "server_name="*             ) local server_name="$( printf '%s\n' "${e_i}" | cut -d '=' -f 2 )"              ;;
+                            "share_name="*              ) local share_name="$( printf '%s\n' "${e_i}" | cut -d '=' -f 2 )"               ;;
+                            "share_mount_under="*       ) local share_mount_under="$( printf '%s\n' "${e_i}" | cut -d '=' -f 2 )"        ;;
                         esac
                     done
 

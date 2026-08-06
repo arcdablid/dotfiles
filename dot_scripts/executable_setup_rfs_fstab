@@ -186,9 +186,9 @@ function rfs_remove {
         declare -a clean_available_rfs
 
         for arfs in "${available_rfs[@]}"; do
-            local server_name="$( cut -d ' ' -f 2 | cut -d '/' -f 4 )"
-            local server_address="$( cut -d ' ' -f 1 | cut -d '/' -f 3 )"
-            local share_name="$( cut -d ' ' -f 1 | cut -d '/' -f 4 )"
+            local server_name="$( printf '%s\n' "${arfs}" | cut -d ' ' -f 2 | cut -d '/' -f 4 )"
+            local server_address="$( printf '%s\n' "${arfs}" | cut -d ' ' -f 1 | cut -d '/' -f 3 )"
+            local share_name="$( printf '%s\n' "${arfs}" | cut -d ' ' -f 1 | cut -d '/' -f 4 )"
             clean_available_rfs+=( "${share_name} @ ${server_name} @ ${server_address}" )
         done
 
@@ -203,9 +203,9 @@ function rfs_remove {
                     printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid selection '${s_r}'"
                 else
 
-                    local share_name="$( cut -d '@' -f 1 -- "${s_r}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' )"
-                    local server_name="$( cut -d '@' -f 2 -- "${s_r}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' )"
-                    local server_address="$( cut -d '@' -f 3 -- "${s_r}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' )"
+                    local share_name="$( printf '%s\n' "${s_r}" | cut -d '@' -f 1 | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' )"
+                    local server_name="$( printf '%s\n' "${s_r}" | cut -d '@' -f 2 | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' )"
+                    local server_address="$( printf '%s\n' "${s_r}" | cut -d '@' -f 3 | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' )"
 
                     printf "[${executor}] ${BPurple}INFO${Color_Off} - Cleaning fstab...\n"
                     sed -i "/$( grep -e 'cifs' -e "uid=${local_user_uid},gid=${local_user_gid}" -e "${server_address}" -e "${share_name}" -e "${server_name}" -- /etc/fstab )/d" /etc/fstab # Remove specific line
