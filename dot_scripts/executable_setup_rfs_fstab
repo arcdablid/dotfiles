@@ -99,7 +99,7 @@ declare -a required_cmds=( "systemctl" "fzf" )
 fail=false
 for rc in "${required_cmds[@]}"; do
     if ! command -v "${rc}" &> /dev/null ; then
-        printf "[${executor}] ${BRed}ERROR${Color_Off} - Command '${rc}' unavailable!?"
+        printf "[${executor}] ${BRed}ERROR${Color_Off} - Command '${rc}' unavailable!?\n"
         fail=true
     fi
 done
@@ -171,7 +171,7 @@ EOF
 
     sudo systemctl daemon-reload
 
-    printf "[${executor}] ${BGreen}SUCCESS${Color_Off} - Done!"
+    printf "[${executor}] ${BGreen}SUCCESS${Color_Off} - Done!\n"
 }
 
 function rfs_remove {
@@ -181,7 +181,7 @@ function rfs_remove {
 
     mapfile -t available_rfs < <( grep -e 'cifs' -e "uid=${local_user_uid},gid=${local_user_gid}" /etc/fstab )
     if [[ -z ${available_rfs+x} || ${#available_rfs[@]} -eq 0 ]]; then
-        printf "[${executor}] ${BPurple}INFO${Color_Off} - Nothing to remove!"
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Nothing to remove!\n"
     else
         declare -a clean_available_rfs
 
@@ -195,12 +195,12 @@ function rfs_remove {
         mapfile -t selected_rfs < <( printf '%s\n' "${clean_available_rfs[@]}" | fzf --multi )
 
         if [[ -z ${selected_rfs+x} || ${#selected_rfs[@]} -eq 0 ]]; then
-            printf "[${executor}] ${BPurple}INFO${Color_Off} - Nothing to remove!"
+            printf "[${executor}] ${BPurple}INFO${Color_Off} - Nothing to remove!\n"
         else
             for s_r in "${selected_rfs[@]}"; do
 
                 if [[ "${s_r}" == "" ]]; then
-                    printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid selection '${s_r}'"
+                    printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid selection '${s_r}'\n"
                 else
 
                     local share_name="$( printf '%s\n' "${s_r}" | cut -d '@' -f 1 | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' )"

@@ -99,7 +99,7 @@ declare -a required_cmds=( "systemctl" "gum" "fd" "expand_path" "str_replace_par
 fail=false
 for rc in "${required_cmds[@]}"; do
     if ! command -v "${rc}" &> /dev/null ; then
-        printf "[${executor}] ${BRed}ERROR${Color_Off} - Command '${rc}' unavailable!?"
+        printf "[${executor}] ${BRed}ERROR${Color_Off} - Command '${rc}' unavailable!?\n"
         fail=true
     fi
 done
@@ -131,7 +131,7 @@ function rfs_add {
         # local server_address=""
         # read -e -r -p "Enter a server address" -i "IPv4 | IPv6 | FQDN" server_address && echo
         if ! str_valid_ip_or_hostname "${server_address}" ; then
-            printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid IP address or hostname!"
+            printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid IP address or hostname!\n"
             exit 1
         else
             if [[ -z ${server_addresses+x} ]]; then
@@ -399,7 +399,7 @@ share_mount_under=${share_mount_under}
         echo "${REGISTRY}" | sudo tee "${rfs_cache}/${systemd_name}.rfs" > /dev/null
         printf "${rfs_cache}/${systemd_name}.rfs\n"
 
-        printf "[${executor}] ${BGreen}SUCCESS${Color_Off} - Done!"
+        printf "[${executor}] ${BGreen}SUCCESS${Color_Off} - Done!\n"
 
         echo
         gum confirm "Add more shares?" || break
@@ -417,17 +417,17 @@ share_mount_under=${share_mount_under}
 
 function rfs_remove {
     if [[ ! -d "${rfs_cache}" ]]; then
-        printf "[${executor}] ${BPurple}INFO${Color_Off} - Nothing to remove!"
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Nothing to remove!\n"
     else
         mapfile -t selected_rfs < <( fd --glob '*.rfs' "${rfs_cache}" --exec-batch gum choose --select-if-one --no-limit --header "Select all rfs you wish to remove" )
 
         if [[ -z ${selected_rfs+x} || ${#selected_rfs[@]} -eq 0 ]]; then
-            printf "[${executor}] ${BPurple}INFO${Color_Off} - Nothing to remove!"
+            printf "[${executor}] ${BPurple}INFO${Color_Off} - Nothing to remove!\n"
         else
             for s_r in "${selected_rfs[@]}"; do
 
                 if [[ "${s_r}" == "" ]]; then
-                    printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid selection '${s_r}'"
+                    printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid selection '${s_r}'\n"
                 else
                     mapfile -t extracted_info < <( cat "${s_r}" )
                     for e_i in "${extracted_info[@]}"; do
@@ -446,19 +446,19 @@ function rfs_remove {
                     local creds_dir="$( expand_path "${credentials_directory}" )"
                     local creds_file="$( expand_path "${creds_dir}/${systemd_name}.creds" )"
 
-                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Disabling & removing files..."
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Disabling & removing files...\n"
 
                     sudo systemctl disable --now "${systemd_name}.timer"
-                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Disabled ${systemd_name}.timer"
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Disabled ${systemd_name}.timer\n"
 
                     sudo systemctl stop "${systemd_name}.service"
-                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.service"
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.service\n"
 
                     sudo systemctl stop "${systemd_name}.automount"
-                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.automount"
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.automount\n"
 
                     sudo systemctl stop "${systemd_name}.mount"
-                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.mount"
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Stopped ${systemd_name}.mount\n"
 
                     if [[ -f "${rfs_cache}/${systemd_name}.env" ]]; then
                         sudo rm -vf "${rfs_cache}/${systemd_name}.env"
@@ -470,14 +470,14 @@ function rfs_remove {
                     sudo rm -vf "/etc/systemd/journald@${systemd_name}.conf"
 
                     sudo systemctl daemon-reload
-                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Completed systemctl daemon-reload"
+                    printf "[${executor}] ${BPurple}INFO${Color_Off} - Completed systemctl daemon-reload\n"
 
                     if [[ -f "${rfs_cache}/${systemd_name}.rfs" ]]; then
                         sudo rm -vf "${rfs_cache}/${systemd_name}.rfs"
-                        printf "[${executor}] ${BPurple}INFO${Color_Off} - Removed registry file ${rfs_cache}/${systemd_name}.rfs"
+                        printf "[${executor}] ${BPurple}INFO${Color_Off} - Removed registry file ${rfs_cache}/${systemd_name}.rfs\n"
                     fi
 
-                    printf "[${executor}] ${BGreen}SUCCESS${Color_Off} - Done!"
+                    printf "[${executor}] ${BGreen}SUCCESS${Color_Off} - Done!\n"
                 fi
             done
         fi
