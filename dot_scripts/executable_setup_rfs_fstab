@@ -94,7 +94,7 @@ done
 executor_path="$(readlink -f "${executor_path}")"
 executor_dir="$(cd -P "$(dirname -- "${executor_path}")" >/dev/null 2>&1 && pwd)"
 
-declare -a required_cmds=( "systemctl" "fzf" )
+declare -a required_cmds=( "systemctl" "fzf" "expand_path" )
 
 fail=false
 for rc in "${required_cmds[@]}"; do
@@ -147,12 +147,20 @@ function rfs_add {
     local local_user_uid=$( id -u ) # or $( id -u <username> ) for any other user than current
     local local_user_gid=$( id -g ) # or $( id -g <username> ) for any other user than current
 
-    printf "[${executor}] ${BPurple}INFO${Color_Off} - Adding...\n"
-
+    printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring presence of mountpoint /mnt/rfs/${server_name}/${share_name}\n"
     sudo mkdir -pv "/mnt/rfs/${server_name}/${share_name}"
-    mkdir -pv "$HOME/rfs/${server_name}/${share_name}"
-    if [[ ! -L "$HOME/rfs/${server_name}/${share_name}" && ! -d "$HOME/rfs/${server_name}/${share_name}" ]]; then
+
+    printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring presence of symlink $HOME/rfs/${server_name}/${share_name} -> /mnt/rfs/${server_name}/${share_name}\n"
+    mkdir -pv "$HOME/rfs/${server_name}"
+
+    if [[ -e "$HOME/rfs/${server_name}/${share_name}" && ! -L "$HOME/rfs/${server_name}/${share_name}" ]]; then
+        printf "[${executor}] ${BRed}ERROR${Color_Off} - $HOME/rfs/${server_name}/${share_name} exists ans is not a symlink --> aborting\n"
+        exit 1
+    elif [[ -L "$HOME/rfs/${server_name}/${share_name}" && ! "$( expand_path "$HOME/rfs/${server_name}/${share_name}" )" == "/mnt/rfs/${server_name}/${share_name}" ]]; then
+        printf "[${executor}] ${BYellow}WARNING${Color_Off} - $HOME/rfs/${server_name}/${share_name} symlink exists and doesn't point where it sh!\n"
         ln -sinv "/mnt/rfs/${server_name}/${share_name}" "$HOME/rfs/${server_name}/${share_name}"
+    else
+        ln -snv "/mnt/rfs/${server_name}/${share_name}" "$HOME/rfs/${server_name}/${share_name}"
     fi
 
     sudo install -d -m 700 /etc/rfs
@@ -166,9 +174,24 @@ EOF
     sudo chown root:root "/etc/rfs/${server_name}_${share_name}.creds"
 
     # file_mode=0664,dir_mode=0755
-    sudo sh -c 'tee -a /etc/fstab > /dev/null' << EOF
-//${server_address}/${share_name} /mnt/rfs/${server_name}/${share_name} cifs _netdev,nofail,noauto,soft,vers=3.1.1,x-systemd.automount,x-systemd.idle-timeout=60,x-systemd.device-timeout=5s,x-systemd.mount-timeout=5s,user,users,uid=${local_user_uid},gid=${local_user_gid},credentials=/etc/rfs/${server_name}_${share_name}.creds 0 0
+    local fstab_line="//${server_address}/${share_name} /mnt/rfs/${server_name}/${share_name} cifs _netdev,nofail,noauto,soft,vers=3.1.1,x-systemd.automount,x-systemd.idle-timeout=60,x-systemd.device-timeout=5s,x-systemd.mount-timeout=5s,user,users,uid=${local_user_uid},gid=${local_user_gid},credentials=/etc/rfs/${server_name}_${share_name}.creds 0 0"
+
+    # Check if line already in fstab
+    # -F, --fixed-strings
+    # Interpret PATTERN as a list of fixed strings, separated by newlines, any of which is to be matched.
+    # -x, --line-regexp
+    # Select only those matches that exactly match the whole line.
+    # -q, --quiet, --silent
+    # Quiet; do not write anything to standard output. Exit immediately with zero status if any match is found, even if an error was detected.
+    if grep -Fxq "${fstab_line}" /etc/fstab ; then
+        printf "[${executor}] ${BPurple}INFO${Color_Off} - Entry already present in /etc/fstab --> ignoring...\n"
+    else
+        sudo sh -c 'tee -a /etc/fstab > /dev/null' << EOF
+${fstab_line}
 EOF
+
+    fi
+
 
     sudo systemctl daemon-reload
 
@@ -268,7 +291,7 @@ else
         rfs_add
         echo
         # gum confirm "Add more shares?" || break
-        local answer=""
+        answer=""
         until [[ $answer =~ ^[Nn]$ || $answer =~ ^[Yy]$ ]]; do
             read -n 1 -r -p "Add more shares? (Y/N): " answer && echo
             case $answer in
