@@ -153,14 +153,14 @@ if [[ "${REMOVE}" == "true" ]]; then
 
 else
 
-    read -e -p "Enter config location:" -i "$HOME/.config/quadlets/data/${app_name}" config_location
+    read -e -p "Enter config location: " -i "$HOME/.config/quadlets/data/${app_name}" config_location
     config_location="$( expand_path "${config_location}" )"
 
     echo
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
     mkdir -pv "$HOME/.config/containers/systemd"
     mkdir -pv "$HOME/.config/quadlets/init/${app_name}"
-    mkdir -pv "${config_location}"
+    mkdir -pv "${config_location}"{/cache,/llama,/recipe}
 
     echo
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Creating quadlet...\n"
