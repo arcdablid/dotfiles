@@ -94,7 +94,7 @@ done
 executor_path="$(readlink -f "${executor_path}")"
 executor_dir="$(cd -P "$(dirname -- "${executor_path}")" >/dev/null 2>&1 && pwd)"
 
-declare -a required_cmds=( "systemctl" "fzf" "expand_path" )
+declare -a required_cmds=( "systemctl" "fzf" "expand_path" "nc" )
 
 fail=false
 for rc in "${required_cmds[@]}"; do
@@ -121,27 +121,51 @@ Flags:
 EOF
 }
 
+function get_host_port_reachable {
+    local -r REMOTE_HOST=$1
+    local -r REMOTE_HOST_PORT=$2
+
+    if nc -zv -w 5 -- ${REMOTE_HOST} ${REMOTE_HOST_PORT} 2>&1 | grep -q 'succeeded' ; then
+        printf '%s\n' 'true'
+    else
+        printf '%s\n' 'false'
+    fi
+}
+
 function rfs_add {
     # local server_name="$( gum input --header "Input server name" --placeholder "name" )"
     local server_name=""
-    read -e -r -p "Enter server name: " -i "my_nas_name" server_name && echo
+    read -e -r -p "Enter server name: " server_name && echo
 
     local server_address=""
-    read -e -r -p "Enter a server address: " -i "IPv4|IPv6|FQDN" server_address && echo
+    read -e -r -p "Enter a server address (IPv4/6|FQDN): " server_address && echo
     # local server_address="$( gum input --header "Input a server address" --placeholder "IPv4 | IPv6 | FQDN" )"
     if ! str_valid_ip_or_hostname "${server_address}" ; then
         printf "[${executor}] ${BRed}ERROR${Color_Off} - Invalid IP address or hostname!\n"
-        exit 1
+        return 1
+    fi
+
+    if [[ ! "$( get_host_port_reachable ${addr} 445 )" == true || ! "$( get_host_port_reachable ${addr} 139 )" == true ]]; then
+        printf "[${executor}] ${BRed}ERROR${Color_Off} - Hostname unreachable!\n"
+        local answer=""
+        until [[ $answer =~ ^[Nn]$ || $answer =~ ^[Yy]$ ]]; do
+            read -n 1 -r -p "Disregard? (Y/N): " answer && echo
+            case $answer in
+                [Yy]* ) break ;;
+                [Nn]* ) return 1 ;;
+                * ) echo "Please answer Y or N." ;;
+            esac
+        done
     fi
 
     local share_name=""
-    read -e -r -p "Enter share name: " -i "my_share_name" share_name && echo
+    read -e -r -p "Enter share name: " share_name && echo
     local share_username=""
-    read -e -r -p "Enter share username: " -i "username" share_username && echo
+    read -e -r -p "Enter share username: " share_username && echo
     local share_password=""
-    read -e -r -s -p "Enter share password: " -i "password" share_password && echo
+    read -e -r -s -p "Enter share password: " share_password && echo
     local share_domain=""
-    read -e -r -p "Enter share domain: " -i "domain" share_domain && echo
+    read -e -r -p "Enter share domain: " share_domain && echo
 
     # $( whoami ) or $( id -un ) for current user
     local local_user_uid=$( id -u ) # or $( id -u <username> ) for any other user than current
@@ -189,13 +213,10 @@ EOF
         sudo sh -c 'tee -a /etc/fstab > /dev/null' << EOF
 ${fstab_line}
 EOF
-
     fi
 
-
     sudo systemctl daemon-reload
-
-    printf "[${executor}] ${BGreen}SUCCESS${Color_Off} - Done!\n"
+    sudo mount -a
 }
 
 function rfs_remove {
@@ -203,7 +224,7 @@ function rfs_remove {
     local local_user_uid=$( id -u ) # or $( id -u <username> ) for any other user than current
     local local_user_gid=$( id -g ) # or $( id -g <username> ) for any other user than current
 
-    mapfile -t available_rfs < <( grep -e 'cifs' -e "uid=${local_user_uid},gid=${local_user_gid}" /etc/fstab )
+    mapfile -t available_rfs < <( \grep -e 'cifs' -e "uid=${local_user_uid},gid=${local_user_gid}" /etc/fstab )
     if [[ -z ${available_rfs+x} || ${#available_rfs[@]} -eq 0 ]]; then
         printf "[${executor}] ${BPurple}INFO${Color_Off} - Nothing to remove!\n"
     else
@@ -232,16 +253,17 @@ function rfs_remove {
                     local server_address="$( printf '%s\n' "${s_r}" | cut -d '@' -f 3 | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' )"
 
                     printf "[${executor}] ${BPurple}INFO${Color_Off} - Cleaning fstab...\n"
-                    sed -i "/$( grep -e 'cifs' -e "uid=${local_user_uid},gid=${local_user_gid}" -e "${server_address}" -e "${share_name}" -e "${server_name}" -- /etc/fstab )/d" /etc/fstab # Remove specific line
+                    sed -i "/$( \grep -e 'cifs' -e "uid=${local_user_uid},gid=${local_user_gid}" -e "${server_address}" -e "${share_name}" -e "${server_name}" -- /etc/fstab )/d" /etc/fstab # Remove specific line
                     sed -i '/^$/d' /etc/fstab # Remove all empty lines
 
                     sudo systemctl daemon-reload
+                    sudo mount -a
 
                     printf "[${executor}] ${BPurple}INFO${Color_Off} - Removing creds...\n"
                     sudo rm -rfv "/etc/rfs/${server_name}_${share_name}.creds"
 
                     printf "[${executor}] ${BPurple}INFO${Color_Off} - Cleaning filesystem...\n"
-                    if [ -z "$( ls -A "/etc/rfs" )" ]; then
+                    if [ -z "$( \ls -A "/etc/rfs" )" ]; then
                         printf "[${executor}] ${BPurple}INFO${Color_Off} - /etc/rfs is empty --> removing...\n"
                         sudo rm -rfv "/etc/rfs"
                     fi
@@ -250,14 +272,14 @@ function rfs_remove {
                     # -z – this test parameter returns true if the output string is empty and false if not
                     if [ -z "$( ls -A "/mnt/rfs/${server_name}/${share_name}" )" ]; then
                         printf "[${executor}] ${BPurple}INFO${Color_Off} - /mnt/rfs/${server_name}/${share_name} is empty --> removing...\n"
-                        rm -fv "$HOME/rfs/${server_name}/${share_name}"
+                        \rm -fv "$HOME/rfs/${server_name}/${share_name}"
                         sudo rm -rfv "/mnt/rfs/${server_name}/${share_name}"
 
-                        if [ -z "$( ls -A "/mnt/rfs/${server_name}" )" ]; then
+                        if [ -z "$( \ls -A "/mnt/rfs/${server_name}" )" ]; then
                             printf "[${executor}] ${BPurple}INFO${Color_Off} - /mnt/rfs/${server_name} is empty --> removing...\n"
                             sudo rm -rfv "/mnt/rfs/${server_name}"
 
-                            if [ -z "$( ls -A "/mnt/rfs" )" ]; then
+                            if [ -z "$( \ls -A "/mnt/rfs" )" ]; then
                                 printf "[${executor}] ${BPurple}INFO${Color_Off} - /mnt/rfs is empty --> removing...\n"
                                 sudo rm -rfv "/mnt/rfs"
                             fi
@@ -288,17 +310,26 @@ elif [[ $# -gt 1 ]]; then
     exit 1
 else
     while :; do
-        rfs_add
-        echo
+        if ! rfs_add ; then
+            printf "[${executor}] ${BRed}ERROR${Color_Off} - Adding share failed!\n"
+            echo
+            prompt_msg="Try again? (Y/N): "
+        else
+            printf "[${executor}] ${BGreen}SUCCESS${Color_Off} - Share added!\n"
+            echo
+            prompt_msg="Add more shares? (Y/N): "
+        fi
+
         # gum confirm "Add more shares?" || break
         answer=""
         until [[ $answer =~ ^[Nn]$ || $answer =~ ^[Yy]$ ]]; do
-            read -n 1 -r -p "Add more shares? (Y/N): " answer && echo
+            read -n 1 -r -p "${prompt_msg}" answer && echo
             case $answer in
-                [Yy]* ) continue 2;;
-                [Nn]* ) break 2;;
-                * ) echo "Please answer Y or N.";;
+                [Yy]* ) continue 2 ;;
+                [Nn]* ) break 2 ;;
+                * ) echo "Please answer Y or N." ;;
             esac
         done
+
     done
 fi
