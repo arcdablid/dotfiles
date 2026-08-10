@@ -156,6 +156,10 @@ else
     read -e -p "Enter config location: " -i "$HOME/.config/quadlets/data/${app_name}" config_location
     config_location="$( expand_path "${config_location}" )"
 
+    # $( whoami ) or $( id -un ) for current user
+    read -e -p "UID: " -i "$( id -u )" local_user_uid # or $( id -u <username> ) for any other user than current
+    read -e -p "GID: " -i "$( id -g )" local_user_gid # or $( id -g <username> ) for any other user than current
+
     echo
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
     mkdir -pv "$HOME/.config/containers/systemd"
@@ -183,6 +187,10 @@ Volume=${config_location}/recipe:/opt/lemonade/.cache/lemonade:Z
 AddDevice=-/dev/kfd
 AddDevice=-/dev/dri
 AutoUpdate=registry
+
+User=10001:10001
+# User Namespace: Maps container user to host user
+UserNS=keep-id:uid=${local_user_uid},gid=${local_user_gid}
 
 # Networking: Pasta is used by default in Podman 5+
 # If you need to access host services (like Ollama on the host):
