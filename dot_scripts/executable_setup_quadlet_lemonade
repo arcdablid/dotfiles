@@ -177,9 +177,9 @@ StartLimitBurst=5
 ContainerName=${app_name}
 Image=ghcr.io/lemonade-sdk/lemonade-server:latest
 PublishPort=13305:13305
-Volume=${config_location}/cache:/root/.cache/huggingface:Z
+Volume=${config_location}/cache:/opt/lemonade/.cache/huggingface:Z
 Volume=${config_location}/llama:/opt/lemonade/llama:Z
-Volume=${config_location}/recipe:/root/.cache/lemonade:Z
+Volume=${config_location}/recipe:/opt/lemonade/.cache/lemonade:Z
 AddDevice=-/dev/kfd
 AddDevice=-/dev/dri
 AutoUpdate=registry
@@ -213,7 +213,7 @@ WantedBy=multi-user.target default.target
     if [[ "$( podman version --format '{{.Client.Version}}' | cut -d '.' -f 1 )" -gt "5" ]]; then
         podman quadlet install --replace --application "${app_name}" -- "$HOME/.config/quadlets/init/${app_name}/"
     else
-        cp "$HOME/.config/quadlets/init/${app_name}/"* "$HOME/.config/containers/systemd/"
+        \cp -v "$HOME/.config/quadlets/init/${app_name}/"* "$HOME/.config/containers/systemd/"
 
         printf "[${executor}] ${BPurple}INFO${Color_Off} - Reload systemd...\n"
         systemctl --user daemon-reload
