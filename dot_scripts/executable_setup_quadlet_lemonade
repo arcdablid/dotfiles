@@ -181,9 +181,9 @@ StartLimitBurst=5
 ContainerName=${app_name}
 Image=ghcr.io/lemonade-sdk/lemonade-server:latest
 PublishPort=13305:13305
-Volume=${config_location}/cache:/opt/lemonade/.cache/huggingface:Z
-Volume=${config_location}/llama:/opt/lemonade/llama:Z
-Volume=${config_location}/recipe:/opt/lemonade/.cache/lemonade:Z
+Volume=${config_location}/cache:/opt/lemonade/.cache/huggingface:Z,U
+Volume=${config_location}/llama:/opt/lemonade/llama:Z,U
+Volume=${config_location}/recipe:/opt/lemonade/.cache/lemonade:Z,U
 AddDevice=-/dev/kfd
 AddDevice=-/dev/dri
 AutoUpdate=registry
@@ -206,6 +206,16 @@ TimeoutStartSec=900
 WantedBy=multi-user.target default.target
 "
     echo "${CONTAINER}" | tee "$HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}.container" > /dev/null
+
+# sh -c "cat > $HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}-cache.volume" << 'EOF'
+# [Volume]
+# EOF
+# sh -c "cat > $HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}-llama.volume" << 'EOF'
+# [Volume]
+# EOF
+# sh -c "cat > $HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}-recipe.volume" << 'EOF'
+# [Volume]
+# EOF
 
     ROCM_CONFIG='
 {
