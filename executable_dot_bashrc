@@ -97,30 +97,6 @@ setterm -linewrap on
 # ------------------------------------------------------------------------------
 
 HISTFILE="$HOME/.bash_history"
-
-declare -a bash_history_dirs=(
-    "$HOME/Syncthing/qed/bash_history"
-    "$HOME/syncthing/qed/bash_history"
-    "$HOME/.syncthing/qed/bash_history"
-    "$HOME/Sync/qed/bash_history"
-    "$HOME/sync/qed/bash_history"
-    "$HOME/.sync/qed/bash_history"
-)
-
-for bhd in "${bash_history_dirs[@]}"; do
-    if [[ -d "${bhd}" ]]; then
-        HISTFILE="${bhd}/bash_history_$( hostname )"
-        # [[ ! -f "${HISTFILE}" ]] && touch "${HISTFILE}"
-
-        # Merge local if present with synced
-        [[ -f "$HOME/.bash_history" ]] && cat "$HOME/.bash_history" | tee -a "$HISTFILE" > /dev/null && \rm "$HOME/.bash_history"
-
-        break
-    fi
-done
-
-unset bash_history_dirs
-
 [[ -f "${HISTFILE}" ]] && cat "$HISTFILE" | uniq | tee "$HISTFILE" > /dev/null
 
 shopt -s histappend
