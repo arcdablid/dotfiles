@@ -181,6 +181,7 @@ StartLimitBurst=5
 ContainerName=${app_name}
 Image=ghcr.io/lemonade-sdk/lemonade-server:latest
 PublishPort=13305:13305
+# PublishPort=9000:9000
 Volume=${config_location}/cache:/opt/lemonade/.cache/huggingface:Z,U
 Volume=${config_location}/llama:/opt/lemonade/llama:Z,U
 Volume=${config_location}/recipe:/opt/lemonade/.cache/lemonade:Z,U
@@ -189,13 +190,13 @@ AddDevice=-/dev/dri
 AutoUpdate=registry
 GroupAdd=video
 
-User=10001:10001
+# User=10001:10001
 # User Namespace: Maps container user to host user
-UserNS=keep-id:uid=${local_user_uid},gid=${local_user_gid}
+# UserNS=keep-id:uid=${local_user_uid},gid=${local_user_gid}
 
 # Networking: Pasta is used by default in Podman 5+
 # If you need to access host services (like Ollama on the host):
-AddHost=host.containers.internal:host-gateway
+# AddHost=host.containers.internal:host-gateway
 
 [Service]
 Restart=always
