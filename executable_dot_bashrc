@@ -97,7 +97,7 @@ setterm -linewrap on
 # ------------------------------------------------------------------------------
 
 HISTFILE="$HOME/.bash_history"
-[[ -f "${HISTFILE}" ]] && cat "$HISTFILE" | uniq | tee "$HISTFILE" > /dev/null
+[[ -f "${HISTFILE}" ]] && cat "$HISTFILE" | uniq | tee "$HISTFILE" > /dev/null || touch "$HOME/.bash_history"
 
 shopt -s histappend
 HISTFILESIZE=10000
