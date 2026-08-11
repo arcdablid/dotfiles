@@ -219,15 +219,15 @@ WantedBy=multi-user.target default.target
 # [Volume]
 # EOF
 
-    ROCM_CONFIG='
-{
-    "llamacpp": {
-        "backend": "rocm"
-    }
-}
-'
-    [[ ! -d "${config_location}/recipe" ]] && mkdir -pv "${config_location}/recipe"
-    echo "${ROCM_CONFIG}" | tee "${config_location}/recipe/config.json" > /dev/null
+#     ROCM_CONFIG='
+# {
+#     "llamacpp": {
+#         "backend": "rocm"
+#     }
+# }
+# '
+#     [[ ! -d "${config_location}/recipe" ]] && mkdir -pv "${config_location}/recipe"
+#     echo "${ROCM_CONFIG}" | tee "${config_location}/recipe/config.json" > /dev/null
 
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Installing quadlet...\n"
     if [[ "$( podman version --format '{{.Client.Version}}' | cut -d '.' -f 1 )" -gt "5" ]]; then
