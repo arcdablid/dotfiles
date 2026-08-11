@@ -187,6 +187,8 @@ Volume=${config_location}/recipe:/opt/lemonade/.cache/lemonade:Z,U
 AddDevice=-/dev/kfd
 AddDevice=-/dev/dri
 AutoUpdate=registry
+GroupAdd=video
+GroupAdd=render
 
 User=10001:10001
 # User Namespace: Maps container user to host user
