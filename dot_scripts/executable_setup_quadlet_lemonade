@@ -189,6 +189,7 @@ AddDevice=-/dev/kfd
 AddDevice=-/dev/dri
 AutoUpdate=registry
 GroupAdd=video
+SecurityLabelDisable=true
 
 # User=10001:10001
 # User Namespace: Maps container user to host user
