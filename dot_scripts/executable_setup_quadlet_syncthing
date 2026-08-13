@@ -177,6 +177,7 @@ else
 Description=${app_name} quadlet
 Wants=network-online.target
 After=network-online.target
+After=local-fs.target
 # Limit to 5 restart attempts within a 60 second window
 StartLimitIntervalSec=60
 StartLimitBurst=5

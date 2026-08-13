@@ -192,6 +192,8 @@ packages:
       - lazydocker # Lazier way to manage everything docker | https://github.com/jesseduffield/lazydocker
       - skopeo # Performs various operations on container images and image repositories | https://github.com/containers/skopeo
 
+      - syncthing
+
   vscode_extensions:
     - adsoncicilioti.yaru-vscode
     - alefragnani.bookmarks
