@@ -157,7 +157,7 @@ else
     # config_location="$( expand_path "${config_location}" )"
     # read -e -p "Enter shares location:" -i "$HOME/Syncthing" shares_location
     # shares_location="$( expand_path "${shares_location}" )"
-    # read -e -p "Timezone:" -i "$(timedatectl show -P Timezone)" time_zone
+    read -e -p "Timezone:" -i "$(timedatectl show -P Timezone)" time_zone
 
     # $( whoami ) or $( id -un ) for current user
     # read -e -p "UID:" -i "$( id -u )" local_user_uid # or $( id -u <username> ) for any other user than current
