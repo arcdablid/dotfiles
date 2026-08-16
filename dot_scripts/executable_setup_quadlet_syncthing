@@ -153,49 +153,61 @@ if [[ "${REMOVE}" == "true" ]]; then
 
 else
 
-    read -e -p "Enter config location:" -i "$HOME/.config/quadlets/data/${app_name}" config_location
-    config_location="$( expand_path "${config_location}" )"
-    read -e -p "Enter shares location:" -i "$HOME/.syncthing.d" shares_location
-    shares_location="$( expand_path "${shares_location}" )"
-    read -e -p "Timezone:" -i "$(timedatectl show -P Timezone)" time_zone
+    # read -e -p "Enter config location:" -i "$HOME/.config/quadlets/data/${app_name}" config_location
+    # config_location="$( expand_path "${config_location}" )"
+    # read -e -p "Enter shares location:" -i "$HOME/Syncthing" shares_location
+    # shares_location="$( expand_path "${shares_location}" )"
+    # read -e -p "Timezone:" -i "$(timedatectl show -P Timezone)" time_zone
 
     # $( whoami ) or $( id -un ) for current user
-    read -e -p "UID:" -i "$( id -u )" local_user_uid # or $( id -u <username> ) for any other user than current
-    read -e -p "GID:" -i "$( id -g )" local_user_gid # or $( id -g <username> ) for any other user than current
+    # read -e -p "UID:" -i "$( id -u )" local_user_uid # or $( id -u <username> ) for any other user than current
+    # read -e -p "GID:" -i "$( id -g )" local_user_gid # or $( id -g <username> ) for any other user than current
 
     echo
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Ensuring required directories are present...\n"
     mkdir -pv "$HOME/.config/containers/systemd"
     mkdir -pv "$HOME/.config/quadlets/init/${app_name}"
-    mkdir -pv "${config_location}"
-    mkdir -pv "${shares_location}"
+    # mkdir -pv "${config_location}"
+    # mkdir -pv "${shares_location}"
 
     echo
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Generating quadlet...\n"
-    CONTAINER="
+
+    sh -c "cat > $HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}.container" << EOF
 [Unit]
 Description=${app_name} quadlet
 Wants=network-online.target
 After=network-online.target
 After=local-fs.target
-# Limit to 5 restart attempts within a 60 second window
+# Limit to 6 restart attempts within a 60 second window
 StartLimitIntervalSec=60
-StartLimitBurst=5
+StartLimitBurst=6
+
+[Service]
+# Create the main directories
+ExecStartPre=-/usr/bin/mkdir -pv %h/.config/quadlets/data/${app_name} %h/Sync
+# Always pull the latest version on boot
+ExecStartPre=podman pull docker.io/syncthing/syncthing:latest
+Restart=on-failure
+RestartSec=5
+# Give image pulls/builds enough time during startup
+TimeoutStartSec=900
 
 [Container]
 ContainerName=quadlet-${app_name}
-Image=lscr.io/linuxserver/syncthing:latest
+Image=docker.io/syncthing/syncthing:latest
 
 # Podman automatic updates
 AutoUpdate=registry
 
 # User Namespace: Maps container user to host user
 # This is crucial for Syncthing to have correct file permissions
-# UserNS=keep-id:uid=${local_user_uid},gid=${local_user_gid}
+UserNS=keep-id:uid=%U,gid=%G
 
-Environment=TZ=${time_zone}
-Environment=PUID=${local_user_uid}
-Environment=PGID=${local_user_gid}
+# Environment=TZ=${time_zone}
+Environment=PUID=%U
+Environment=PGID=%G
+Environment=STGUIADDRESS=
 
 # Use same hostname as host
 HostName=$( hostname -s )
@@ -220,28 +232,24 @@ Network=host
 # AddHost=host.containers.internal:host-gateway
 
 # Config
-# Volume=${config_location}:/var/syncthing/config:Z
-Volume=${config_location}:/config:Z
+Volume=%h/.config/quadlets/data/"${app_name}":/var/syncthing/config:z
 
 # Default folder for shares
-# Volume=${shares_location}:/var/syncthing/shares:Z
-Volume=${shares_location}:/shares:Z
+Volume=%h/Sync:/var/syncthing/shares:z
 
 # Maintenance & Logging
 # Log to JSON files
 LogDriver=k8s-file
 PodmanArgs=--log-opt=max-size=10m --log-opt=max-file=3
 
-[Service]
-Restart=always
-RestartSec=5
-# Give image pulls/builds enough time during startup
-TimeoutStartSec=900
+HealthCmd=curl -fkLsS -m 2 127.0.0.1:8384/rest/noauth/health | grep -o --color=never OK || exit 1
+HealthInterval=1m
+HealthRetries=3
+HealthTimeout=10s
 
 [Install]
-WantedBy=default.target
-"
-    echo "${CONTAINER}" | tee "$HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}.container" > /dev/null
+WantedBy=multi-user.target default.target
+EOF
 
     printf "[${executor}] ${BPurple}INFO${Color_Off} - Installing quadlet...\n"
     if [[ "$( podman version --format '{{.Client.Version}}' | cut -d '.' -f 1 )" -gt "5" ]]; then
