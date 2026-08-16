@@ -97,7 +97,16 @@ setterm -linewrap on
 # ------------------------------------------------------------------------------
 
 HISTFILE="$HOME/.bash_history"
-[[ -f "${HISTFILE}" ]] && cat "$HISTFILE" | uniq | tee "$HISTFILE" > /dev/null || touch "$HOME/.bash_history"
+# [[ -f "${HISTFILE}" ]] && cat "${HISTFILE}" | uniq | tee "${HISTFILE}" > /dev/null || touch "${HISTFILE}"
+
+if [[ -f "${HISTFILE}" ]]; then
+    mapfile -t hist_entries < <( \cat "${HISTFILE}" )
+    sh -c "cat > ${HISTFILE}" << EOF
+$( printf '%s\n' "${hist_entries[@]}" | \uniq )
+EOF
+else
+    \touch "${HISTFILE}"
+fi
 
 shopt -s histappend
 HISTFILESIZE=10000
