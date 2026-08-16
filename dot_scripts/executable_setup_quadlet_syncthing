@@ -184,16 +184,18 @@ StartLimitBurst=5
 
 [Container]
 ContainerName=quadlet-${app_name}
-Image=docker.io/syncthing/syncthing:latest
+Image=lscr.io/linuxserver/syncthing:latest
 
 # Podman automatic updates
 AutoUpdate=registry
 
 # User Namespace: Maps container user to host user
 # This is crucial for Syncthing to have correct file permissions
-UserNS=keep-id:uid=${local_user_uid},gid=${local_user_gid}
+# UserNS=keep-id:uid=${local_user_uid},gid=${local_user_gid}
 
 Environment=TZ=${time_zone}
+Environment=PUID=${local_user_uid}
+Environment=PGID=${local_user_gid}
 
 # Use same hostname as host
 HostName=$( hostname -s )
@@ -218,10 +220,12 @@ Network=host
 # AddHost=host.containers.internal:host-gateway
 
 # Config
-Volume=${config_location}:/var/syncthing/config:Z
+# Volume=${config_location}:/var/syncthing/config:Z
+Volume=${config_location}:/config:Z
 
 # Default folder for shares
-Volume=${shares_location}:/var/syncthing/shares:Z
+# Volume=${shares_location}:/var/syncthing/shares:Z
+Volume=${shares_location}:/shares:Z
 
 # Maintenance & Logging
 # Log to JSON files
