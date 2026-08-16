@@ -232,7 +232,7 @@ Network=host
 # AddHost=host.containers.internal:host-gateway
 
 # Config
-Volume=%h/.config/quadlets/data/"${app_name}":/var/syncthing/config:z
+Volume=%h/.config/quadlets/data/${app_name}:/var/syncthing/config:z
 
 # Default folder for shares
 Volume=%h/Sync:/var/syncthing/shares:z
