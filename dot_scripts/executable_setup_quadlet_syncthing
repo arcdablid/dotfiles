@@ -176,9 +176,9 @@ else
     sh -c "cat > $HOME/.config/quadlets/init/${app_name}/quadlet-${app_name}.container" << EOF
 [Unit]
 Description=${app_name} quadlet
-Wants=network-online.target
-After=network-online.target
-After=local-fs.target
+# Wants=network-online.target
+# After=network-online.target
+# After=local-fs.target
 # Limit to 6 restart attempts within a 60 second window
 StartLimitIntervalSec=60
 StartLimitBurst=6
@@ -202,12 +202,11 @@ AutoUpdate=registry
 
 # User Namespace: Maps container user to host user
 # This is crucial for Syncthing to have correct file permissions
-UserNS=keep-id:uid=%U,gid=%G
+UserNS=keep-id
 
-# Environment=TZ=${time_zone}
+Environment=TZ=${time_zone}
 Environment=PUID=%U
 Environment=PGID=%G
-Environment=STGUIADDRESS=
 
 # Use same hostname as host
 HostName=$( hostname -s )
@@ -215,17 +214,17 @@ HostName=$( hostname -s )
 # Use host mode which is the recommended way to run Syncthing.
 # It allows the service to easily discover other devices on your local network using UPnP/DLNA.
 # Only works for a single instance of Syncthing.
-Network=host
+# Network=host
 
 # Alternatively publish ports
 # Application WebUI
-# PublishPort=8384:8384
+PublishPort=8384:8384
 # Listening port (TCP)
-# PublishPort=22000:22000/tcp
+PublishPort=22000:22000/tcp
 # Listening port (UDP)
-# PublishPort=22000:22000/udp
+PublishPort=22000:22000/udp
 # Protocol discovery
-# PublishPort=21027:21027/udp
+PublishPort=21027:21027/udp
 
 # Networking: Pasta is used by default in Podman 5+
 # If you need to access host services (like Ollama on the host):
