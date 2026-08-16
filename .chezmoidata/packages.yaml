@@ -249,7 +249,7 @@ packages:
     - charliermarsh.ruff
     - astral-sh.ty
 
-    - eamodio.gitlens
+    # - eamodio.gitlens
     - github.vscode-github-actions
     - github.vscode-pull-request-github
 
