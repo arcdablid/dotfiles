@@ -657,7 +657,10 @@ fi
 
 if command -v chezmoi 2>&1 >/dev/null; then
     alias czm="chezmoi"
-    alias czmi="chezmoi init"
+    alias czmia="chezmoi init --apply"
+    alias czmu="chezmoi update"
+    alias czmd="chezmoi diff"
+    alias czmdr="chezmoi git pull -- --autostash --rebase && chezmoi diff"
     alias czma="chezmoi apply"
     function chezmoi-rerun-scripts {
         chezmoi state delete-bucket --bucket=entryState
