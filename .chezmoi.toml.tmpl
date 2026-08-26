@@ -1,6 +1,9 @@
+[hooks.read-source-state.pre]
+    command = ".local/share/chezmoi/.install-keepassxc.sh"
+
 [edit]
     command = "code"
-    args = ["--wait"]
+    args = ["--new-window", "--wait"]
 
 [merge]
     command = "flatpak run org.gnome.meld"

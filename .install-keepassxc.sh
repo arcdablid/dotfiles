@@ -1,5 +1,5 @@
-{{ if eq .chezmoi.os "linux" -}}
 #!/usr/bin/env bash
+
 
 #------------------------------------------------------------------------------
 # ANSI escape code variables.
@@ -84,94 +84,14 @@ On_IWhite='\033[0;107m'   # White
 
 # ------------------------------------------------------------------------------
 
-executor="${0##*/}"
-executor_path="${BASH_SOURCE}"
-while [ -L "${executor_path}" ]; do
-    executor_dir="$(cd -P "$(dirname "${executor_path}")" >/dev/null 2>&1 && pwd)"
-    executor_path="$(readlink "${executor_path}")"
-    [[ ${executor_path} != /* ]] && executor_path="${executor_dir}/${executor_path}"
-done
-executor_path="$(readlink -f "${executor_path}")"
-executor_dir="$(cd -P "$(dirname -- "${executor_path}")" >/dev/null 2>&1 && pwd)"
-
-# ------------------------------------------------------------------------------
-
-function print_char_line {
-    local filler=${1}
-    printf "%`tput cols`s" | sed "s/ /${filler}/g"
-    printf '\n'
-}
-
-# ------------------------------------------------------------------------------
-
-if ! command -v brew &> /dev/null; then
-    printf "[${executor}] ${BRed}ERROR${Color_Off} - 'brew' not available!"
+if ! command -v flatpak &> /dev/null ; then
+    # exit immediately if flatpak is not available
+    printf "[chezmoi] ${BRed}ERROR${Color_Off} - 'flatpak' not available!"
+    exit 1
+elif flatpak list --app --columns=application | grep -Fq ; then
+    # exit immediately if password-manager-binary is already in $PATH
+    exit
 else
-    printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Update Homebrew...\n"
-    brew update --force
-
-    printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via brew bundle...\n"
-
-    brew bundle upgrade --force --force-cleanup --jobs auto --file=/dev/stdin <<EOF
-{{ range .packages.homebrew.taps -}}
-$(  if [[ -f {{ . }} ]]; then
-        cat {{ . }} | grep '^tap' | sort -u
-    elif [[ -d {{ . }} ]]; then
-        find {{ . }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u
-    else
-        echo 'tap {{ . | quote }}'
-    fi )
-{{ end -}}
-
-{{ range .packages.homebrew.formulae -}}
-brew {{ . | quote }}
-{{ end -}}
-
-{{ range .packages.homebrew.casks -}}
-cask {{ . | quote }}
-{{ end -}}
-
-{{ range .packages.flatpaks -}}
-flatpak {{ . | quote }}
-{{ end -}}
-
-{{ range .packages.go -}}
-go {{ . | quote }}
-{{ end -}}
-
-{{ range .packages.cargo -}}
-cargo {{ . | quote }}
-{{ end -}}
-
-{{ range .packages.uv -}}
-uv {{ . | quote }}
-{{ end -}}
-
-{{ range .packages.vscode_extensions -}}
-vscode {{ . | quote }}
-{{ end -}}
-
-{{ range .packages.files -}}
-$(  if [[ -f {{ . }} ]]; then
-        cat {{ . }}
-    elif [[ -d {{ . }} ]]; then
-        find {{ . }} -name '*.Brewfile' -exec cat {} \; | sort -u
-    fi )
-{{ end -}}
-EOF
-
+    flatpak remote-modify --system --default-branch=stable flathub
+    flatpak install org.keepassxc.KeePassXC
 fi
-
-# ------------------------------------------------------------------------------
-
-printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating cache path presence...\n"
-cache="$HOME/.var/lib/chezmoi/run_onchange_apply_packages.d"
-[[ -d "${cache}" ]] && rm -rfv "${cache}"
-
-
-# ------------------------------------------------------------------------------
-
-echo
-printf "\n[${executor}] ${BBlue}INFO${Color_Off} - All done!\n"
-
-{{ end -}}
