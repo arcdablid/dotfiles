@@ -2,6 +2,7 @@ packages:
   cargo:
     - wrestic # A backup tool built in Rust that provides a wrapper around Restic, a popular backup program. | https://github.com/alvaro17f/wrestic
     - suckit # Recursively visit and download a website's content to your disk. | https://github.com/Skallwar/suckit
+    - siomon # Hardware information and real-time sensor monitoring | https://crates.io/crates/siomon | https://github.com/level1techs/siomon
 
   go:
 
@@ -194,6 +195,8 @@ packages:
 
       - syncthing
 
+      - netcat # Utility for managing network connections | https://netcat.sourceforge.net/
+
   vscode_extensions:
     - adsoncicilioti.yaru-vscode
     - alefragnani.bookmarks
@@ -280,10 +283,10 @@ packages:
     - ca.desrt.dconf-editor
 
     - org.mozilla.firefox
-    - net.waterfox.waterfox
+    # - net.waterfox.waterfox
     - io.gitlab.librewolf-community
     - app.zen_browser.zen
-    - one.ablaze.floorp
+    # - one.ablaze.floorp
     - io.github.ungoogled_software.ungoogled_chromium
     - io.github.ungoogled_software.ungoogled_chromium.Codecs
     - org.torproject.torbrowser-launcher
@@ -388,7 +391,7 @@ packages:
     - io.github.mfat.sshpilot
     - io.github.plrigaux.sysd-manager
 
-    - com.github.hugolabe.Wike # Search and read Wikipedia articles | https://flathub.org/en/apps/com.github.hugolabe.Wike
+    # - com.github.hugolabe.Wike # Search and read Wikipedia articles | https://flathub.org/en/apps/com.github.hugolabe.Wike
     - dev.mufeed.Wordbook # Wordbook | An offline English-English dictionary application powered by WordNet and eSpeak.
     - me.iepure.devtoolbox
     - io.github.shonebinu.Brief # Browse command-line cheatsheets | https://flathub.org/apps/io.github.shonebinu.Brief
@@ -402,7 +405,7 @@ packages:
     - com.jeffser.Alpaca
     - com.jeffser.Alpaca.Plugins.Ollama
     - com.jeffser.Alpaca.Plugins.AMD
-    - io.github.qwersyk.Newelle # AI Chatbot | https://flathub.org/apps/io.github.qwersyk.Newelle
+    # - io.github.qwersyk.Newelle # AI Chatbot | https://flathub.org/apps/io.github.qwersyk.Newelle
 
     - org.gnome.Calculator
     - org.gnome.Calendar
@@ -429,6 +432,84 @@ packages:
 
     - org.mozilla.thunderbird_esr
     - org.gnome.Geary
+
+  gnome_extensions:
+    - 2236 # Night Theme Switcher
+      # https://extensions.gnome.org/extension/2236/night-theme-switcher/
+      # https://nightthemeswitcher.romainvigier.fr
+    - 3193 # Blur my Shell
+      # blur-my-shell@aunetx
+      # https://extensions.gnome.org/extension/3193/blur-my-shell/
+      # https://github.com/aunetx/blur-my-shell
+    - 615 # AppIndicator and KStatusNotifierItem Support
+      # appindicatorsupport@rgcjonas.gmail.com
+      # https://extensions.gnome.org/extension/615/appindicator-support/
+      # https://github.com/ubuntu/gnome-shell-extension-appindicator
+    - 307 # Dash-to-Dock
+      # dash-to-dock@micxgx.gmail.com
+      # https://extensions.gnome.org/extension/307/dash-to-dock/
+      # https://micheleg.github.io/dash-to-dock/
+    - 1160 # Dash to Panel
+      # dash-to-panel@jderose9.github.com
+      # https://github.com/home-sweet-gnome/dash-to-panel
+      # https://extensions.gnome.org/extension/1160/dash-to-panel/
+    - 1460 # Vitals
+      # Vitals@CoreCoding.com
+      # https://github.com/corecoding/Vitals
+      # https://extensions.gnome.org/extension/1460/vitals/
+    - 5470 # Weather O'Clock
+      # weatheroclock@CleoMenezesJr.github.io
+      # https://github.com/CleoMenezesJr/weather-oclock
+      # https://extensions.gnome.org/extension/5470/weather-oclock/
+    - 7065 # Tiling Shell
+      # tilingshell@ferrarodomenico.com
+      # https://extensions.gnome.org/extension/7065/tiling-shell/
+      # https://github.com/domferr/tilingshell
+    - 8745 # App Grid Tuner
+      # app-grid-tuner@m-lab
+      # https://extensions.gnome.org/extension/8745/app-grid-tuner/
+      # https://codeberg.org/m-lab/app-grid-tuner
+    # 6099  # PaperWM
+    # paperwm@paperwm.github.com
+    # https://github.com/paperwm/PaperWM
+    # https://extensions.gnome.org/extension/6099/paperwm/
+    # - 973 # Switcher
+    # switcher@landau.fi
+    # https://extensions.gnome.org/extension/973/switcher/
+    # https://github.com/daniellandau/switcher
+    - 19 # User Themes
+      # user-theme@gnome-shell-extensions.gcampax.github.com
+      # https://extensions.gnome.org/extension/19/user-themes/
+      # https://gitlab.gnome.org/GNOME/gnome-shell-extensions
+    - 1319 # GSConnect
+      # gsconnect@andyholmes.github.io
+      # https://extensions.gnome.org/extension/1319/gsconnect/
+      # https://github.com/GSConnect/gnome-shell-extension-gsconnect/wiki
+    - 517 # Caffeine
+      # caffeine@patapon.info
+      # https://extensions.gnome.org/extension/517/caffeine/
+      # https://github.com/eonpatapon/gnome-shell-extension-caffeine
+    # - 6325  # Control monitor brightness and volume with ddcutil
+    # https://extensions.gnome.org/extension/6325/control-monitor-brightness-and-volume-with-ddcutil/
+    # https://gitlab.gnome.org/Nei/gnome-shell-extension-monitor-brightness-volume
+    - 5724 # Battery Health Charging
+      # https://extensions.gnome.org/extension/5724/battery-health-charging/
+      # https://github.com/maniacx/Battery-Health-Charging
+    - 6670 # Bluetooth Battery Meter
+      # https://extensions.gnome.org/extension/6670/bluetooth-battery-meter/
+      # https://github.com/maniacx/Bluetooth-Battery-Meter
+    - 3843 # Just Perfection
+      # https://extensions.gnome.org/extension/3843/just-perfection/
+      # https://gitlab.gnome.org/jrahmatzadeh/just-perfection
+    - 8834 # Copyous
+      # https://extensions.gnome.org/extension/8834/copyous/
+      # https://github.com/boerdereinar/copyous
+    - 6000 # Quick Settings Audio Devices Renamer
+      # https://extensions.gnome.org/extension/6000/quick-settings-audio-devices-renamer/
+      # https://github.com/marcinjahn/gnome-quicksettings-audio-devices-renamer-extension
+    - 5964 # Quick Settings Audio Devices Hider
+      # https://extensions.gnome.org/extension/5964/quick-settings-audio-devices-hider/
+      # https://github.com/marcinjahn/gnome-quicksettings-audio-devices-hider-extension
 
   # Additional files
   files:
