@@ -84,14 +84,38 @@ On_IWhite='\033[0;107m'   # White
 
 # ------------------------------------------------------------------------------
 
-if ! command -v flatpak &> /dev/null ; then
-    # exit immediately if flatpak is not available
-    printf "[chezmoi] ${BRed}ERROR${Color_Off} - 'flatpak' not available!"
-    exit 1
-elif flatpak list --app --columns=application | grep -Fq ; then
-    # exit immediately if password-manager-binary is already in $PATH
-    exit
-else
-    flatpak remote-modify --system --default-branch=stable flathub
-    flatpak install org.keepassxc.KeePassXC
+# Check base package managers
+declare -a required_cmds=( "flatpak" "brew" )
+fail=false
+for rc in "${required_cmds[@]}"; do
+    if ! command -v "${rc}" &> /dev/null ; then
+        printf "[${executor}] ${BRed}ERROR${Color_Off} - Command '${rc}' unavailable!?\n"
+        fail=true
+    fi
+done
+unset required_cmds
+[[ "${fail}" == true ]] && exit 1
+
+# Password manager(s)
+flatpak remote-modify --system --default-branch=stable flathub
+flatpak remote-modify --user --default-branch=stable flathub
+
+declare -a password_managers=( "org.keepassxc.KeePassXC" "com.bitwarden.desktop" )
+for pm in "${password_managers[@]}"; do
+    if ! flatpak list --app --columns=application | grep -Fq "${pm}" ; then
+        flatpak install --or-update -y "${pm}"
+    fi
+done
+
+# gnome-extensions-cli
+if ! command -v gext &> /dev/null ; then
+
+    brew exec --formulae uv -- uv tool install gnome-extensions-cli
+
+    # if ! command -v uv &> /dev/null ; then
+    #     brew update
+    #     brew upgrade -y
+    #     brew install -y --formulae uv && source ~/.bash_profile
+    # fi
+    # uv tool install gnome-extensions-cli
 fi
