@@ -132,9 +132,7 @@ cask {{ . | quote }}
 {{ end -}}
 
 {{ range .packages.flatpaks -}}
-$(  if ! command -v flatpak &> /dev/null; then
-        echo 'flatpak {{ . | quote }}'
-    fi )
+flatpak {{ . | quote }}
 {{ end -}}
 
 {{ range .packages.go -}}
@@ -150,7 +148,7 @@ uv {{ . | quote }}
 {{ end -}}
 
 {{ range .packages.vscode_extensions -}}
-$(  if ! command -v code &> /dev/null; then
+$(  if command -v code &> /dev/null; then
         echo 'vscode {{ . | quote }}'
     fi )
 {{ end -}}
@@ -166,8 +164,6 @@ EOF
 
 fi
 
-source ~/.bash_profile
-
 # ------------------------------------------------------------------------------
 
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating cache path presence...\n"
@@ -178,8 +174,12 @@ cache="$HOME/.var/lib/chezmoi/run_onchange_after_packages.d"
 
 if ! command -v gnome-shell &> /dev/null; then
     printf "[${executor}] ${BRed}ERROR${Color_Off} - A non-Gnome desktop environment was detected, where Gnome extensions are not supported"
-
+elif ! command -v gext &> /dev/null; then
+    printf "[${executor}] ${BYellow}Warning${Color_Off} - Command 'gext' not available - skipping installing gnome extensions..."
 else
+
+    GNOME_VER=$(gnome-shell --version | sed 's/[^0-9]*\([0-9]*\).*/\1/')
+    printf "[${executor}] ${BBlue}INFO${Color_Off} - Gnome version: ${GNOME_VER}"
 
     printf "[${executor}] ${BBlue}INFO${Color_Off} - Testing connection with https://extensions.gnome.org/..."
     if ! curl -fLsS --retry 5 -o /dev/null --head "https://extensions.gnome.org/"; then
@@ -190,15 +190,11 @@ else
     else
         printf "[${executor}] ${BBlue}INFO${Color_Off} - Connection successful, proceeding."
 
-
         cat <<EOF > "${cache}"/registry_wanted_gnome_extensions.txt
 {{ range .packages.gnome_extensions -}}
 {{ . }}
 {{ end -}}
 EOF
-
-        GNOME_VER=$(gnome-shell --version | sed 's/[^0-9]*\([0-9]*\).*/\1/')
-        printf "[${executor}] ${BBlue}INFO${Color_Off} - Gnome version: ${GNOME_VER}"
 
         declare -a failed_uninstall=()
         declare -a failed_install=()
