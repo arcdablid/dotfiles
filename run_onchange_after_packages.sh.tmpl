@@ -105,12 +105,12 @@ function print_char_line {
 # ------------------------------------------------------------------------------
 
 if ! command -v brew &> /dev/null; then
-    printf "[${executor}] ${BRed}ERROR${Color_Off} - 'brew' not available!"
+    printf "[${executor}] ${BRed}ERROR${Color_Off} - 'brew' not available!\n"
 else
     printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Update Homebrew...\n"
     brew update --force
 
-    printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating installables via brew bundle...\n"
+    printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating requirements via brew bundle...\n"
 
     brew bundle --file=/dev/stdin <<EOF
 {{ range .packages.homebrew.taps -}}
@@ -119,7 +119,7 @@ $(  if [[ -f {{ . }} ]]; then
     elif [[ -d {{ . }} ]]; then
         find {{ . }} -name '*.Brewfile' -exec cat {} \; | grep '^tap' | sort -u
     else
-        echo 'tap {{ . | quote }}'
+        printf '%s\n' 'tap {{ . | quote }}'
     fi )
 {{ end -}}
 
@@ -149,7 +149,7 @@ uv {{ . | quote }}
 
 {{ range .packages.vscode_extensions -}}
 $(  if command -v code &> /dev/null; then
-        echo 'vscode {{ . | quote }}'
+        printf '%s\n' 'vscode {{ . | quote }}'
     fi )
 {{ end -}}
 
@@ -173,22 +173,22 @@ cache="$HOME/.var/lib/chezmoi/run_onchange_after_packages.d"
 # ------------------------------------------------------------------------------
 
 if ! command -v gnome-shell &> /dev/null; then
-    printf "[${executor}] ${BRed}ERROR${Color_Off} - A non-Gnome desktop environment was detected, where Gnome extensions are not supported"
+    printf "[${executor}] ${BRed}ERROR${Color_Off} - A non-Gnome desktop environment was detected, where Gnome extensions are not supported!\n"
 elif ! command -v gext &> /dev/null; then
-    printf "[${executor}] ${BYellow}Warning${Color_Off} - Command 'gext' not available - skipping installing gnome extensions..."
+    printf "[${executor}] ${BYellow}Warning${Color_Off} - Command 'gext' not available - skipping installing gnome extensions...\n"
 else
 
     GNOME_VER=$(gnome-shell --version | sed 's/[^0-9]*\([0-9]*\).*/\1/')
-    printf "[${executor}] ${BBlue}INFO${Color_Off} - Gnome version: ${GNOME_VER}"
+    printf "[${executor}] ${BBlue}INFO${Color_Off} - Gnome version: ${GNOME_VER}\n"
 
     printf "[${executor}] ${BBlue}INFO${Color_Off} - Testing connection with https://extensions.gnome.org/..."
     if ! curl -fLsS --retry 5 -o /dev/null --head "https://extensions.gnome.org/"; then
-        printf "[${executor}] ${BRed}ERROR${Color_Off} - Connection unsuccessful."
-        printf "[${executor}] ${BRed}ERROR${Color_Off} - This usually happens when https://extensions.gnome.org/ # website is down."
-        printf "[${executor}] ${BRed}ERROR${Color_Off} - Please try again later (or disable the module temporarily)"
+        printf "[${executor}] ${BRed}ERROR${Color_Off} - Connection unsuccessful.\n"
+        printf "[${executor}] ${BRed}ERROR${Color_Off} - This usually happens when https://extensions.gnome.org/ # website is down.\n"
+        printf "[${executor}] ${BRed}ERROR${Color_Off} - Please try again later (or disable the module temporarily)\n"
 
     else
-        printf "[${executor}] ${BBlue}INFO${Color_Off} - Connection successful, proceeding."
+        printf "[${executor}] ${BBlue}INFO${Color_Off} - Connection successful, proceeding.\n"
 
         cat <<EOF > "${cache}"/registry_wanted_gnome_extensions.txt
 {{ range .packages.gnome_extensions -}}
@@ -226,7 +226,7 @@ EOF
                     # Add to registry
 
                     if gext install "${geti}" ; then
-                        echo "${geti}" | tee -a "${cache}"/registry_present_gnome_extensions.txt > /dev/null
+                        printf '%s\n' "${geti}" | tee -a "${cache}"/registry_present_gnome_extensions.txt > /dev/null
                     else
                         failed_install+=( "${geti}" )
                     fi
@@ -243,7 +243,7 @@ EOF
                     # Install
                     # Add to registry
                     if gext install "${geti}"; then
-                        echo "${geti}" | tee -a "${cache}"/registry_present_gnome_extensions.txt > /dev/null
+                        printf '%s\n' "${geti}" | tee -a "${cache}"/registry_present_gnome_extensions.txt > /dev/null
                     else
                         failed_install+=( "${geti}" )
                     fi
