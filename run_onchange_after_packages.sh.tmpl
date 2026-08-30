@@ -84,18 +84,6 @@ On_IWhite='\033[0;107m'   # White
 
 # ------------------------------------------------------------------------------
 
-executor="${0##*/}"
-executor_path="${BASH_SOURCE}"
-while [ -L "${executor_path}" ]; do
-    executor_dir="$(cd -P "$(dirname "${executor_path}")" >/dev/null 2>&1 && pwd)"
-    executor_path="$(readlink "${executor_path}")"
-    [[ ${executor_path} != /* ]] && executor_path="${executor_dir}/${executor_path}"
-done
-executor_path="$(readlink -f "${executor_path}")"
-executor_dir="$(cd -P "$(dirname -- "${executor_path}")" >/dev/null 2>&1 && pwd)"
-
-# ------------------------------------------------------------------------------
-
 function print_char_line {
     local filler=${1}
     printf "%`tput cols`s" | sed "s/ /${filler}/g"
@@ -105,12 +93,12 @@ function print_char_line {
 # ------------------------------------------------------------------------------
 
 if ! command -v brew &> /dev/null; then
-    printf "[${executor}] ${BRed}ERROR${Color_Off} - 'brew' not available!\n"
+    printf "[${BWhite}chezmoi${Color_Off}] ${BRed}ERROR${Color_Off} - 'brew' not available!\n"
 else
-    printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Update Homebrew...\n"
+    printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Update Homebrew...\n"
     brew update --force
 
-    printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating requirements via brew bundle...\n"
+    printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Evaluating requirements via brew bundle...\n"
 
     brew bundle --file=/dev/stdin <<EOF
 {{ range .packages.homebrew.taps -}}
@@ -166,29 +154,35 @@ fi
 
 # ------------------------------------------------------------------------------
 
-printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Evaluating cache path presence...\n"
+print_char_line '-'
+
+printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Evaluating script cache path presence...\n"
 cache="$HOME/.var/lib/chezmoi/run_onchange_after_packages.d"
 [[ ! -d "${cache}" ]] && mkdir -pv "${cache}"
 
 # ------------------------------------------------------------------------------
 
+print_char_line '-'
+
+printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Installing GNOME extensions...\n"
+
 if ! command -v gnome-shell &> /dev/null; then
-    printf "[${executor}] ${BRed}ERROR${Color_Off} - A non-Gnome desktop environment was detected, where Gnome extensions are not supported!\n"
+    printf "[${BWhite}chezmoi${Color_Off}] ${BRed}ERROR${Color_Off} - A non-Gnome desktop environment was detected, where Gnome extensions are not supported!\n"
 elif ! command -v gext &> /dev/null; then
-    printf "[${executor}] ${BYellow}Warning${Color_Off} - Command 'gext' not available - skipping installing gnome extensions...\n"
+    printf "[${BWhite}chezmoi${Color_Off}] ${BYellow}Warning${Color_Off} - Command 'gext' not available - skipping installing gnome extensions...\n"
 else
 
     GNOME_VER=$(gnome-shell --version | sed 's/[^0-9]*\([0-9]*\).*/\1/')
-    printf "[${executor}] ${BBlue}INFO${Color_Off} - Gnome version: ${GNOME_VER}\n"
+    printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Gnome version: ${GNOME_VER}\n"
 
-    printf "[${executor}] ${BBlue}INFO${Color_Off} - Testing connection with https://extensions.gnome.org/..."
+    printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Testing connection with https://extensions.gnome.org/...\n"
     if ! curl -fLsS --retry 5 -o /dev/null --head "https://extensions.gnome.org/"; then
-        printf "[${executor}] ${BRed}ERROR${Color_Off} - Connection unsuccessful.\n"
-        printf "[${executor}] ${BRed}ERROR${Color_Off} - This usually happens when https://extensions.gnome.org/ # website is down.\n"
-        printf "[${executor}] ${BRed}ERROR${Color_Off} - Please try again later (or disable the module temporarily)\n"
+        printf "[${BWhite}chezmoi${Color_Off}] ${BRed}ERROR${Color_Off} - Connection unsuccessful.\n"
+        printf "[${BWhite}chezmoi${Color_Off}] ${BRed}ERROR${Color_Off} - This usually happens when https://extensions.gnome.org/ website is down.\n"
+        printf "[${BWhite}chezmoi${Color_Off}] ${BRed}ERROR${Color_Off} - Please try again later (or disable the module temporarily)\n"
 
     else
-        printf "[${executor}] ${BBlue}INFO${Color_Off} - Connection successful, proceeding.\n"
+        printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Connection successful, proceeding.\n"
 
         cat <<EOF > "${cache}"/registry_wanted_gnome_extensions.txt
 {{ range .packages.gnome_extensions -}}
@@ -272,7 +266,8 @@ fi
 
 # ------------------------------------------------------------------------------
 
-echo
-printf "\n[${executor}] ${BBlue}INFO${Color_Off} - All done!\n"
+print_char_line '-'
+
+printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - All done!\n"
 
 {{ end -}}
