@@ -99,7 +99,7 @@ unset required_cmds
 # Update everything
 printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Update Flatpak & Homebrew...\n"
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-flatpak remote-modify --default-branch=stable flathub
+flatpak remote-modify --system --default-branch=stable flathub
 flatpak update -y
 
 brew update --force && brew upgrade -y
