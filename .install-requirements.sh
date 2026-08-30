@@ -96,10 +96,15 @@ done
 unset required_cmds
 [[ "${fail}" == true ]] && exit 1
 
-# Password manager(s)
-flatpak remote-modify --system --default-branch=stable flathub
-flatpak remote-modify --user --default-branch=stable flathub
+# Update everything
+printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Update Flatpak & Homebrew...\n"
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak remote-modify --default-branch=stable flathub
+flatpak update -y
 
+brew update --force && brew upgrade -y
+
+# Password manager(s)
 declare -a password_managers=( "org.keepassxc.KeePassXC" "com.bitwarden.desktop" )
 for pm in "${password_managers[@]}"; do
     if ! flatpak list --app --columns=application | grep -Fq "${pm}" ; then
@@ -109,13 +114,5 @@ done
 
 # gnome-extensions-cli
 if ! command -v gext &> /dev/null ; then
-
     brew exec --formulae uv -- uv tool install gnome-extensions-cli
-
-    # if ! command -v uv &> /dev/null ; then
-    #     brew update
-    #     brew upgrade -y
-    #     brew install -y --formulae uv && source ~/.bash_profile
-    # fi
-    # uv tool install gnome-extensions-cli
 fi
