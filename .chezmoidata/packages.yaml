@@ -516,4 +516,6 @@ packages:
     - /usr/share/ublue-os/homebrew/fonts.Brewfile
 
   exec:
-    - sudo usermod -s /usr/bin/xonsh <user>
+    - loginctl enable-linger $USER
+    - echo "foobar"
+    # - sudo usermod -s /usr/bin/xonsh <user>

@@ -268,6 +268,17 @@ fi
 
 print_char_line '-'
 
-printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - All done!\n"
+printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Running additional cmds...\n"
+
+{{ range .packages.exec -}}
+printf "\n${On_Purple}%s${Color_Off}\n" {{ . | quote }}
+eval {{ . | quote }}
+{{ end -}}
+
+# ------------------------------------------------------------------------------
+
+print_char_line '-'
+
+printf "[${BWhite}chezmoi${Color_Off}] ${BGreen}DONE${Color_Off}\n"
 
 {{ end -}}
