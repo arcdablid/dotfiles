@@ -153,18 +153,20 @@ EOF
 fi
 
 # ------------------------------------------------------------------------------
-
+echo
 print_char_line '-'
-
+echo
 printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Evaluating script cache path presence...\n"
+echo
 cache="$HOME/.var/lib/chezmoi/run_onchange_after_packages.d"
-[[ ! -d "${cache}" ]] && mkdir -pv "${cache}"
+[[ ! -d "${cache}" ]] && mkdir -pv "${cache}" || printf '%s\n' 'Already present...'
 
 # ------------------------------------------------------------------------------
-
+echo
 print_char_line '-'
-
+echo
 printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Installing GNOME extensions...\n"
+echo
 
 if ! command -v gnome-shell &> /dev/null; then
     printf "[${BWhite}chezmoi${Color_Off}] ${BRed}ERROR${Color_Off} - A non-Gnome desktop environment was detected, where Gnome extensions are not supported!\n"
@@ -265,9 +267,9 @@ EOF
 fi
 
 # ------------------------------------------------------------------------------
-
+echo
 print_char_line '-'
-
+echo
 printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Running additional cmds...\n"
 
 {{ range .packages.exec -}}
@@ -277,8 +279,9 @@ eval {{ . | quote }}
 
 # ------------------------------------------------------------------------------
 
+echo
 print_char_line '-'
-
+echo
 printf "[${BWhite}chezmoi${Color_Off}] ${BGreen}DONE${Color_Off}\n"
 
 {{ end -}}

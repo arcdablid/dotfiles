@@ -97,7 +97,7 @@ unset required_cmds
 [[ "${fail}" == true ]] && exit 1
 
 # Update everything
-printf "\n[${executor}] ${BBlue}INFO${Color_Off} - Update Flatpak & Homebrew...\n"
+printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Update Flatpak & Homebrew...\n"
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak remote-modify --system --default-branch=stable flathub
 flatpak update -y
@@ -105,6 +105,8 @@ flatpak update -y
 brew update --force && brew upgrade -y
 
 # Password manager(s)
+print_char_line '-'
+printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Install password managers...\n"
 declare -a password_managers=( "org.keepassxc.KeePassXC" "com.bitwarden.desktop" )
 for pm in "${password_managers[@]}"; do
     if ! flatpak list --app --columns=application | grep -Fq "${pm}" ; then
