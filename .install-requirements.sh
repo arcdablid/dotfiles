@@ -100,6 +100,9 @@ unset required_cmds
 printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Update Flatpak & Homebrew...\n"
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak remote-modify --system --default-branch=stable flathub
+if flatpak remotes | grep -F flathub | grep -Fq user ; then
+    flatpak remote-modify --user --default-branch=stable flathub
+fi
 flatpak update -y
 
 brew update --force && brew upgrade -y
