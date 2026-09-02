@@ -74,6 +74,7 @@ packages:
       - nnn # Tiny, lightning fast, feature-packed file manager | https://github.com/jarun/nnn
       - zoxide # Shell extension to navigate your filesystem faster | https://github.com/ajeetdsouza/zoxide
       - nomino # Batch rename utility | https://github.com/yaa110/nomino
+      - try-rs # Temporary workspace manager for fast experimentation in the terminal | https://github.com/tassiovirginio/try-rs
 
       - btop # Resource monitor. C+ homebrew_formula |"version and continuation of bashtop and bpytop | https://github.com/aristocratos/btop
       - glances # Alternative to top/htop | https://nicolargo.github.io/glances/
