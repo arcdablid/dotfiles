@@ -84,6 +84,14 @@ On_IWhite='\033[0;107m'   # White
 
 # ------------------------------------------------------------------------------
 
+function print_char_line {
+    local filler=${1}
+    printf "%`tput cols`s" | sed "s/ /${filler}/g"
+    printf '\n'
+}
+
+# ------------------------------------------------------------------------------
+
 # Check base package managers
 declare -a required_cmds=( "flatpak" "brew" )
 fail=false
