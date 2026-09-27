@@ -197,6 +197,7 @@ packages:
       - syncthing
 
       - netcat # Utility for managing network connections | https://netcat.sourceforge.net/
+      - argon2 # Password hashing library and CLI utility | https://github.com/P-H-C/phc-winner-argon2
 
   vscode_extensions:
     - adsoncicilioti.yaru-vscode
