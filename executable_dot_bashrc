@@ -817,20 +817,6 @@ if command -v just 2>&1 >/dev/null; then
 fi
 
 # ------------------------------------------------------------------------------
-# try-rs integration
-# https://github.com/tassiovirginio/try-rs
-# ------------------------------------------------------------------------------
-if command -v try-rs 2>&1 >/dev/null; then
-
-    export TRY_PATH="$HOME/.try-rs.d"
-
-    if [[ -d "$HOME/.config/try-rs/try-rs.bash" ]]; then
-        source '/var/home/dkm/.config/try-rs/try-rs.bash'
-    fi
-
-fi
-
-# ------------------------------------------------------------------------------
 # Other user specific aliases and functions
 # ------------------------------------------------------------------------------
 # if [[ -d "$HOME/.bashrc.d" ]]; then
@@ -945,6 +931,20 @@ fi
 # ------------------------------------------------------------------------------
 
 [[ "$( uname -a )" == *"Android"* && -d "${HOME}/storage/downloads" ]] && cd "${HOME}/storage/downloads"
+
+# ------------------------------------------------------------------------------
+# try-rs integration
+# https://github.com/tassiovirginio/try-rs
+# ------------------------------------------------------------------------------
+if command -v try-rs 2>&1 >/dev/null; then
+
+    export TRY_PATH="$HOME/.try-rs.d"
+
+    if [[ -d "$HOME/.config/try-rs/try-rs.bash" ]]; then
+        source "$HOME/.config/try-rs/try-rs.bash"
+    fi
+
+fi
 
 # ------------------------------------------------------------------------------
 
