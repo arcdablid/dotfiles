@@ -90,6 +90,58 @@ function print_char_line {
     printf '\n'
 }
 
+function flatpak_get_remote_default_branch {
+    local config remote
+
+    if [[ $# -eq 2 && $1 == --user ]]; then
+        config="${XDG_DATA_HOME:-$HOME/.local/share}/flatpak/repo/config"
+        remote=$2
+    elif [[ $# -eq 1 ]]; then
+        config=/var/lib/flatpak/repo/config
+        remote=$1
+    else
+        return 2
+    fi
+
+    [[ -r $config ]] || return 1
+
+    awk -v wanted="$remote" '
+        function trim(s) {
+            sub(/^[[:space:]]+/, "", s)
+            sub(/[[:space:]]+$/, "", s)
+            return s
+        }
+
+        {
+            line = trim($0)
+
+            if (line ~ /^\[remote "/) {
+                section = line
+                sub(/^\[remote "/, "", section)
+                sub(/"\]$/, "", section)
+                active = (section == wanted)
+                next
+            }
+
+            if (line ~ /^\[/) {
+                active = 0
+                next
+            }
+
+            if (active && line ~ /^xa\.default-branch[[:space:]]*=/) {
+                sub(/^[^=]*=/, "", line)
+                print trim(line)
+                found = 1
+                exit
+            }
+        }
+
+        END {
+            if (!found) exit 1
+        }
+    ' "$config"
+}
+
 # ------------------------------------------------------------------------------
 
 # Check base package managers
@@ -104,28 +156,50 @@ done
 unset required_cmds
 [[ "${fail}" == true ]] && exit 1
 
-# Update everything
-printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Update Flatpak & Homebrew...\n"
+# Check flatpaks
+printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Check Flatpak...\n"
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-flatpak remote-modify --system --default-branch=stable flathub
-if flatpak remotes | grep -F flathub | grep -Fq user ; then
-    flatpak remote-modify --user --default-branch=stable flathub
+
+if flatpak_get_remote_default_branch flathub | grep -Fq stable ; then
+    flatpak remote-modify --system --default-branch=stable flathub
 fi
+
+if flatpak remotes | grep -F flathub | grep -Fq user ; then
+    if flatpak_get_remote_default_branch --user flathub | grep -Fq stable ; then
+        flatpak remote-modify --user --default-branch=stable flathub
+    fi
+fi
+
 flatpak update -y
 
+# Check homebrew
+echo && print_char_line '-'
+printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Check Homebrew...\n"
 brew update --force && brew upgrade -y
 
-# Password manager(s)
-print_char_line '-'
-printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Install password managers...\n"
+# Check password manager(s)
+echo && print_char_line '-'
+printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Checking password managers...\n"
 declare -a password_managers=( "org.keepassxc.KeePassXC" "com.bitwarden.desktop" )
 for pm in "${password_managers[@]}"; do
+    printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - ${pm} -> "
     if ! flatpak list --app --columns=application | grep -Fq "${pm}" ; then
+        printf "${BYellow}INSTALLING${Color_Off}\n"
         flatpak install --or-update -y "${pm}"
+    else
+        printf "${BGreen}PRESENT${Color_Off}\n"
     fi
 done
 
+# Check gext
+echo && print_char_line '-'
+printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Checking gnome-extensions-cli (gext) -> "
 # gnome-extensions-cli
 if ! command -v gext &> /dev/null ; then
+    printf "${BYellow}INSTALLING${Color_Off}\n"
     brew exec --formulae uv -- uv tool install gnome-extensions-cli
+else
+    printf "${BGreen}PRESENT${Color_Off}\n"
 fi
+
+echo && print_char_line '='

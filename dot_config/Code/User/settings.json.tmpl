@@ -125,6 +125,7 @@
   ],
   "dev.containers.dockerComposePath": "podman-compose",
   "dev.containers.dockerPath": "podman",
-  "dev.containers.dockerSocketPath": "/run/user/{{- .chezmoi.uid -}}/podman/podman.sock"
-  "prettier.tabWidth": 4
+  "dev.containers.dockerSocketPath": "/run/user/{{- .chezmoi.uid -}}/podman/podman.sock",
+  "prettier.tabWidth": 4,
+  "todo-tree.ripgrep": "{{- lookPath "rg" -}}",
 }

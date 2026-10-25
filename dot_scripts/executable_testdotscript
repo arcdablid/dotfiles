@@ -1,5 +1,5 @@
-#!/usr/bin/bash
-set -euo pipefail
+#!/usr/bin/env bash
+set ${SET_X:+-x} -eou pipefail
 
 function nested_array {
     # RPM packages list
@@ -145,9 +145,67 @@ function print_divider {
     printf '\n\n'
 }
 
-print_divider
-print_divider -r 80
-print_divider -r 80 -f 'u'
-print_divider -f '9'
-# print_divider -h
-print_divider -g 'f7'
+# print_divider
+# print_divider -r 80
+# print_divider -r 80 -f 'u'
+# print_divider -f '9'
+# # print_divider -h
+# print_divider -g 'f7'
+
+
+get_flatpak_default_branch() {
+    local config remote
+
+    if [[ $# -eq 2 && $1 == --user ]]; then
+        config="${XDG_DATA_HOME:-$HOME/.local/share}/flatpak/repo/config"
+        remote=$2
+    elif [[ $# -eq 1 ]]; then
+        config=/var/lib/flatpak/repo/config
+        remote=$1
+    else
+        return 2
+    fi
+
+    [[ -r $config ]] || return 1
+
+    awk -v wanted="$remote" '
+        function trim(s) {
+            sub(/^[[:space:]]+/, "", s)
+            sub(/[[:space:]]+$/, "", s)
+            return s
+        }
+
+        {
+            line = trim($0)
+
+            if (line ~ /^\[remote "/) {
+                section = line
+                sub(/^\[remote "/, "", section)
+                sub(/"\]$/, "", section)
+                active = (section == wanted)
+                next
+            }
+
+            if (line ~ /^\[/) {
+                active = 0
+                next
+            }
+
+            if (active && line ~ /^xa\.default-branch[[:space:]]*=/) {
+                sub(/^[^=]*=/, "", line)
+                print trim(line)
+                found = 1
+                exit
+            }
+        }
+
+        END {
+            if (!found) exit 1
+        }
+    ' "$config"
+}
+
+echo 'flatpak_default_branch flathub'
+get_flatpak_default_branch flathub
+echo 'flatpak_default_branch --user flathub'
+get_flatpak_default_branch --user flathub
