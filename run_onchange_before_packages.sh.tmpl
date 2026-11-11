@@ -92,6 +92,8 @@ function print_char_line {
 
 # ------------------------------------------------------------------------------
 
+{{- $desktop := output "sh" "-c" "echo ${XDG_CURRENT_DESKTOP:-unknown}" | trim | lower -}}
+
 if ! command -v brew &> /dev/null; then
     printf "[${BWhite}chezmoi${Color_Off}] ${BRed}ERROR${Color_Off} - 'brew' not available!\n"
 else
@@ -101,6 +103,7 @@ else
     printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Evaluating requirements via brew bundle...\n"
 
     brew bundle --file=/dev/stdin <<EOF
+# Homebrew Taps
 {{ range .packages.homebrew.taps -}}
 $(  if [[ -f {{ . }} ]]; then
         cat {{ . }} | grep '^tap' | sort -u
@@ -111,36 +114,60 @@ $(  if [[ -f {{ . }} ]]; then
     fi )
 {{ end -}}
 
+# Homebrew Formulae
 {{ range .packages.homebrew.formulae -}}
 brew {{ . | quote }}
 {{ end -}}
 
+# Homebrew Casks
 {{ range .packages.homebrew.casks -}}
 cask {{ . | quote }}
 {{ end -}}
 
-{{ range .packages.flatpaks -}}
-flatpak {{ . | quote }}
+# Flatpak
+{{- range index .packages.flatpaks $desktop }}
+$(  if [[ -f {{ . }} ]]; then
+    cat {{ . }} | grep '^flatpak' | sort -u
+elif [[ -d {{ . }} ]]; then
+    find {{ . }} -name '*.Brewfile' -exec cat {} \; | grep '^flatpak' | sort -u
+else
+    printf '%s\n' 'flatpak {{ . | quote }}'
+fi )
 {{ end -}}
 
+{{ range .packages.flatpaks.other -}}
+$(  if [[ -f {{ . }} ]]; then
+        cat {{ . }} | grep '^flatpak' | sort -u
+    elif [[ -d {{ . }} ]]; then
+        find {{ . }} -name '*.Brewfile' -exec cat {} \; | grep '^flatpak' | sort -u
+    else
+        printf '%s\n' 'flatpak {{ . | quote }}'
+    fi )
+{{ end -}}
+
+# GO
 {{ range .packages.go -}}
 go {{ . | quote }}
 {{ end -}}
 
+# Rust Crates
 {{ range .packages.cargo -}}
 cargo {{ . | quote }}
 {{ end -}}
 
+# Python | uv Tools
 {{ range .packages.uv -}}
 uv {{ . | quote }}
 {{ end -}}
 
+# VSCode Extensions
 {{ range .packages.vscode_extensions -}}
 $(  if command -v code &> /dev/null; then
         printf '%s\n' 'vscode {{ . | quote }}'
     fi )
 {{ end -}}
 
+# Import from other files
 {{ range .packages.files -}}
 $(  if [[ -f {{ . }} ]]; then
         cat {{ . }}
@@ -153,15 +180,22 @@ EOF
 fi
 
 # ------------------------------------------------------------------------------
+
 echo
 print_char_line '-'
 echo
-printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Evaluating script cache path presence...\n"
-echo
+printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Evaluating script cache path presence..."
 cache="$HOME/.var/lib/chezmoi/run_onchange_after_packages.d"
-[[ ! -d "${cache}" ]] && mkdir -pv "${cache}" || printf '%s\n' 'Already present...'
+if [[ ! -d "${cache}" ]]; then
+    printf "${BYellow}ABSENT${Color_Off}\n"
+    mkdir -pv "${cache}"
+else
+    printf "${BGreen}PRESENT${Color_Off}\n"
+fi
 
 # ------------------------------------------------------------------------------
+
+{{- if eq .Env.XDG_CURRENT_DESKTOP "GNOME" }}
 echo
 print_char_line '-'
 echo
@@ -265,6 +299,7 @@ EOF
         fi
     fi
 fi
+{{- end }}
 
 # ------------------------------------------------------------------------------
 echo

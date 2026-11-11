@@ -272,171 +272,156 @@ packages:
     - streetsidesoftware.code-spell-checker-scientific-terms
 
   flatpaks:
+    backburned:
+      - io.missioncenter.MissionCenter # Monitor system resource usage | https://flathub.org/en/apps/io.missioncenter.MissionCenter
+      - io.github.kolunmi.Bazaar # Discover and manage applications | https://flathub.org/en/apps/io.github.kolunmi.Bazaar
+      - io.github.pwr_solaar.solaar
 
-    - io.github.flattool.Warehouse # Manage all things Flatpak | https://flathub.org/en/apps/io.github.flattool.Warehouse
-    - com.github.tchx84.Flatseal # Manage Flatpak permissions | https://flathub.org/en/apps/com.github.tchx84.Flatseal
-    - io.github.kolunmi.Bazaar # Discover and manage applications | https://flathub.org/en/apps/io.github.kolunmi.Bazaar
-    - com.mattjakeman.ExtensionManager # Browse and install GNOME Shell extensions | https://flathub.org/en/apps/com.mattjakeman.ExtensionManager
-    - io.github.flattool.Ignition # Manage startup apps and scripts | https://flathub.org/en/apps/io.github.flattool.Ignition
-    - io.missioncenter.MissionCenter # Monitor system resource usage | https://flathub.org/en/apps/io.missioncenter.MissionCenter
-    - page.tesk.Refine
-    - io.github.realmazharhussain.GdmSettings
-    - io.github.pwr_solaar.solaar
+      - io.github.flattool.Warehouse # Manage all things Flatpak | https://flathub.org/en/apps/io.github.flattool.Warehouse
+      - io.github.flattool.Ignition # Manage startup apps and scripts | https://flathub.org/en/apps/io.github.flattool.Ignition
+      - com.github.tchx84.Flatseal # Manage Flatpak permissions | https://flathub.org/en/apps/com.github.tchx84.Flatseal
 
-    - org.altlinux.Tuner # Extensible control center | https://flathub.org/en/apps/org.altlinux.Tuner
-    - io.github.fabrialberio.pinapp # Create and edit app shortcuts | https://flathub.org/en/apps/io.github.fabrialberio.pinapp
-    - ca.desrt.dconf-editor
+      - io.github.fabrialberio.pinapp # Create and edit app shortcuts | https://flathub.org/en/apps/io.github.fabrialberio.pinapp
 
-    - org.mozilla.firefox
-    # - net.waterfox.waterfox
-    - io.gitlab.librewolf-community
-    - app.zen_browser.zen
-    # - one.ablaze.floorp
-    - io.github.ungoogled_software.ungoogled_chromium
-    - io.github.ungoogled_software.ungoogled_chromium.Codecs
-    - org.torproject.torbrowser-launcher
+      - io.github.input_leap.input-leap
+      - org.deskflow.deskflow
 
-    # Games
-    - com.github.k4zmu2a.spacecadetpinball
-    - com.github.Matoking.protontricks
-    - com.vysp3r.ProtonPlus
-    - page.kramo.Cartridges # A simple game launcher for all of your games | https://flathub.org/en/apps/page.kramo.Cartridges
-    - com.github.mtkennerly.ludusavi # Cross-platform savegame backups/restores
-    - com.valvesoftware.Steam
-    - com.heroicgameslauncher.hgl
+    gnome:
+      - io.github.realmazharhussain.GdmSettings
+      - ca.desrt.dconf-editor
+      - org.gnome.Calendar
+      - org.gnome.DejaDup
+      - org.gnome.Logs
+      - org.gnome.Showtime # Video player
+      - org.gnome.Snapshot
+      - org.gnome.SoundRecorder
+      - org.gnome.Weather
+      - org.gnome.Geary
+      - org.gnome.Fractal # A Matrix messaging app for GNOME written in Rust
+      - org.gnome.Builder
+      - org.gnome.Decibels
+      - info.febvre.Komikku # Discover and read manga & comics | https://flathub.org/en/apps/info.febvre.Komikku
 
-    - io.github.alainm23.planify # Project/task manager
-    - codes.merritt.bargain # Compare items when shopping | https://flathub.org/apps/codes.merritt.bargain
+    kde:
 
-    - org.libreoffice.LibreOffice
-    - org.onlyoffice.desktopeditors
-    - com.github.jeromerobert.pdfarranger
-    - me.broken_by.PdfMetadataEditor # Advanced editor for PDF metadata | https://flathub.org/en/apps/me.broken_by.PdfMetadataEditor
-    - it.mijorus.smile # An emoji picker | https://flathub.org/en/apps/it.mijorus.smile
-    - dev.geopjr.Calligraphy # Turn text into ASCII banners | https://flathub.org/en/apps/dev.geopjr.Calligraphy
+    other:
+      - org.mozilla.firefox
+      # - net.waterfox.waterfox
+      - io.gitlab.librewolf-community
+      - app.zen_browser.zen
+      # - one.ablaze.floorp
+      - io.github.ungoogled_software.ungoogled_chromium
+      - org.torproject.torbrowser-launcher
 
-    - io.github.peazip.PeaZip
-    - de.leopoldluley.Clapgrep
-    - dev.geopjr.Collision # Check hashes for your files | https://flathub.org/en/apps/dev.geopjr.Collision
-    - me.fouquet.Stencil # Batch file renamer | https://flathub.org/apps/me.fouquet.Stencil
+      - com.valvesoftware.Steam
+      - com.heroicgameslauncher.hgl
+      - com.vysp3r.ProtonPlus
+      - com.github.Matoking.protontricks
+      - com.github.k4zmu2a.spacecadetpinball
+      - com.github.mtkennerly.ludusavi # Cross-platform savegame backups/restores
 
-    - org.gnome.Builder
+      - io.github.alainm23.planify # Project/task manager
+      - codes.merritt.bargain # Compare items when shopping | https://flathub.org/apps/codes.merritt.bargain
 
-    - com.github.marhkb.Pods
-    - com.ranfdev.DistroShelf # Graphical interface for managing Distrobox containers | https://flathub.org/en/apps/com.ranfdev.DistroShelf
-    - com.usebottles.bottles
-    - io.podman_desktop.PodmanDesktop
-    - it.mijorus.gearlever
+      - org.libreoffice.LibreOffice
+      - org.onlyoffice.desktopeditors
+      - com.github.jeromerobert.pdfarranger
+      - me.broken_by.PdfMetadataEditor # Advanced editor for PDF metadata | https://flathub.org/en/apps/me.broken_by.PdfMetadataEditor
+      - it.mijorus.smile # An emoji picker | https://flathub.org/en/apps/it.mijorus.smile
+      - dev.geopjr.Calligraphy # Turn text into ASCII banners | https://flathub.org/en/apps/dev.geopjr.Calligraphy
 
-    - io.github.getnf.embellish # Embellish | User-friendly application designed for managing Nerd Fonts on your system.
-    - org.gustavoperedo.FontDownloader
+      - io.github.peazip.PeaZip
+      - de.leopoldluley.Clapgrep
+      - dev.geopjr.Collision # Check hashes for your files | https://flathub.org/en/apps/dev.geopjr.Collision
+      - me.fouquet.Stencil # Batch file renamer | https://flathub.org/apps/me.fouquet.Stencil
 
-    - page.kramo.Sly
-    - com.github.PintaProject.Pinta
-    - org.gimp.GIMP
-    - org.upscayl.Upscayl
-    - io.github.tobagin.scramble
-    - io.github.nroduit.Weasis
-    - be.alexandervanhee.gradia # Annotate your screenshots
-    - com.github.finefindus.eyedropper # Pick and format colors | https://flathub.org/en/apps/com.github.finefindus.eyedropper
-    - com.github.huluti.Curtail # Compress your images | https://flathub.org/en/apps/com.github.huluti.Curtail
+      - com.github.marhkb.Pods
+      - com.ranfdev.DistroShelf # Graphical interface for managing Distrobox containers | https://flathub.org/en/apps/com.ranfdev.DistroShelf
+      - com.usebottles.bottles
+      - io.podman_desktop.PodmanDesktop
+      - it.mijorus.gearlever
 
-    - org.freecad.FreeCAD
+      - io.github.getnf.embellish # Embellish | User-friendly application designed for managing Nerd Fonts on your system.
 
-    - org.videolan.VLC
-    - io.mpv.Mpv
-    - io.github.diegopvlk.Cine
+      - page.kramo.Sly
+      - com.github.PintaProject.Pinta
+      - org.gimp.GIMP
+      - org.upscayl.Upscayl
+      - io.github.tobagin.scramble
+      - io.github.nroduit.Weasis
+      - be.alexandervanhee.gradia # Annotate your screenshots
+      - com.github.finefindus.eyedropper # Pick and format colors | https://flathub.org/en/apps/com.github.finefindus.eyedropper
+      - com.github.huluti.Curtail # Compress your images | https://flathub.org/en/apps/com.github.huluti.Curtail
 
-    - org.shotcut.Shotcut # Video editor | https://flathub.org/apps/org.shotcut.Shotcut
-    - fr.handbrake.ghb
-    - org.bunkus.mkvtoolnix-gui
-    - com.obsproject.Studio
-    - io.github.mhogomchungu.media-downloader
-    - io.freetubeapp.FreeTube
-    - org.nickvision.tubeconverter
-    - org.gnome.gitlab.YaLTeR.VideoTrimmer # Trim videos quickly | https://flathub.org/apps/org.gnome.gitlab.YaLTeR.VideoTrimmer
+      - org.freecad.FreeCAD
 
-    - io.bassi.Amberol
-    - de.haeckerfelix.AudioSharing # Share your computer audio | https://flathub.org/en/apps/de.haeckerfelix.AudioSharing
-    - com.github.taiko2k.tauonmb # A modern, comfortable and streamlined music player | https://flathub.org/en/apps/com.github.taiko2k.tauonmb
-    # - io.github.mmarco94.tambourine # Music player with waveform seekbar | https://flathub.org/apps/io.github.mmarco94.tambourine
-    - com.github.neithern.g4music # A light weight music player | https://flathub.org/en/apps/com.github.neithern.g4music
-    - org.gnome.Decibels
-    - app.drey.EarTag
+      - org.videolan.VLC
+      - io.mpv.Mpv
+      # - io.github.diegopvlk.Cine
 
-    - com.github.johnfactotum.Foliate # Read e-books | https://flathub.org/en/apps/com.github.johnfactotum.Foliate
-    - info.febvre.Komikku
+      - org.shotcut.Shotcut # Video editor | https://flathub.org/apps/org.shotcut.Shotcut
+      - org.kde.kdenlive # Video editor | https://flathub.org/en/apps/org.kde.kdenlive
+      - org.gnome.gitlab.YaLTeR.VideoTrimmer # Trim videos quickly | https://flathub.org/apps/org.gnome.gitlab.YaLTeR.VideoTrimmer
+      - org.bunkus.mkvtoolnix-gui
+      - fr.handbrake.ghb
+      - com.obsproject.Studio
+      - io.freetubeapp.FreeTube
+      - io.github.mhogomchungu.media-downloader
+      - org.nickvision.tubeconverter
 
-    # - com.github.zocker_160.SyncThingy
-    - app.drey.Warp
-    - org.localsend.localsend_app
-    - org.onionshare.OnionShare
-    - org.qbittorrent.qBittorrent
-    - io.github.giantpinkrobots.varia
+      - io.bassi.Amberol # music player | https://flathub.org/en/apps/io.bassi.Amberol
+      - de.haeckerfelix.AudioSharing # Share your computer audio | https://flathub.org/en/apps/de.haeckerfelix.AudioSharing
+      - com.github.taiko2k.tauonmb # A modern, comfortable and streamlined music player | https://flathub.org/en/apps/com.github.taiko2k.tauonmb
+      - io.github.mmarco94.tambourine # Music player with waveform seekbar | https://flathub.org/apps/io.github.mmarco94.tambourine
+      - com.github.neithern.g4music # Gapless - light weight music player | https://flathub.org/en/apps/com.github.neithern.g4music
+      - app.drey.EarTag
 
-    # - org.signal.Signal
-    - org.gnome.Fractal # A Matrix messaging app for GNOME written in Rust
+      - com.github.johnfactotum.Foliate # Read e-books | https://flathub.org/en/apps/com.github.johnfactotum.Foliate
+      - io.github.riyaniii.Kaori # Discover and read comics | https://flathub.org/en/apps/io.github.riyaniii.Kaori
 
-    - com.rustdesk.RustDesk
-    - io.github.input_leap.input-leap
-    - org.deskflow.deskflow
-    - io.github.totoshko88.RustConn # Manage SSH, RDP, VNC, SPICE, MOSH, Telnet, Serial, Kubernetes, and Zero Trust connections | https://flathub.org/apps/io.github.totoshko88.RustConn
-    - com.freerdp.FreeRDP
+      # - com.github.zocker_160.SyncThingy
+      - app.drey.Warp
+      - org.localsend.localsend_app
+      - org.onionshare.OnionShare
+      - org.qbittorrent.qBittorrent
+      - io.github.giantpinkrobots.varia
 
-    - io.github.justinrdonnelly.bouncer # Bouncer | An application to choose the correct firewall zone for wireless connections.
+      # - org.signal.Signal
 
-    - com.bitwarden.desktop
-    - org.keepassxc.KeePassXC
-    - com.belmoussaoui.Authenticator
+      - com.rustdesk.RustDesk
+      - io.github.totoshko88.RustConn # Manage SSH, RDP, VNC, SPICE, MOSH, Telnet, Serial, Kubernetes, and Zero Trust connections | https://flathub.org/apps/io.github.totoshko88.RustConn
+      - com.freerdp.FreeRDP
 
-    - org.nmap.Zenmap
-    - de.swsnr.turnon # Turn On | Conveniently turn on devices in your network, such as a NAS or a gaming console, using Wake On LAN (WoL).
+      - io.github.justinrdonnelly.bouncer # Bouncer | An application to choose the correct firewall zone for wireless connections.
 
-    - io.github.BuddySirJava.SSH-Studio
-    - io.github.mfat.sshpilot
-    - io.github.plrigaux.sysd-manager
+      - com.bitwarden.desktop
+      - org.keepassxc.KeePassXC
+      - com.belmoussaoui.Authenticator
 
-    # - com.github.hugolabe.Wike # Search and read Wikipedia articles | https://flathub.org/en/apps/com.github.hugolabe.Wike
-    - dev.mufeed.Wordbook # Wordbook | An offline English-English dictionary application powered by WordNet and eSpeak.
-    - me.iepure.devtoolbox
-    - io.github.shonebinu.Brief # Browse command-line cheatsheets | https://flathub.org/apps/io.github.shonebinu.Brief
-    - org.zealdocs.Zeal
-    - org.gnome.meld
+      - org.nmap.Zenmap
+      - de.swsnr.turnon # Turn On | Conveniently turn on devices in your network, such as a NAS or a gaming console, using Wake On LAN (WoL).
 
-    - io.gitlab.adhami3310.Impression # Create bootable drives | https://flathub.org/en/apps/io.gitlab.adhami3310.Impression
-    - com.github.wwmm.easyeffects
-    - com.belmoussaoui.Decoder
+      - io.github.BuddySirJava.SSH-Studio
+      - io.github.mfat.sshpilot
+      - io.github.plrigaux.sysd-manager
 
-    - com.jeffser.Alpaca
-    - com.jeffser.Alpaca.Plugins.Ollama
-    - com.jeffser.Alpaca.Plugins.AMD
-    # - io.github.qwersyk.Newelle # AI Chatbot | https://flathub.org/apps/io.github.qwersyk.Newelle
+      # - com.github.hugolabe.Wike # Search and read Wikipedia articles | https://flathub.org/en/apps/com.github.hugolabe.Wike
+      - dev.mufeed.Wordbook # Wordbook | An offline English-English dictionary application powered by WordNet and eSpeak.
+      - me.iepure.devtoolbox
+      - io.github.shonebinu.Brief # Browse command-line cheatsheets | https://flathub.org/apps/io.github.shonebinu.Brief
+      - org.zealdocs.Zeal
+      - org.gnome.meld
 
-    - org.gnome.Calculator
-    - org.gnome.Calendar
-    - org.gnome.Characters
-    - org.gnome.Connections
-    - org.gnome.Contacts
-    - org.gnome.DejaDup
-    - org.gnome.FileRoller
-    - org.gnome.Firmware
-    - org.gnome.Logs
-    - org.gnome.Loupe # Image viewer
-    - org.gnome.Maps
-    - org.gnome.NautilusPreviewer
-    - org.gnome.Papers
-    - org.gnome.Showtime # Video player
-    - org.gnome.SimpleScan
-    - org.gnome.Snapshot
-    - org.gnome.SoundRecorder
-    - org.gnome.TextEditor
-    - org.gnome.Weather
-    - org.gnome.baobab # Disk Usage Analyzer
-    - org.gnome.clocks
-    - org.gnome.font-viewer
+      - io.gitlab.adhami3310.Impression # Create bootable drives | https://flathub.org/en/apps/io.gitlab.adhami3310.Impression
+      - com.github.wwmm.easyeffects
+      - com.belmoussaoui.Decoder
 
-    - org.mozilla.thunderbird_esr
-    - org.gnome.Geary
+      - com.jeffser.Alpaca
+      - com.jeffser.Alpaca.Plugins.Ollama
+      - com.jeffser.Alpaca.Plugins.AMD
+      # - io.github.qwersyk.Newelle # AI Chatbot | https://flathub.org/apps/io.github.qwersyk.Newelle
+
+      - org.mozilla.thunderbird_esr
 
   gnome_extensions:
     - 2236 # Night Theme Switcher
