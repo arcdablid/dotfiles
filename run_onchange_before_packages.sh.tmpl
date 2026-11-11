@@ -195,16 +195,14 @@ fi
 
 # ------------------------------------------------------------------------------
 
-{{- if eq .Env.XDG_CURRENT_DESKTOP "GNOME" }}
+{{- if contains "gnome" $desktop }}
 echo
 print_char_line '-'
 echo
 printf "[${BWhite}chezmoi${Color_Off}] ${BBlue}INFO${Color_Off} - Installing GNOME extensions...\n"
 echo
 
-if ! command -v gnome-shell &> /dev/null; then
-    printf "[${BWhite}chezmoi${Color_Off}] ${BRed}ERROR${Color_Off} - A non-Gnome desktop environment was detected, where Gnome extensions are not supported!\n"
-elif ! command -v gext &> /dev/null; then
+if ! command -v gext &> /dev/null; then
     printf "[${BWhite}chezmoi${Color_Off}] ${BYellow}Warning${Color_Off} - Command 'gext' not available - skipping installing gnome extensions...\n"
 else
 
